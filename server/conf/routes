@@ -1,0 +1,113 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+#All the proxy routes
+GET         /proxy/spark/*path                   web.controllers.proxy.SparkProxyController.master(path: String)
+
+#Spark cluster
+PUT        /web/v1/spark-cluster                                 web.controllers.read.ClusterController.saveLocalSparkClusterConfig
+GET        /web/v1/spark/:clusterId/redirect/*path               web.controllers.spark.SparkClusterController.proxyHistoryUI(clusterId: Long, path: String)
+GET        /web/v1/spark/:clusterId/history/*path                web.controllers.spark.SparkClusterController.proxyHistoryAPI(clusterId: Long, path: String)
+GET        /web/v1/spark/:clusterId/master/version/:version      web.controllers.spark.SparkClusterController.proxyMasterUI(clusterId: Long, version: String)
+GET        /web/v1/spark/:clusterId                              web.controllers.read.ClusterController.fetchSparkCluster(clusterId: Long)
+GET        /ws/spark/:clusterId                                  web.controllers.read.ClusterController.streamClusterMetrics(clusterId: Long)
+
+#Kafka Cluster
+PUT        /web/v1/kafka-cluster                                web.controllers.kafka.KafkaClusterController.saveLocalKafkaClusterConfig
+GET        /web/v1/kafka/:clusterId                             web.controllers.kafka.KafkaClusterController.fetchKafkaCluster(clusterId: Long)
+GET        /ws/kafka/:clusterId                                 web.controllers.kafka.KafkaClusterController.streamKafkaClusterState(clusterId: Long)
+GET        /web/v1/kafka/:clusterId/topics                      web.controllers.kafka.KafkaClusterController.listTopics(clusterId: Long)
+GET        /web/v1/kafka/:clusterId/nodes                       web.controllers.kafka.KafkaClusterController.listBrokers(clusterId: Long)
+PUT        /web/v1/kafka/:clusterId/topics                      web.controllers.kafka.KafkaClusterController.createTopic(clusterId: Long)
+GET        /web/v1/kafka/:clusterId/topics/:topic/partitions    web.controllers.kafka.KafkaClusterController.listTopicPartitions(clusterId: Long, topic: String)
+POST        /web/v1/kafka/:clusterId/topics/:topic/messages      web.controllers.kafka.KafkaClusterController.listTopicMessages(clusterId: Long, topic: String)
+GET        /web/v1/kafka/:clusterId/topics/:topic/configs       web.controllers.kafka.KafkaClusterController.listTopicConfigurations(clusterId: Long, topic: String)
+GET        /web/v1/kafka/:clusterId/consumer-groups             web.controllers.kafka.KafkaClusterController.listConsumerGroups(clusterId: Long)
+
+#HDFS Cluster
+PUT        /web/v1/hdfs-cluster                                 web.controllers.hdfs.HDFSController.saveLocalHDFSClusterConfig
+GET        /ws/hadoop/:clusterId                                 web.controllers.hdfs.HDFSController.streamHDFSClusterState(clusterId: Long)
+GET        /web/v1/hadoop/:clusterId                             web.controllers.hdfs.HDFSController.fetchHDFSCluster(clusterId: Long)
+GET        /web/v1/hadoop/:clusterId/webhdfs/v1/*path            web.controllers.hdfs.HDFSController.proxyWebHDFS(clusterId: Long, path: String)
+PUT        /web/v1/hadoop/:clusterId/modify/webhdfs/v1/*path     web.controllers.hdfs.HDFSController.modifyWebHDFS(clusterId: Long, path: String)
+PUT        /web/v1/hadoop/:clusterId/webhdfs/v1/*path            web.controllers.hdfs.HDFSController.uploadToHDFS(clusterId: Long, path: String)
+DELETE     /web/v1/hadoop/:clusterId/webhdfs/v1/*path            web.controllers.hdfs.HDFSController.proxyDelFileWebHDFS(clusterId: Long, path: String)
+
+#Common cluster Web APIs
+POST        /web/v1/clusters/:clusterId/services/:service/start     web.controllers.read.ClusterController.startCluster(service: String, clusterId: Long)
+POST        /web/v1/clusters/:clusterId/stop                        web.controllers.read.ClusterController.stopCluster(clusterId: Long)
+
+# Auth APIs
++ nocsrf
+POST        /web/signin                          web.controllers.auth.AuthController.signIn
+GET         /web/signout                         web.controllers.auth.AuthController.signOut
+GET         /web/account                         web.controllers.auth.MemberController.accountDetails
+GET         /web/v1/orgs                         web.controllers.auth.MemberController.listOrgsWithKeys
+
+#Orgs and Workspace
+POST        /web/v1/workspace                    web.controllers.read.WorkspaceController.createWorkspace
+GET         /web/v1/workspaces                   web.controllers.read.WorkspaceController.listWorkspaces
+POST        /web/v1/onboard                         web.controllers.read.WorkspaceController.onboardMember
+
+#Connections
++ nocsrf
+POST        /web/v1/connections                        web.controllers.read.WorkspaceController.addConnection
++ nocsrf
+PUT         /web/v1/connections/:connectionId          web.controllers.read.WorkspaceController.updateConnection(connectionId: Long)
+DELETE      /web/v1/connections/:connectionId          web.controllers.read.WorkspaceController.deleteConnection(connectionId: Long)
+GET         /web/v1/connections                        web.controllers.read.WorkspaceController.listConnections
+GET         /web/v1/connection-providers               web.controllers.read.WorkspaceController.listConnectionProviders
+GET         /web/v1/connections/:connectionId          web.controllers.read.WorkspaceController.testConnection(connectionId: Long)
+
+#File systems
+GET         /web/v1/fs/:connectionId                   web.controllers.FSController.listRootLevelFiles(connectionId: Long)
+GET         /web/v1/fs/:connectionId/path/*path        web.controllers.FSController.listFiles(connectionId: Long, path: String)
++ nocsrf
+PUT         /web/v1/fs/:connectionId/path/*path         web.controllers.FSController.newDirectory(connectionId: Long, path: String)
++ nocsrf
+DELETE      /web/v1/fs/:connectionId/path/*path         web.controllers.FSController.deleteFile(connectionId: Long, path: String)
++ nocsrf
+PUT         /web/v1/fs/:connectionId/upload/*path      web.controllers.FSController.upload(connectionId: Long, path: String)
+
+#Databases
+GET         /web/v1/rdbms/:connectionId/summary                         web.controllers.DatabasesController.summary(connectionId: Long)
+GET         /web/v1/rdbms/:connectionId/catalogs                        web.controllers.DatabasesController.catalogs(connectionId: Long)
+GET         /web/v1/rdbms/:connectionId/schemas                         web.controllers.DatabasesController.schemas(connectionId: Long)
+GET         /web/v1/rdbms/:connectionId/schemas/:schema/tables          web.controllers.DatabasesController.listTables(connectionId: Long, schema: String)
++ nocsrf
+PUT         /web/v1/rdbms/:connectionId/execute                         web.controllers.DatabasesController.executeQuery(connectionId: Long)
+
+#Secrets
+GET         /web/secrets/pub-key                                          web.controllers.read.WorkspaceController.getPublicKey
+POST        /web/v1/name                                                  web.controllers.auth.MemberController.changeName
+POST        /web/v1/password                                              web.controllers.auth.MemberController.changePassword
+
+
+#Workspaces WEB APIs
+GET         /web/v1/workspaces/keys                                       web.controllers.read.WorkspaceController.listAPIKeys
+GET         /web/v1/workspace/hosts                                       web.controllers.read.WorkspaceController.listWorkspaceHosts
+POST        /web/v1/org/upload-logo                                       web.controllers.read.WorkspaceController.uploadOrganisationLogo
+GET         /web/v1/org                                                   web.controllers.read.WorkspaceController.getOrgDetails
+POST        /web/v1/org                                                   web.controllers.read.WorkspaceController.updateOrg
+
+#Clusters Web API
+GET         /web/v1/sandbox-clusters                                      web.controllers.read.WorkspaceController.listSandboxVersions
+GET         /web/v1/packages/:name                                        web.controllers.read.WorkspaceController.fetchPackageVersions(name: String)
+
+POST        /web/v1/sandbox-cluster/:clusterId/status/:status             web.controllers.read.WorkspaceController.updateClusterStatus(clusterId: Long, status: String)
+GET         /web/v1/clusters                                              web.controllers.read.WorkspaceController.listAllWorkspaceClusters
+
+PUT         /web/v1/clusters/new                                          web.controllers.read.WorkspaceController.newCluster
+DELETE      /web/v1/clusters/:clusterId                                   web.controllers.read.ClusterController.removeCluster(clusterId: Long)
+POST        /web/v1/clusters/verify                                       web.controllers.read.WorkspaceController.verifyCluster
+
+
+
+# Map static resources from the /public folder to the /assets URL path
+GET         /                                                            controllers.Assets.at(path="/public", file="index.html")
+GET         /manifest.json                                               controllers.Assets.at(path="/public", file="manifest.json")
+GET         /favicon.ico                                                 controllers.Assets.at(path="/public", file="favicon.ico")
+GET         /static/*file                                                controllers.Assets.at(path="/public/static", file)
+GET         /web/assets/img/*file                                        web.controllers.read.WorkspaceController.assetsAt(file: String)
+
