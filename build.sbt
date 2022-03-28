@@ -3,12 +3,12 @@ import com.typesafe.sbt.packager.MappingsHelper._
 import sbt._
 import com.typesafe.sbt.packager.linux._
 
-lazy val `gigahex-ce` = (project in file("."))
+lazy val `heapland-ce` = (project in file("."))
   .settings(buildSettings)
   .settings(baseSettings)
   .settings(
-    organization := "com.gigahex",
-    moduleName := "gigahex-ce"
+    organization := "com.heapland",
+    moduleName := "heapland-ce"
   )
 
 lazy val buildSettings = Seq(
@@ -32,7 +32,7 @@ lazy val buildSettings = Seq(
 )
 
 lazy val projectSettings = baseSettings ++ buildSettings ++ Seq(
-  organization := "com.gigahex",
+  organization := "com.heapland",
   resolvers ++= Seq("lazylibsodium" at "https://dl.bintray.com/terl/lazysodium-maven", "jcenter" at "https://jcenter.bintray.com"),
   javaOptions ++= Seq(
     "-Dcom.sun.management.jmxremote",
@@ -44,7 +44,7 @@ lazy val projectSettings = baseSettings ++ buildSettings ++ Seq(
 )
 
 lazy val sparkProjectSettings = buildSettings ++ Seq(
-  organization := "com.gigahex"
+  organization := "com.heapland"
 )
 
 lazy val baseSettings = Seq(
@@ -85,8 +85,8 @@ lazy val scalaCompilerOptions = scalacOptions ++= Seq(
 lazy val models = (project in file("modules/common"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-models",
-    moduleName := "gigahex-models",
+    name := "heapland-models",
+    moduleName := "heapland-models",
     libraryDependencies ++= Seq(
       "org.scalikejdbc"            %% "scalikejdbc"                     % "3.3.5",
     )
@@ -96,8 +96,8 @@ lazy val models = (project in file("modules/common"))
 lazy val aws = (project in file("modules/aws"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-aws",
-    moduleName := "gigahex-aws",
+    name := "heapland-aws",
+    moduleName := "heapland-aws",
     libraryDependencies ++= Seq(
       "com.amazonaws" % "aws-java-sdk-s3" % "1.12.180" withSources (),
       "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.2"
@@ -107,8 +107,8 @@ lazy val aws = (project in file("modules/aws"))
 lazy val cassandra = (project in file("modules/cassandra"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-cassandra",
-    moduleName := "gigahex-cassandra",
+    name := "heapland-cassandra",
+    moduleName := "heapland-cassandra",
     libraryDependencies ++= Seq(
       "com.datastax.oss" % "java-driver-core" % "4.14.0"
     )
@@ -117,16 +117,16 @@ lazy val cassandra = (project in file("modules/cassandra"))
 lazy val cockroachdb = (project in file("modules/cockroachdb"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-cockroachdb",
-    moduleName := "gigahex-cockroachdb"
+    name := "heapland-cockroachdb",
+    moduleName := "heapland-cockroachdb"
   ).dependsOn(postgres)
 
 
 lazy val postgres = (project in file("modules/postgres"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-postgres",
-    moduleName := "gigahex-postgres",
+    name := "heapland-postgres",
+    moduleName := "heapland-postgres",
     libraryDependencies ++= Seq(
       "org.postgresql"             % "postgresql"                       % "42.2.16"
     )
@@ -135,8 +135,8 @@ lazy val postgres = (project in file("modules/postgres"))
 lazy val mysql = (project in file("modules/mysql"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-mysql",
-    moduleName := "gigahex-mysql",
+    name := "heapland-mysql",
+    moduleName := "heapland-mysql",
     libraryDependencies ++= Seq(
       "mysql" % "mysql-connector-java" % "8.0.27"
     )
@@ -145,25 +145,25 @@ lazy val mysql = (project in file("modules/mysql"))
 lazy val mariadb = (project in file("modules/mariadb"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-mysql",
-    moduleName := "gigahex-mysql",
+    name := "heapland-mysql",
+    moduleName := "heapland-mysql",
     libraryDependencies ++= Seq(
       "org.mariadb.jdbc" % "mariadb-java-client" % "3.0.3"
     )
   ).dependsOn(models)
 
-lazy val `gigahex-server`  = (project in file("server"))
+lazy val `heapland-server`  = (project in file("server"))
   .settings(projectSettings)
   .settings(
-    name := "gigahex-server",
-    moduleName := "gigahex-server",
-    maintainer in Linux := "Gigahex Support <support@gigahex.com>",
-    packageSummary in Linux := "Gigahex Web Server",
+    name := "heapland-server",
+    moduleName := "heapland-server",
+    maintainer in Linux := "heapland Support <support@heapland.com>",
+    packageSummary in Linux := "heapland Web Server",
     mappings in Universal ++= directory(baseDirectory.value / "public"),
     mappings in Universal ++= directory(baseDirectory.value / "lib"),
     mappings in Universal ++= directory(baseDirectory.value / "sbin"),
-    defaultLinuxInstallLocation := "/opt/gigahex",
-    packageDescription := """Gigahex Data Platform Server""",
+    defaultLinuxInstallLocation := "/opt/heapland",
+    packageDescription := """heapland Data Platform Server""",
     linuxStartScriptTemplate in Debian := {
       println((resourceDirectory in Compile).value.toPath.toAbsolutePath.toString)
       ((resourceDirectory in Compile).value / "server-start-template").toURI.toURL
