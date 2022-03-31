@@ -5,24 +5,23 @@ import akka.stream.Materializer
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.gigahex.postgres.{MySQLDatabaseService, PostgresDBService}
 import com.gigahex.services.{MySQLConnection, PgConnection, RequestQueryExecution, ServiceConnection}
-import com.mohiva.play.silhouette.api.{HandlerResult, Silhouette}
+import com.mohiva.play.silhouette.api.Silhouette
 import controllers.AssetsFinder
 import javax.inject.Inject
 import web.models.{ErrorResponse, IllegalParam, InternalServerErrorResponse}
 import web.models.formats.{AuthResponseFormats, ConnectionFormats, DBFormats}
-import web.services.{ClusterService, DatabaseServiceManager, FileServiceManager, MemberService, SecretStore, WorkspaceService}
+import web.services.{ DatabaseServiceManager, MemberService, SecretStore, WorkspaceService}
 import play.api.cache.SyncCacheApi
 import play.api.i18n.I18nSupport
 import play.api.mvc._
 import play.api.libs.json.{JsError, Json, Reads}
-import play.api.mvc.{ControllerComponents, InjectedController, Results}
+import play.api.mvc.{ControllerComponents, InjectedController}
 import play.cache.NamedCache
-import utils.auth.{DefaultEnv, RandomGenerator}
+import utils.auth.{DefaultEnv}
 import web.controllers.handlers.SecuredWebRequestHandler
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
 
-import scala.concurrent.{ExecutionContext, Future, blocking}
-import scala.util.Failure
+import scala.concurrent.Future
 import scala.concurrent.ExecutionContext
 
 class DatabasesController @Inject()(
@@ -52,7 +51,7 @@ with DBFormats{
   val mapper = new ObjectMapper()
   mapper.registerModule(DefaultScalaModule)
 
-  private def usingConnection(workspaceId: Long, connectionId: Long, path: String)(connHandler: DatabaseServiceManager[_] => Result): Future[Result] = {
+  private def usingDBConnection(workspaceId: Long, connectionId: Long, path: String)(connHandler: DatabaseServiceManager[_] => Result): Future[Result] = {
     workspaceService
       .getConnection(workspaceId, connectionId)
       .map {
@@ -73,7 +72,7 @@ with DBFormats{
   def summary(connectionId: Long) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        usingConnection(profile.workspaceId, connectionId, request.path) { dbm =>
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { dbm =>
           dbm.getSummary()
             .fold(
               err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
@@ -89,7 +88,7 @@ with DBFormats{
   def catalogs(connectionId: Long) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        usingConnection(profile.workspaceId, connectionId, request.path) { dbm =>
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { dbm =>
           dbm.getCatalogs()
             .fold(
               err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
@@ -105,7 +104,7 @@ with DBFormats{
   def schemas(connectionId: Long) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        usingConnection(profile.workspaceId, connectionId, request.path) { dbm =>
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { dbm =>
           dbm.getSchemas()
             .fold(
               err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
@@ -121,7 +120,7 @@ with DBFormats{
   def listTables(connectionId: Long, schema: String) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        usingConnection(profile.workspaceId, connectionId, request.path) { dbm =>
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { dbm =>
           dbm.listTables(schema)
             .fold(
               err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
@@ -137,7 +136,7 @@ with DBFormats{
   def executeQuery(connectionId: Long) = silhouette.UserAwareAction.async(validateJson[RequestQueryExecution]) { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        usingConnection(profile.workspaceId, connectionId, request.path) { dbm =>
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { dbm =>
           dbm.executeQuery(request.body.q)
             .fold(
               err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),

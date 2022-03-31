@@ -23,7 +23,7 @@ case class MemberInfoResponse(exist: Boolean,
                               name: Option[String] = None,
                               email: Option[String] = None,
                               profile: Option[MemberProfile] = None,
-                              message: String = "User not found") {
+                              message: String = "") {
 
   def from(member: Option[Member]): MemberInfoResponse = member match {
     case None => this

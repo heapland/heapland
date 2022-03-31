@@ -13,12 +13,29 @@
     }
 
     .workspace-content-header {
-      height: 52px;
-      padding: 15px 20px 15px 20px;
+      min-height: 52px;
+      padding: 15px 20px 15px 10px;
       display: flex;
       align-items: center;
       justify-content: space-between;
       background: $lt-card-bg;
+      border-bottom: 1px solid var(--border-color);
+
+      .btn-breadcrumb {
+        padding: 0px;
+      }
+
+      div.root-breadcrumb {
+        display: flex;
+        padding: 4px 8px;
+        cursor: pointer;
+        border-radius: 4px;
+
+        &:hover {
+          background-color: var(--hover-bg);
+        }
+      }
+
       img {
         height: 20px;
       }
@@ -239,9 +256,13 @@
 
   .brand-logo-container {
     display: flex;
-    padding: 5px;
+    padding: 4px;
     cursor: pointer;
     transition: all 0.2s;
+
+    & > img {
+      height: 24px;
+    }
 
     &:hover {
       background-color: $lt-bg;

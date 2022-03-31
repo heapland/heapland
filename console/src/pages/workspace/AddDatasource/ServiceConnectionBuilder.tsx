@@ -18,11 +18,12 @@ const ServiceConnectionBuilder: React.FC<{
   service: string;
   isOpen: boolean;
   onClose: () => void;
+  editMode: boolean;
   connectionId?: number;
   initialValues?: any;
-}> = ({ service, isOpen, connectionId, onClose, initialValues }) => {
+}> = ({ service, isOpen, connectionId, editMode, onClose, initialValues }) => {
   const [builderForm] = useForm();
-  const serviceOpt = ["spark", "kafka", "hadoop"];
+
   const [builder, setBuilder] = useState<{
     loading: boolean;
   }>({
@@ -31,9 +32,10 @@ const ServiceConnectionBuilder: React.FC<{
 
   const onFinish = (values: any) => {
     values["_type"] = connectionRegistry[service];
-    if (connectionId) {
+    if (editMode) {
+      console.log("Updating the connection");
       Connections.updateConnection(connectionId, values["name"], service, JSON.stringify(values), 1, (r) => {
-        message.success(`Connection has been saved`);
+        message.success(`Connection has been updated`);
         onClose();
       });
     } else {
@@ -61,7 +63,7 @@ const ServiceConnectionBuilder: React.FC<{
       footer={
         <Space>
           <Button type='primary' onClick={(e) => builderForm.submit()}>
-            Save Connection
+            {editMode ? "Update Connection" : "Save Connection"}
           </Button>
         </Space>
       }>

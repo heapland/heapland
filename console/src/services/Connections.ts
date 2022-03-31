@@ -1,5 +1,5 @@
 import { message } from "antd";
-import { FailedFileListing, FileListing } from "../models/FileBrowser";
+import { FailedFileListing, FileListing, FileSummary } from "../models/FileBrowser";
 import { PubKeyResponse } from "./AuthService";
 import { IErrorHandler } from "./IErrorHander";
 import { InternalServerError } from "./SparkService";
@@ -74,7 +74,7 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  listConnections = async (onSuccess: (topic: ConnectionView[]) => void) => {
+  listConnections = async (onSuccess: (connections: ConnectionView[]) => void) => {
     try {
       const response = this.webAPI.get<ConnectionView[] | InternalServerError>(`/web/v1/connections`);
 
@@ -133,6 +133,29 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
+  getFileSummary = async (
+    connectionId: number,
+    path: string,
+    onSuccess: (summary: FileSummary) => void,
+    OnFailure: (err: FailedFileListing) => void
+  ) => {
+    try {
+      const response = this.webAPI.get<FileSummary | FailedFileListing>(`/web/v1/fs/${connectionId}/summary/${path}`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as FileSummary;
+        onSuccess(result);
+      } else if (r.status === 400 && r.parsedBody) {
+        const body = r.parsedBody as FailedFileListing;
+        OnFailure(body);
+      } else {
+        const err = this.getDefaultError("Fetching the files");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
   deleteConnection = async (connectionId: number, onSuccess: (result: OpResult) => void) => {
     try {
       const response = this.webAPI.delete<OpResult | InternalServerError>(`/web/v1/connections/${connectionId}`, {});
@@ -146,6 +169,42 @@ class ConnectionService extends IErrorHandler {
         this.showError(body.message);
       } else {
         const err = this.getDefaultError("Fetching the files");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  createDirectory = async (connectionId: number, path: string, onSuccess: (result: OpResult) => void) => {
+    try {
+      const response = this.webAPI.put<OpResult | InternalServerError>(`/web/v1/fs/${connectionId}/path/${path}`, {});
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as OpResult;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Create directory");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  deleteFile = async (connectionId: number, path: string, onSuccess: (result: OpResult) => void) => {
+    try {
+      const response = this.webAPI.delete<OpResult | InternalServerError>(`/web/v1/fs/${connectionId}/path/${path}`, {});
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as OpResult;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Delete File");
         this.showError(err.message);
       }
     } catch (e) {}
@@ -176,7 +235,7 @@ class ConnectionService extends IErrorHandler {
         schemaVersion: schemaVersion,
       });
 
-      if (savedResponse.status === 201 && savedResponse.parsedBody) {
+      if (savedResponse.status === 200 && savedResponse.parsedBody) {
         const updateResult = savedResponse.parsedBody as OpResult;
         onSuccess(updateResult);
       } else {

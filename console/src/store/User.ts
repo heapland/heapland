@@ -1,5 +1,6 @@
 import { MemberProfile } from "../services/AuthService";
 import React from "react";
+import { ConnectionView } from "../services/Connections";
 
 export interface User {
   id: number;
@@ -12,7 +13,9 @@ export interface User {
 interface AppContext {
   currentUser: User;
   loading: boolean;
+  connections: ConnectionView[];
   updateUser: (id: number, name: string, email: string, loggedIn: boolean, profile?: MemberProfile) => void;
+  updateConnections: (connections: ConnectionView[]) => void;
 }
 
 export const InitialUser: User = {
@@ -25,7 +28,9 @@ export const InitialUser: User = {
 const UserContext = React.createContext<AppContext>({
   currentUser: InitialUser,
   loading: true,
+  connections: [],
   updateUser: () => {},
+  updateConnections: () => {},
 });
 
 export { UserContext };

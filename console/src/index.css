@@ -5,6 +5,8 @@
 
 html[data-theme="light"] {
   --background-color: #fff;
+  --hover-bg: #eee;
+  --border-color: #eee;
 }
 
 html[data-theme="dark"] {

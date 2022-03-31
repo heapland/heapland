@@ -70,8 +70,9 @@ const routes = (
         exact
         render={(props) => (
           <WorkspaceMain
-            index='10'
+            index='fs'
             slugId={props.match.params.slugId}
+            subIndex={props.match.params.connectionId}
             content={<FileManager connectionId={Number(props.match.params.connectionId)} />}
             {...props}
           />
@@ -157,7 +158,7 @@ const routes = (
       />
 
       <Route
-        path='/:slugId/workspace/:workspaceId/add-datasource'
+        path='/:slugId/workspace/:workspaceId/add-connection'
         exact
         render={(props) => (
           <WorkspaceMain

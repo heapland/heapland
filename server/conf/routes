@@ -68,7 +68,8 @@ PUT         /web/v1/fs/:connectionId/path/*path         web.controllers.FSContro
 + nocsrf
 DELETE      /web/v1/fs/:connectionId/path/*path         web.controllers.FSController.deleteFile(connectionId: Long, path: String)
 + nocsrf
-PUT         /web/v1/fs/:connectionId/upload/*path      web.controllers.FSController.upload(connectionId: Long, path: String)
+POST        /web/v1/fs/:connectionId/upload/*path      web.controllers.FSController.upload(connectionId: Long, path: String)
+GET         /web/v1/fs/:connectionId/summary/*path      web.controllers.FSController.getFileSummary(connectionId: Long, path: String)
 
 #Databases
 GET         /web/v1/rdbms/:connectionId/summary                         web.controllers.DatabasesController.summary(connectionId: Long)

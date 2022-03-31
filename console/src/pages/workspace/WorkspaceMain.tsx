@@ -16,6 +16,7 @@ import AuthService, { MemberProfile } from "../../services/AuthService";
 import { history } from "../../configureStore";
 import packageJson from "../../../package.json";
 import CustomScroll from "react-custom-scroll";
+import BrandLogo from "../../static/img/heapland.png";
 import { getLocalStorage } from "../../services/Utils";
 import WebService from "../../services/WebService";
 import { ConsoleLogo } from "../../components/Icons/ConsoleLogo";
@@ -29,6 +30,7 @@ interface IMainProps {
   index: string;
   content: React.ReactNode;
   isAppLoaded: boolean;
+  subIndex?: string;
   slugId?: string;
   updateLogin?: typeof updateLogin;
   appLoaded?: typeof appLoaded;
@@ -63,7 +65,7 @@ const OrgThumbnailImg: React.FC<{ name: string; thumbnail?: string }> = ({ name,
   );
 };
 
-const WorkspaceMain: React.FC<IMainProps> = ({ index, content, updateLogin, isAppLoaded, appLoaded, user }) => {
+const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateLogin, isAppLoaded, appLoaded, user }) => {
   const context = React.useContext(UserContext);
 
   const [state, setState] = React.useState<{ collapsed: boolean; activeConnections: ConnectionView[]; loading: boolean }>({
@@ -72,11 +74,12 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, updateLogin, isAp
     loading: true,
   });
 
-  React.useEffect(() => {
-    Connections.listConnections((r) => {
-      setState({ ...state, activeConnections: r, loading: false });
-    });
-  }, []);
+  // React.useEffect(() => {
+  //   Connections.listConnections((r) => {
+  //     setState({ ...state, activeConnections: r, loading: false });
+  //   });
+  // }, []);
+  console.log(context.connections);
 
   const handleLogout = () => {
     AuthService.logOut().then((r) => {
@@ -138,13 +141,13 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, updateLogin, isAp
           </Dropdown>
         </div>
         <CustomScroll heightRelativeToParent='calc(100vh - 100px)'>
-          <Menu theme='light' mode='inline' defaultSelectedKeys={[]} defaultOpenKeys={["0"]}>
+          <Menu theme='light' mode='inline' defaultSelectedKeys={[subIndex]} defaultOpenKeys={[index]}>
             <Menu.Item
-              key='11'
+              key='0'
               className='center-name'
               onClick={(e) =>
                 history.push(
-                  `/${context.currentUser.profile?.orgSlugId}/workspace/${context.currentUser.profile?.workspaceId}/add-datasource`
+                  `/${context.currentUser.profile?.orgSlugId}/workspace/${context.currentUser.profile?.workspaceId}/add-connection`
                 )
               }>
               <Button
@@ -170,32 +173,32 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, updateLogin, isAp
               }>
               {context.currentUser.profile && <span>Sandboxes</span>}
             </Menu.Item>
-            {state.activeConnections.length > 0 && state.activeConnections.filter((ac) => ac.providerCategory === "rdbms").length > 0 && (
+            {context.connections.length > 0 && context.connections.filter((ac) => ac.providerCategory === "rdbms").length > 0 && (
               <SubMenu
-                key='0'
+                key='rdbms'
                 icon={
                   <i className={`side-nav-icon`}>
                     <FaDatabase />
                   </i>
                 }
                 title='Databases'>
-                {state.activeConnections
+                {context.connections
                   .filter((ac) => ac.providerCategory === "rdbms")
                   .map((cp) => (
                     <Menu.Item key={cp.id}>{cp.name}</Menu.Item>
                   ))}
               </SubMenu>
             )}
-            {state.activeConnections.length > 0 && state.activeConnections.filter((ac) => ac.providerCategory === "fs").length > 0 && (
+            {context.connections.length > 0 && context.connections.filter((ac) => ac.providerCategory === "fs").length > 0 && (
               <SubMenu
-                key='1'
+                key='fs'
                 icon={
                   <i className={`side-nav-icon`}>
                     <FaFileInvoice />
                   </i>
                 }
                 title='File Systems'>
-                {state.activeConnections
+                {context.connections
                   .filter((ac) => ac.providerCategory === "fs")
                   .map((cp) => (
                     <Menu.Item
@@ -210,7 +213,7 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, updateLogin, isAp
                   ))}
               </SubMenu>
             )}
-            {state.activeConnections.length > 0 && state.activeConnections.filter((ac) => ac.providerCategory === "messaging").length > 0 && (
+            {context.connections.length > 0 && context.connections.filter((ac) => ac.providerCategory === "messaging").length > 0 && (
               <SubMenu
                 key='2'
                 icon={
@@ -232,8 +235,7 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, updateLogin, isAp
         <div className='brand-footer'>
           <Dropdown overlay={orgMenu} trigger={["click"]} overlayStyle={{ width: 200 }}>
             <div className='brand-logo-container'>
-              <ConsoleLogo />
-              <span className='brand-name'>Gigahex</span>
+              <img src={BrandLogo} />
             </div>
           </Dropdown>
           <GitHubButton href='https://github.com/gigahexhq/console' data-show-count='true' aria-label='Star gigahexhq/console on GitHub'>

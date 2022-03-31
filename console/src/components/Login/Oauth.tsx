@@ -6,6 +6,7 @@ import { connect } from "react-redux";
 import { history } from "../../configureStore";
 import AuthService, { MemberInfo } from "../../services/AuthService";
 import { UserContext } from "../../store/User";
+import Connections from "../../services/Connections";
 
 const mapStateToProps = (state: AppState) => ({
   user: state.auth,
@@ -23,7 +24,11 @@ const OAuth: React.FC<{ provider: string; location: string; updateLogin?: typeof
           if (account.exist) {
             const member = account as MemberInfo;
             context.updateUser(member.id, member.name, member.email, true, member.profile);
-            history.push(`/`);
+            console.log("calling list connections");
+            Connections.listConnections((cnn) => {
+              context.updateConnections(cnn);
+              history.push(`/`);
+            });
           }
         });
       }
