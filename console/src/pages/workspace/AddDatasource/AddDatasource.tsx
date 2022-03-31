@@ -90,7 +90,7 @@ const AddDatasource: FC<{ orgSlugId: string; workspaceId: number }> = ({ orgSlug
         </div>
       </div>
 
-      <ServiceConnectionBuilder service={sourceDrawer.name} isOpen={sourceDrawer.isOpen} onClose={onCloseDrawer} />
+      <ServiceConnectionBuilder service={sourceDrawer.name} isOpen={sourceDrawer.isOpen} editMode={false} onClose={onCloseDrawer} />
     </div>
   );
 };

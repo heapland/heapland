@@ -5,12 +5,13 @@ import java.io.File
 import com.amazonaws.auth.{AWSStaticCredentialsProvider, BasicAWSCredentials}
 import com.amazonaws.services.s3.model.ListObjectsV2Request
 import com.amazonaws.services.s3.{AmazonS3, AmazonS3ClientBuilder}
-import com.gigahex.services.fs.{FileListing, FileListingResult}
+import com.gigahex.services.fs.{FileListing, FileListingResult, FileSummary}
 import com.gigahex.services.{AWSS3Connection, DataServiceProvider, ServiceConnection}
 import com.amazonaws.services.s3.model.ObjectMetadata
 import com.amazonaws.services.s3.model.PutObjectRequest
 import java.io.ByteArrayInputStream
 import java.io.InputStream
+
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
@@ -55,7 +56,20 @@ object S3DataService extends DataServiceProvider[AWSS3Connection] {
     */
   override def uploadFile(config: AWSS3Connection, path: String, file: File): Try[String] = {
     usingS3Client(config) { s3 =>
-      s3.putObject(config.bucket, path, file).getVersionId
+      val key  = if(path == "/"){
+        file.getName
+      } else {
+        s"${path}${file.getName}"
+      }
+      s3.putObject(config.bucket, key, file).getVersionId
+    }
+  }
+
+  private def getObjectName(key: String, isDirectory: Boolean): String = {
+    if(isDirectory){
+      key
+    } else {
+      key.substring(key.lastIndexOf('/') + 1)
     }
   }
 
@@ -63,16 +77,35 @@ object S3DataService extends DataServiceProvider[AWSS3Connection] {
     usingS3Client(config) { s3 =>
       val request = path match {
         case None        => new ListObjectsV2Request().withBucketName(config.bucket).withDelimiter("/")
-        case Some(value) => new ListObjectsV2Request().withBucketName(config.bucket).withPrefix(value)
+        case Some(value) => new ListObjectsV2Request().withBucketName(config.bucket).withPrefix(value).withDelimiter("/")
       }
 
       val result = if (marker.isDefined) s3.listObjectsV2(request.withContinuationToken(marker.get)) else s3.listObjectsV2(request)
-      val directories = result.getCommonPrefixes.asScala.toList.map(s => FileListing(s, true, Some(0), 0, None))
-        val files = result.getObjectSummaries.asScala.toList
-        .map(s => FileListing(name = s.getKey, s.getKey.endsWith("/"), Some(s.getSize), s.getLastModified.toInstant.getEpochSecond, Option(s.getOwner).map(_.getDisplayName) ))
+      val directories = result.getCommonPrefixes.asScala
+        .toList
+        .filter(p => !p.equals(path.getOrElse("")))
+        .map(s => FileListing(s.substring(path.map(_.length).getOrElse(0)), true, Some(0), 0, None))
+
+        val files = result.getObjectSummaries
+          .asScala
+          .toList
+            .filter(p => !p.getKey.equals(path.getOrElse("")))
+        .map(s => FileListing(name = getObjectName(s.getKey, s.getKey.endsWith("/")), s.getKey.endsWith("/"), Some(s.getSize),
+          s.getLastModified.toInstant.getEpochSecond, Option(s.getOwner).map(_.getId) ))
       val nextMarker = if (result.getNextContinuationToken != null) Some(result.getNextContinuationToken) else None
       FileListingResult(hasMore = result.isTruncated, files ++ directories, nextMarker)
     }
+  }
+
+  override def getFileSummary(config: AWSS3Connection, path: String): Try[FileSummary] = usingS3Client(config) { s3 =>
+    val metaData = s3.getObjectMetadata(config.bucket, path)
+    val props = metaData.getUserMetadata
+    FileSummary(owner = "",
+      lastModified = metaData.getLastModified.getTime,
+      size = metaData.getContentLength,
+      fileType = metaData.getContentType,
+      etag = Some(metaData.getETag),
+      objectUrl = s"https://${config.bucket}.s3.${config.region}.amazonaws.com/${path}")
   }
 
   override def createDirectory(config: AWSS3Connection, path: String): Try[Boolean] = usingS3Client(config) { s3 =>

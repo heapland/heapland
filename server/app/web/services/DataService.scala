@@ -3,7 +3,7 @@ package web.services
 import java.io.File
 
 import com.gigahex.aws.S3DataService
-import com.gigahex.services.fs.FileListingResult
+import com.gigahex.services.fs.{FileListingResult, FileSummary}
 import com.gigahex.services.{AWSS3Connection, DataServiceProvider, DatabaseServer, DatabaseServiceProvider, MariaDBConnection, MySQLConnection, PgConnection, ServiceConnection}
 
 import scala.util.{Failure, Try}
@@ -18,6 +18,8 @@ class FileServiceManager[T <: ServiceConnection](connection: T, dataServiceProvi
     dataServiceProvider.listFileItems(connection, path, marker).map(_.copy(fsName = fsName, provider = provider))
 
   def createDirectory(path: String): Try[Boolean] = dataServiceProvider.createDirectory(connection, path)
+
+  def getFileSummary(path: String): Try[FileSummary] = dataServiceProvider.getFileSummary(connection, path)
 
   def deleteFile(path: String): Try[Boolean] = dataServiceProvider.deleteFile(connection, path)
 

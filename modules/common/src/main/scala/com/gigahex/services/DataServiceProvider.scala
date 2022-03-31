@@ -2,7 +2,7 @@ package com.gigahex.services
 
 import java.io.File
 
-import com.gigahex.services.fs.{FileListing, FileListingResult}
+import com.gigahex.services.fs.{FileListing, FileListingResult, FileSummary}
 
 import scala.util.Try
 
@@ -15,6 +15,8 @@ trait DataServiceProvider[T <: ServiceConnection] {
   def deleteFile(config: T, path: String): Try[Boolean]
 
   def listFileItems(config: T, path: Option[String], marker: Option[String]): Try[FileListingResult]
+
+  def getFileSummary(config: T, path: String): Try[FileSummary]
 
   def createDirectory(config: T, path: String): Try[Boolean]
 

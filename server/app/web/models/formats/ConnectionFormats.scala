@@ -1,6 +1,6 @@
 package web.models.formats
 
-import com.gigahex.services.fs.{FailedFileListing, FileListing, FileListingResult}
+import com.gigahex.services.fs.{FailedFileListing, FileListing, FileListingResult, FileSummary}
 import com.gigahex.services.{
   AWSS3Connection,
   CassandraConnection,
@@ -26,6 +26,7 @@ trait ConnectionFormats {
   implicit val fileListingFmt         = Json.format[FileListing]
   implicit val fileListingResultFmt   = Json.format[FileListingResult]
   implicit val failedFileListingFmt   = Json.format[FailedFileListing]
+  implicit val fileSummaryFmt         = Json.format[FileSummary]
 
 }
 

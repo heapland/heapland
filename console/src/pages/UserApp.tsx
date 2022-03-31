@@ -4,6 +4,7 @@ import { useLocation } from "react-router-dom";
 import { history } from "../configureStore";
 import AuthService, { MemberProfile, MemberInfo } from "../services/AuthService";
 import { InitialUser, User, UserContext } from "../store/User";
+import Connections, { ConnectionView } from "../services/Connections";
 
 const UserApp: React.FC = ({ children }) => {
   const location = useLocation();
@@ -11,6 +12,8 @@ const UserApp: React.FC = ({ children }) => {
     user: InitialUser,
     loading: true,
   });
+
+  const [activeConnections, setActiveConnections] = useState<ConnectionView[]>([]);
 
   const updateUser = (id: number, name: string, email: string, loggedIn: boolean, profile?: MemberProfile) => {
     setAppState({
@@ -26,6 +29,10 @@ const UserApp: React.FC = ({ children }) => {
     });
   };
 
+  const updateConnections = (conns: ConnectionView[]) => {
+    setActiveConnections(conns);
+  };
+
   useEffect(() => {
     if (location.pathname.includes("signup")) {
       setAppState({ ...appState, loading: false });
@@ -37,7 +44,10 @@ const UserApp: React.FC = ({ children }) => {
             document.documentElement.setAttribute("data-theme", member.profile.webTheme);
           }
 
-          updateUser(member.id, member.name, member.email, true, member.profile);
+          Connections.listConnections((conn) => {
+            updateConnections(conn);
+            updateUser(member.id, member.name, member.email, true, member.profile);
+          });
         } else {
           if (!location.pathname.includes("oauth") && !location.pathname.includes("login")) {
             history.push("/login");
@@ -51,7 +61,14 @@ const UserApp: React.FC = ({ children }) => {
   }, []);
 
   return (
-    <UserContext.Provider value={{ currentUser: appState.user, loading: appState.loading, updateUser: updateUser }}>
+    <UserContext.Provider
+      value={{
+        currentUser: appState.user,
+        connections: activeConnections,
+        loading: appState.loading,
+        updateUser: updateUser,
+        updateConnections: updateConnections,
+      }}>
       {appState.loading && <Spinner />}
       {!appState.loading && <>{children}</>}
     </UserContext.Provider>

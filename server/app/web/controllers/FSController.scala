@@ -1,34 +1,41 @@
 package web.controllers
 
+import java.io.File
+import java.nio.file.Paths
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.gigahex.aws.S3DataService
+import com.gigahex.postgres.{MySQLDatabaseService, PostgresDBService}
 import com.gigahex.services.fs.FailedFileListing
-import com.gigahex.services.{AWSS3Connection, ServiceConnection}
+import com.gigahex.services.{AWSS3Connection, MySQLConnection, PgConnection, ServiceConnection}
 import com.mohiva.play.silhouette.api.{HandlerResult, Silhouette}
 import controllers.AssetsFinder
 import javax.inject.Inject
-import web.models.{ErrorResponse, InternalServerErrorResponse}
+import play.api.Configuration
+import web.models.{ErrorResponse, IllegalParam, InternalServerErrorResponse}
 import web.models.formats.{AuthResponseFormats, ConnectionFormats}
-import web.services.{ClusterService, FileServiceManager, MemberService, SecretStore, WorkspaceService}
+import web.services.{ClusterService, DatabaseServiceManager, FileServiceManager, MemberService, SecretStore, WorkspaceService}
 import play.api.cache.SyncCacheApi
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsError, Json, Reads}
-import play.api.mvc.{ControllerComponents, InjectedController}
+import play.api.mvc.{ControllerComponents, InjectedController, Result}
 import play.cache.NamedCache
 import utils.auth.{DefaultEnv, RandomGenerator}
 import web.controllers.handlers.SecuredWebRequestHandler
+import web.models.requests.WorkspaceConnection
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.Failure
 
 class FSController @Inject()(
-    components: ControllerComponents,
-    silhouette: Silhouette[DefaultEnv],
-    memberService: MemberService,
-    workspaceService: WorkspaceService,
-    @NamedCache("workspace-keypairs") workspaceKeyCache: SyncCacheApi,
-    secretStore: SecretStore
+                              components: ControllerComponents,
+                              silhouette: Silhouette[DefaultEnv],
+                              memberService: MemberService,
+                              workspaceService: WorkspaceService,
+                              @NamedCache("workspace-keypairs") workspaceKeyCache: SyncCacheApi,
+                              secretStore: SecretStore,
+                              configuration: Configuration,
 )(
     implicit
     ex: ExecutionContext,
@@ -46,30 +53,54 @@ class FSController @Inject()(
     _.validate[A].asEither.left.map(e => BadRequest(JsError.toJson(e)))
   )
 
+  private def usingFileConnection(workspaceId: Long, connectionId: Long, path: String)(connHandler: (FileServiceManager[_], WorkspaceConnection) => Result): Future[Result] = {
+    workspaceService
+      .getConnection(workspaceId, connectionId)
+      .map {
+        case Left(e) => InternalServerError(Json.toJson(InternalServerErrorResponse(path, e.getMessage)))
+        case Right(Some(v)) => secretStore
+          .decryptText(v.encProperties, workspaceId, workspaceKeyCache)
+          .map(p => Json.parse(p).as[ServiceConnection])
+          .map {
+            case x: AWSS3Connection => new FileServiceManager[AWSS3Connection](x, S3DataService)
+          }.map(dbm => connHandler(dbm,v))
+          .getOrElse(BadRequest(Json.toJson(IllegalParam(path, 0, "Unable to decrypt the connection details due to missing encryption keys."))))
+        case _ => BadRequest(Json.toJson(IllegalParam(path, 0, "Unable to get the connection details")))
+
+      }
+  }
+
   def listRootLevelFiles(connectionId: Long) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceManagePermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        workspaceService
-          .getConnection(profile.workspaceId, connectionId)
-          .map {
-            case Left(e) => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, e.getMessage)))
-            case Right(Some(v)) =>
-              secretStore
-                .decryptText(v.encProperties, profile.workspaceId, workspaceKeyCache)
-                .map(p => Json.parse(p).as[ServiceConnection])
-                .map {
-                  case x: AWSS3Connection => new FileServiceManager[AWSS3Connection](x, S3DataService)
-                }
-                .map(service => service.listFiles(None, None, v.name, v.provider))
-                .getOrElse(Failure(new RuntimeException("Failed extracting the config")))
-                .fold(
-                  err => {
-                    BadRequest(Json.toJson(FailedFileListing(v.name, v.provider, err.getMessage)))
-                  },
-                  result => Ok(Json.toJson(result))
-                )
-            case _ => BadRequest(Json.toJson(InternalServerErrorResponse(request.path, "Invalid connection configuration provided")))
-          }
+        usingFileConnection(profile.workspaceId, connectionId, request.path){ (fm, conn) =>
+          fm.listFiles(None, None, conn.name, conn.provider)
+          .fold(
+            err => {
+              BadRequest(Json.toJson(FailedFileListing(conn.name, conn.provider, err.getMessage)))
+            },
+            result => Ok(Json.toJson(result))
+          )
+        }
+
+      } else {
+        Future.successful(Forbidden)
+      }
+    }
+  }
+
+  def getFileSummary(connectionId: Long, path: String) = silhouette.UserAwareAction.async { implicit request =>
+    handleMemberRequest(request, memberService) { (roles, profile) =>
+      if (hasWorkspaceManagePermission(profile, roles, profile.orgId, profile.workspaceId)) {
+        usingFileConnection(profile.workspaceId, connectionId, request.path){ (fm, conn) =>
+          fm.getFileSummary(path)
+            .fold(
+              err => {
+                BadRequest(Json.toJson(FailedFileListing(conn.name, conn.provider, err.getMessage)))
+              },
+              result => Ok(Json.toJson(result))
+            )
+        }
 
       } else {
         Future.successful(Forbidden)
@@ -180,16 +211,22 @@ class FSController @Inject()(
           .map {
             case Left(e) => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, e.getMessage)))
             case Right(Some(v)) =>
+
               request.body
                 .file("file")
                 .flatMap { f =>
+                  val rootpath = configuration.get[String]("gigahex.tmp")
+                  val filename    = Paths.get(f.filename).getFileName
+                  val tmpFilePath = s"${rootpath}/${filename}"
+                  val tmpFile = new File(tmpFilePath)
+                  f.ref.moveTo(tmpFile, replace = true)
                   secretStore
                     .decryptText(v.encProperties, profile.workspaceId, workspaceKeyCache)
                     .map(p => Json.parse(p).as[ServiceConnection])
                     .map {
                       case x: AWSS3Connection => new FileServiceManager[AWSS3Connection](x, S3DataService)
                     }
-                    .map(service => service.uploadFile(path, f.ref.path.toFile))
+                    .map(service => service.uploadFile(path, tmpFile))
                 }
                 .getOrElse(Failure(new RuntimeException("Failed extracting the config")))
                 .fold(
@@ -197,7 +234,10 @@ class FSController @Inject()(
 
                     BadRequest(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage)))
                   },
-                  result => Ok(Json.toJson(Map("success" -> result)))
+                  result => {
+
+                    Ok(Json.toJson(Map("success" -> result)))
+                  }
                 )
             case _ => BadRequest(Json.toJson(InternalServerErrorResponse(request.path, "Invalid connection configuration provided")))
           }

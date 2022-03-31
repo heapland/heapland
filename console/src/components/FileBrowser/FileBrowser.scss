@@ -1,5 +1,20 @@
 @import "../../variables.scss";
 
+div.file-meta {
+  align-items: center;
+}
+
+div.file-info-drawer {
+  .ant-statistic-title {
+    font-size: 12px;
+  }
+  .ant-statistic-content {
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 10px;
+  }
+}
+
 .file-browser-controls {
   height: 52px;
   padding: 10px 20px 10px 20px;
