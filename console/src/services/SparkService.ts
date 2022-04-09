@@ -103,6 +103,12 @@ export type InternalServerError = {
   path: string;
   message: string;
 };
+
+export type BadConnection = {
+  error: string;
+  connectionName: string;
+  provider: string;
+};
 export type IllegalParam = {
   path: string;
   memberId: number;

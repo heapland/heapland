@@ -4,6 +4,7 @@
   position: relative;
   overflow-y: hidden;
   overflow-x: hidden;
+
   .site-layout-background {
     overflow-y: auto;
     background: var(--background-color);
@@ -282,6 +283,8 @@
 }
 .workspace-side-nav {
   border-right: 1px solid #eee;
+  max-height: 100vh;
+  min-height: 100vh;
   & > div {
     display: flex;
     flex-direction: column;
@@ -294,6 +297,7 @@
   .ant-menu-sub.ant-menu-inline > .ant-menu-item {
     height: 30px;
     line-height: 30px;
+    margin: 2px 0;
   }
   .side-nav-icon {
     font-size: 0.9rem;

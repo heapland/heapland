@@ -1,6 +1,7 @@
 package web.models.common
 
-import com.gigahex.commons.models.{ErrorSource, ErrorType, JVMErrorStack, JVMException, SeverityLevel, TraceElement}
+import com.heapland.commons.models.ErrorSource
+import com.heapland.commons.models.{ErrorSource, ErrorType, JVMErrorStack, JVMException, SeverityLevel, TraceElement}
 import play.api.libs.json.Json
 
 trait JobErrorJson {

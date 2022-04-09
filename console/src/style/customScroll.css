@@ -64,6 +64,6 @@
 .rcs-custom-scroll .rcs-inner-handle {
   height: calc(100% - 12px);
   margin-top: 6px;
-  background-color: #abb5f4;
+  background-color: #caded1;
   border-radius: 3px;
 }

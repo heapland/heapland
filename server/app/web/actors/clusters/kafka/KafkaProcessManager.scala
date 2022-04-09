@@ -2,7 +2,7 @@ package web.actors.clusters.kafka
 
 import java.io.{BufferedReader, File, InputStreamReader}
 
-import com.gigahex.commons.models.RunStatus
+import com.heapland.commons.models.RunStatus
 
 import scala.concurrent.{ExecutionContext, Future, blocking}
 import scala.util.Try

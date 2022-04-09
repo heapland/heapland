@@ -1,7 +1,7 @@
 package web.models
 
-import com.gigahex.commons.models.JobType.JobType
-import com.gigahex.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.JobType.JobType
+import com.heapland.commons.models.RunStatus.RunStatus
 
 object CacheKeys {
   val jobIdPrefix = "jobId"

@@ -22,6 +22,7 @@ import HDFSClusterDashboard from "../pages/workspace/Clusters/HDFSClusterDashboa
 import AddDatasource from "../pages/workspace/AddDatasource/AddDatasource";
 import { FileBrowser, FileManager } from "../components/FileBrowser/FileBrowser";
 import DatabaseBrowse from "../pages/workspace/DatabaseBrowser/DatabaseBrowser";
+import DatabaseBrowser from "../pages/workspace/DatabaseBrowser/DatabaseBrowser";
 
 const routes = (
   <div>
@@ -170,17 +171,18 @@ const routes = (
         )}
       />
       <Route
-        path='/:slugId/workspace/:workspaceId/database/:databaseId'
+        path='/:slugId/workspace/:workspaceId/rdbms/:databaseId'
         exact
         render={(props) => (
           <WorkspaceMain
-            index='0'
+            index='rdbms'
             slugId={props.match.params.slugId}
+            subIndex={props.match.params.databaseId}
             content={
-              <DatabaseBrowse
+              <DatabaseBrowser
                 orgSlugId={props.match.params.slugId}
                 workspaceId={Number(props.match.params.workspaceId)}
-                databaseId={Number(props.match.params.workspaceId)}
+                databaseId={Number(props.match.params.databaseId)}
               />
             }
             {...props}

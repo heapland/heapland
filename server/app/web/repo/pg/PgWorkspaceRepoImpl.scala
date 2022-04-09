@@ -1,6 +1,7 @@
 package web.repo.pg
 
 import com.goterl.lazycode.lazysodium.utils.KeyPair
+import com.heapland.services.QueryView
 import javax.inject.Inject
 import web.models.{WorkspaceAPIKey, WorkspaceId}
 import web.models.rbac.{AccessRoles, MemberProfile, SubjectType, Theme}
@@ -41,26 +42,25 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
             .apply()
 
           //Generate the crypto keypair and save
-          val wsKeyPair     = secretStore.generateKeyPair
+          val wsKeyPair = secretStore.generateKeyPair
           sql"""INSERT INTO workspace_crypto_keypairs(hex_pub_key, hex_private_key, workspace_id)
              VALUES(${wsKeyPair.getPublicKey.getAsHexString}, ${wsKeyPair.getSecretKey.getAsHexString}, ${workspaceId})"""
             .update()
             .apply()
 
-         val apiKeyPair = new DefaultKeyPairGenerator().genKey(10, workspaceId)
+          val apiKeyPair            = new DefaultKeyPairGenerator().genKey(10, workspaceId)
           val encryptedApiSecretKey = secretStore.encrypt(apiKeyPair.secret, wsKeyPair)
 
           var created = false
 
-          while(!created){
-           created = Try {
+          while (!created) {
+            created = Try {
               sql"""INSERT INTO workspace_api_keys(api_key, encrypted_api_secret_key, name, workspace_id)
                VALUES(${apiKeyPair.key}, $encryptedApiSecretKey, 'default', $workspaceId)"""
-                .update().apply()
+                .update()
+                .apply()
             }.isSuccess
           }
-
-
 
           //Create all the roles defined by system
           val adminPolicies = AccessRoles.ROLE_WORKSPACE_MANAGER.map(_.name).mkString(AccessRoles.policySeparator)
@@ -114,23 +114,19 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
     }
   }
 
-  override def listWorkspaceAPIKeys(workspaceId: Long, secretStore: SecretStore, workspaceKeys: Option[KeyPair]): Future[Seq[WorkspaceAPIKey]] = Future {
+  override def listWorkspaceAPIKeys(workspaceId: Long,
+                                    secretStore: SecretStore,
+                                    workspaceKeys: Option[KeyPair]): Future[Seq[WorkspaceAPIKey]] = Future {
     blocking {
       workspaceKeys match {
         case None => Seq()
         case Some(kp) =>
           DB localTx { implicit session =>
             sql"""SELECT name, api_key, encrypted_api_secret_key FROM workspace_api_keys WHERE workspace_id = ${workspaceId}"""
-              .map(
-                r =>
-                  WorkspaceAPIKey(r.string("name"),
-                    r.string("api_key"),
-                    r.string("encrypted_api_secret_key")
-                    ))
+              .map(r => WorkspaceAPIKey(r.string("name"), r.string("api_key"), r.string("encrypted_api_secret_key")))
               .list()
               .apply()
-              .map{ wk =>
-
+              .map { wk =>
                 val encryptedAPIKey = secretStore.encrypt(wk.apiKey, kp)
 
                 val decryptedSecretKey = secretStore.decrypt(wk.apiSecretKey, kp)
@@ -143,36 +139,35 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
     }
   }
 
-  override def retrieveWorkspace(apiKey: String, secretStore: SecretStore, workspaceKeysCache: SyncCacheApi): Future[Option[WorkspaceId]] = Future {
-    blocking {
-      DB localTx { implicit session =>
-        sql"""SELECT workspaces.name, workspaces.id as w_id, wapi.name as key_name, wapi.encrypted_api_secret_key FROM workspace_api_keys as wapi
+  override def retrieveWorkspace(apiKey: String, secretStore: SecretStore, workspaceKeysCache: SyncCacheApi): Future[Option[WorkspaceId]] =
+    Future {
+      blocking {
+        DB localTx { implicit session =>
+          sql"""SELECT workspaces.name, workspaces.id as w_id, wapi.name as key_name, wapi.encrypted_api_secret_key FROM workspace_api_keys as wapi
              INNER JOIN workspaces ON wapi.workspace_id = workspaces.id WHERE wapi.api_key = $apiKey"""
-          .map(r => WorkspaceId(r.long("w_id"),
-            r.string("name"),
-            r.string("key_name"),
-            apiKey,
-            r.string("encrypted_api_secret_key")))
-          .single().apply()
-          .flatMap {wk =>
-            secretStore.getWorkspaceKeyPair(wk.id, workspaceKeysCache).map { kp =>
-              val decryptedSecretKey = secretStore.decrypt(wk.secretKey, kp)
-              wk.copy(secretKey = decryptedSecretKey)
+            .map(r => WorkspaceId(r.long("w_id"), r.string("name"), r.string("key_name"), apiKey, r.string("encrypted_api_secret_key")))
+            .single()
+            .apply()
+            .flatMap { wk =>
+              secretStore.getWorkspaceKeyPair(wk.id, workspaceKeysCache).map { kp =>
+                val decryptedSecretKey = secretStore.decrypt(wk.secretKey, kp)
+                wk.copy(secretKey = decryptedSecretKey)
+              }
             }
-          }
+        }
       }
+    }.recover {
+      case e: Exception =>
+        e.printStackTrace()
+        None
     }
-  }.recover{
-    case e : Exception =>
-    e.printStackTrace()
-    None
-  }
 
- override  def updateCurrentWorkspace(memberId: Long, workspaceId: Long, orgId: Long): Future[Option[MemberProfile]] = Future {
+  override def updateCurrentWorkspace(memberId: Long, workspaceId: Long, orgId: Long): Future[Option[MemberProfile]] = Future {
     blocking {
       DB localTx { implicit session =>
         sql"""update member_profile set current_workspace = ${workspaceId}  WHERE org_id = ${orgId} AND member_id = ${memberId}"""
-          .update().apply() > 0
+          .update()
+          .apply() > 0
 
         sql"""SELECT current_org_id, current_workspace_id, web_theme, workspaces.name as ws_name,
                orgs.name as org_name, orgs.slug_id as org_slug_id, desktop_theme FROM member_profile
@@ -188,7 +183,7 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
               r.string("ws_name"),
               Theme.withName(r.string("web_theme")),
               Theme.withName(r.string("desktop_theme"))
-            ))
+          ))
           .single()
           .apply()
       }
@@ -214,10 +209,8 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
       Try {
         DB localTx { implicit session =>
           sql"""SELECT name, description, category FROM connection_providers"""
-            .map{ row =>
-              ConnectionProvider(name = row.string("name"),
-                description = row.string("description"),
-                category = row.string("category"))
+            .map { row =>
+              ConnectionProvider(name = row.string("name"), description = row.string("description"), category = row.string("category"))
             }
             .list()
             .apply()
@@ -226,9 +219,9 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
     }
   }
 
-
-
-  override def updateConnection(workspaceId: Long, connectionId: Long, connection: WorkspaceConnection): Future[Either[Throwable, Boolean]] = Future {
+  override def updateConnection(workspaceId: Long,
+                                connectionId: Long,
+                                connection: WorkspaceConnection): Future[Either[Throwable, Boolean]] = Future {
     blocking {
       Try {
         DB localTx { implicit session =>
@@ -251,13 +244,15 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
                 WHERE
                 workspace_id = ${workspaceId}
              """
-            .map{ row =>
-              ConnectionView(id = row.long("id"),
+            .map { row =>
+              ConnectionView(
+                id = row.long("id"),
                 name = row.string("name"),
                 schemaVersion = row.string("connection_schema_ver"),
                 provider = row.string("connection_provider"),
                 providerCategory = row.string("category"),
-                dateCreated = row.dateTime("dt_created").toEpochSecond)
+                dateCreated = row.dateTime("dt_created").toEpochSecond
+              )
             }
             .list()
             .apply()
@@ -286,13 +281,75 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
           sql"""SELECT name, connection_provider, properties, connection_schema_ver
                  FROM connections WHERE workspace_id = ${workspaceId} AND id = ${connectionId}
              """
-            .map{ row =>
-              WorkspaceConnection(name = row.string("name"),
+            .map { row =>
+              WorkspaceConnection(
+                name = row.string("name"),
                 encProperties = row.string("properties"),
                 provider = row.string("connection_provider"),
                 schemaVersion = row.int("connection_schema_ver")
               )
-            }.single().apply()
+            }
+            .single()
+            .apply()
+        }
+      }.toEither
+    }
+  }
+
+  override def addDBQuery(connectionId: Long, name: String, query: String): Future[Either[Throwable, Long]] = Future {
+    blocking {
+      Try {
+        DB localTx { implicit session =>
+          sql"""INSERT INTO queries(name, qtext, db_id) VALUES(${name}, ${query}, ${connectionId})
+             """
+            .updateAndReturnGeneratedKey()
+            .apply()
+        }
+      }.toEither
+    }
+  }
+
+  override def updateDBQuery(connectionId: Long, queryId: Long, name: String, query: String): Future[Either[Throwable, Boolean]] = Future {
+    blocking {
+      Try {
+        DB localTx { implicit session =>
+        println(query)
+          sql"""UPDATE queries SET name = ${name}, qtext = ${query} WHERE db_id = ${connectionId} AND id = ${queryId}
+             """
+            .update()
+            .apply() > 0
+        }
+      }.toEither
+    }
+  }
+
+  override def listQueries(connectionId: Long): Future[Either[Throwable, List[QueryView]]] = Future {
+    blocking {
+      Try {
+        DB localTx { implicit session =>
+          sql"""SELECT id, name, qtext FROM queries WHERE db_id = ${connectionId}
+             """
+            .map { row =>
+              QueryView(id = row.long("id"), name = row.string("name"), text = row.string("qtext"))
+            }
+            .list()
+            .apply()
+        }
+      }.toEither
+    }
+  }
+
+  override def getQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Option[QueryView]]] = Future {
+    blocking {
+      Try {
+        DB localTx { implicit session =>
+          sql"""SELECT id, name, qtext FROM queries WHERE db_id = ${connectionId} AND id = ${queryId}
+             """
+            .map { row =>
+              QueryView(id = row.long("id"), name = row.string("name"), text = row.string("qtext"))
+            }
+            .single()
+            .apply()
         }
       }.toEither
     }

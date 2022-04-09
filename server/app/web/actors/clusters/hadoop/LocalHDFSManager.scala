@@ -4,15 +4,16 @@ import java.net.UnknownHostException
 import java.nio.file.{Files, Paths, StandardCopyOption}
 
 import akka.actor.{Actor, ActorLogging, Cancellable, PoisonPill, Props}
-import com.gigahex.commons.constants.AppSettings
-import com.gigahex.commons.models.{ClusterStatus, RunStatus}
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.ClusterStatus
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
 import web.actors.clusters.hadoop.LocalHDFSManager.{DownloadHadoop, StartHDFS}
 import web.actors.clusters.{ClusterActorBuilder, InstallationManager, PIDMonitor, ServiceMessages}
 import web.actors.clusters.spark.LocalSparkManager.UpdateDownloadProgress
 import web.models.cloud.ClusterProcess
 import web.models.cluster.{HDFSProcesses, HadoopPackage}
 import akka.pattern._
+import com.heapland.commons.constants.AppSettings
+import com.heapland.commons.models.{ClusterStatus, RunStatus}
 
 import scala.concurrent.duration._
 import web.services.ClusterService
@@ -44,7 +45,7 @@ class LocalHDFSManager(appConfig: Configuration, pkg: HadoopPackage, clusterServ
 
     case ServiceMessages.StartCluster =>
       val result = status match {
-        case com.gigahex.commons.models.ClusterStatus.NEW =>
+        case ClusterStatus.NEW =>
           self ! DownloadHadoop
           clusterService
             .updateCluster(pkg.workspaceId, pkg.clusterId, ClusterStatus.DOWNLOADING)

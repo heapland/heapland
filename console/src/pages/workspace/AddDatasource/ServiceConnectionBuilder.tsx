@@ -8,10 +8,10 @@ import { ConnectionConfig } from "../../../components/connections/ConnectionConf
 import Connections from "../../../services/Connections";
 
 const connectionRegistry = {
-  S3: "com.gigahex.services.AWSS3Connection",
-  Postgres: "com.gigahex.services.PgConnection",
-  MySQL: "com.gigahex.services.MySQLConnection",
-  MariaDB: "com.gigahex.services.MariaDBConnection",
+  s3: "com.heapland.services.AWSS3Connection",
+  postgresql: "com.heapland.services.PgConnection",
+  mysql: "com.heapland.services.MySQLConnection",
+  mariadb: "com.heapland.services.MariaDBConnection",
 };
 
 const ServiceConnectionBuilder: React.FC<{
@@ -23,15 +23,10 @@ const ServiceConnectionBuilder: React.FC<{
   initialValues?: any;
 }> = ({ service, isOpen, connectionId, editMode, onClose, initialValues }) => {
   const [builderForm] = useForm();
-
-  const [builder, setBuilder] = useState<{
-    loading: boolean;
-  }>({
-    loading: false,
-  });
+  console.log(initialValues);
 
   const onFinish = (values: any) => {
-    values["_type"] = connectionRegistry[service];
+    values["_type"] = connectionRegistry[service.toLowerCase()];
     if (editMode) {
       console.log("Updating the connection");
       Connections.updateConnection(connectionId, values["name"], service, JSON.stringify(values), 1, (r) => {
@@ -44,8 +39,6 @@ const ServiceConnectionBuilder: React.FC<{
         onClose();
       });
     }
-
-    console.log(values);
   };
 
   useEffect(() => {

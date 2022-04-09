@@ -4,9 +4,10 @@ import java.net.UnknownHostException
 
 import akka.actor.{Actor, ActorLogging, Cancellable, PoisonPill, Props}
 import akka.pattern._
-import com.gigahex.commons.constants.AppSettings
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
-import com.gigahex.commons.models.{ClusterStatus, RunStatus}
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.ClusterStatus
+import com.heapland.commons.constants.AppSettings
+import com.heapland.commons.models.{ClusterStatus, RunStatus}
 import web.actors.clusters.kafka.LocalKafkaManager.{DownloadKafka, StartKafkaProcesses}
 import web.actors.clusters.spark.LocalSparkManager.UpdateDownloadProgress
 import web.actors.clusters.{ClusterActorBuilder, InstallationManager, PIDMonitor, ServiceMessages}
@@ -40,7 +41,7 @@ class LocalKafkaManager(appConfig: Configuration, pkg: KafkaPackage, clusterServ
 
     case ServiceMessages.StartCluster =>
       val result = status match {
-        case com.gigahex.commons.models.ClusterStatus.NEW =>
+        case ClusterStatus.NEW =>
           self ! DownloadKafka
           clusterService
             .updateCluster(pkg.workspaceId, pkg.clusterId, ClusterStatus.DOWNLOADING)

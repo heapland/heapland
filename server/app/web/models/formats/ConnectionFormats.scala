@@ -1,17 +1,9 @@
 package web.models.formats
 
-import com.gigahex.services.fs.{FailedFileListing, FileListing, FileListingResult, FileSummary}
-import com.gigahex.services.{
-  AWSS3Connection,
-  CassandraConnection,
-  CockroachDBConnection,
-  DatabaseServer,
-  MariaDBConnection,
-  MySQLConnection,
-  PgConnection,
-  RequestQueryExecution,
-  ServiceConnection
-}
+import com.heapland.services.fs.FailedFileListing
+import com.heapland.services.CassandraConnection
+import com.heapland.services.fs.{FailedFileListing, FileListing, FileListingResult, FileSummary}
+import com.heapland.services.{AWSS3Connection, CassandraConnection, CockroachDBConnection, DatabaseServer, MariaDBConnection, MySQLConnection, NewQuery, PgConnection, QueryView, RequestQueryExecution, ServiceConnection}
 import play.api.libs.json.Json
 
 trait ConnectionFormats {
@@ -33,4 +25,6 @@ trait ConnectionFormats {
 trait DBFormats {
   implicit val dbServer = Json.format[DatabaseServer]
   implicit val qReq     = Json.format[RequestQueryExecution]
+  implicit val newQueryFmt = Json.format[NewQuery]
+  implicit val updateQueryFmt = Json.format[QueryView]
 }

@@ -1,34 +1,13 @@
 package web.repo
 
-import com.gigahex.commons.models.ClusterProvider.ClusterProvider
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
-import com.gigahex.commons.models.RunStatus.RunStatus
-import com.gigahex.commons.models.{
-  ClusterNode,
-  ClusterProvider,
-  ClusterState,
-  ClusterStatus,
-  ClusterView,
-  NewCluster,
-  RunStatus,
-}
+import com.heapland.commons.models.ClusterProvider.ClusterProvider
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.{ClusterNode, ClusterProvider, ClusterState, ClusterStatus, ClusterView, NewCluster, RunStatus}
+import com.heapland.commons.models
+import com.heapland.commons.models.{ClusterProvider, ClusterStatus, ClusterView, NewCluster, RunStatus}
 import web.models.cluster.LocalSparkConfig
-import web.models.{
-  ClusterMetric,
-  ContainerAppDef,
-  ContainerSandbox,
-  DBSandboxCluster,
-  DistributedService,
-  LastClusterPing,
-  NewSandboxCluster,
-  OrgUsagePlan,
-  SandboxCluster,
-  ServerHost,
-  ServiceComponent,
-  ServiceOption,
-  ServiceOptionId,
-  ServicePort
-}
+import web.models.{ClusterMetric, ContainerAppDef, ContainerSandbox, DBSandboxCluster, DistributedService, LastClusterPing, NewSandboxCluster, OrgUsagePlan, SandboxCluster, ServerHost, ServiceComponent, ServiceOption, ServiceOptionId, ServicePort}
 import web.utils.DateUtil
 import play.api.libs.json.{Json, OFormat}
 import scalikejdbc._
@@ -134,15 +113,15 @@ class ClusterRepoImpl(blockingEC: ExecutionContext) extends ClusterRepo {
   override def checkUsage(orgId: Long, provider: ClusterProvider, plan: OrgUsagePlan): Future[Boolean] = Future {
     blocking {
       provider match {
-        case com.gigahex.commons.models.ClusterProvider.SANDBOX                 => checkForLocalCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.SANDBOX_DOCKER          => checkForLocalCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.SANDBOX_K8s             => checkForLocalCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.ONPREM_SPARK_STANDALONE => checkForRemoteCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.ONPREM_K8S              => checkForRemoteCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.ONPREM_YARN             => checkForRemoteCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.AWS_EMR                 => checkForRemoteCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.GCP_DATAPROC            => checkForRemoteCluster(orgId, plan)
-        case com.gigahex.commons.models.ClusterProvider.DATABRICKS              => checkForRemoteCluster(orgId, plan)
+        case ClusterProvider.SANDBOX                 => checkForLocalCluster(orgId, plan)
+        case models.ClusterProvider.SANDBOX_DOCKER          => checkForLocalCluster(orgId, plan)
+        case models.ClusterProvider.SANDBOX_K8s             => checkForLocalCluster(orgId, plan)
+        case models.ClusterProvider.ONPREM_SPARK_STANDALONE => checkForRemoteCluster(orgId, plan)
+        case models.ClusterProvider.ONPREM_K8S              => checkForRemoteCluster(orgId, plan)
+        case models.ClusterProvider.ONPREM_YARN             => checkForRemoteCluster(orgId, plan)
+        case models.ClusterProvider.AWS_EMR                 => checkForRemoteCluster(orgId, plan)
+        case models.ClusterProvider.GCP_DATAPROC            => checkForRemoteCluster(orgId, plan)
+        case models.ClusterProvider.DATABRICKS              => checkForRemoteCluster(orgId, plan)
       }
     }
   }

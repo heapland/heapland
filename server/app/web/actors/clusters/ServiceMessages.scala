@@ -1,6 +1,6 @@
 package web.actors.clusters
 
-import com.gigahex.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.RunStatus.RunStatus
 
 object ServiceMessages {
 

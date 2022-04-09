@@ -7,9 +7,11 @@ import java.nio.file.{Files, Paths}
 
 import akka.actor.{Actor, ActorLogging, Cancellable, PoisonPill, Props}
 import akka.pattern._
-import com.gigahex.commons.constants.AppSettings
-import com.gigahex.commons.models.{ClusterStatus, RunStatus}
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.ClusterStatus
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.constants.AppSettings
+import com.heapland.commons.models
+import com.heapland.commons.models.{ClusterStatus, RunStatus}
 import web.actors.clusters.{PIDMonitor, ReadableConsumerByteChannel, ServiceMessages}
 import web.actors.clusters.spark.LocalSparkManager.{HandleSparkDownloadRequest, StartClusterProcesses, UpdateDownloadProgress}
 import web.models.cloud.ClusterProcess
@@ -56,13 +58,13 @@ class LocalSparkManager(appConfig: Configuration, pkg: SparkPackage, clusterServ
         case None => Future.successful(ClusterStatus.DELETED)
         case Some(v) =>
           v.status match {
-            case com.gigahex.commons.models.ClusterStatus.NEW =>
+            case ClusterStatus.NEW =>
               self ! HandleSparkDownloadRequest
               clusterService
                 .updateCluster(pkg.workspaceId, pkg.clusterId, ClusterStatus.DOWNLOADING)
                 .map(_ => ClusterStatus.DOWNLOADING)
 
-            case com.gigahex.commons.models.ClusterStatus.TERMINATED_WITH_ERRORS =>
+            case models.ClusterStatus.TERMINATED_WITH_ERRORS =>
               self ! HandleSparkDownloadRequest
               clusterService
                 .updateCluster(pkg.workspaceId, pkg.clusterId, ClusterStatus.DOWNLOADING)

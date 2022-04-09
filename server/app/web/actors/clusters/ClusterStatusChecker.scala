@@ -1,7 +1,7 @@
 package web.actors.clusters
 
 import akka.actor.{Actor, ActorLogging}
-import com.gigahex.commons.models.ClusterStatus
+import com.heapland.commons.models.ClusterStatus
 import javax.inject.Inject
 import web.services.ClusterService
 import web.utils.DateUtil

@@ -8,7 +8,7 @@ import web.services.ClusterService
 import play.api.libs.ws.WSClient
 import akka.pattern._
 import akka.util.Timeout
-import com.gigahex.commons.models.ClusterStatus
+import com.heapland.commons.models.ClusterStatus
 import play.api.Configuration
 
 import concurrent.duration._

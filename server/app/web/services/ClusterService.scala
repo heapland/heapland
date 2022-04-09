@@ -1,20 +1,11 @@
 package web.services
 
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
-import com.gigahex.commons.models.RunStatus.RunStatus
-import com.gigahex.commons.models.{ClusterPingResponse, ClusterState, ClusterView, NewCluster}
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.ClusterPingResponse
+import com.heapland.commons.models.{ClusterView, NewCluster}
 import javax.inject.Inject
-import web.models.cluster.{
-  ClusterPackage,
-  HDFSClusterInfo,
-  HDFSConfigurationRequest,
-  KafkaClusterInfo,
-  KafkaConfigurationRequest,
-  LocalSparkConfig,
-  SparkClusterInfo,
-  SparkClusterProcess,
-  SparkConfigurationRequest
-}
+import web.models.cluster.{ClusterPackage, HDFSClusterInfo, HDFSConfigurationRequest, KafkaClusterInfo, KafkaConfigurationRequest, LocalSparkConfig, SparkClusterInfo, SparkClusterProcess, SparkConfigurationRequest}
 import web.models.{DBSandboxCluster, LastClusterPing, NewSandboxCluster, ServerHost}
 import web.repo.ClusterRepo
 import web.repo.clusters.{HDFSClusterRepo, KafkaClusterRepo, ServicesNames, SparkClusterRepo}

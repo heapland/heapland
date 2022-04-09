@@ -160,19 +160,7 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
                 Add Connection
               </Button>
             </Menu.Item>
-            <Menu.Item
-              key='10'
-              className='center-name'
-              onClick={(e) =>
-                history.push(`/${context.currentUser.profile?.orgSlugId}/workspace/${context.currentUser.profile?.workspaceId}/hosts`)
-              }
-              icon={
-                <i style={{ fontSize: 18, marginTop: 4 }}>
-                  <MdDashboard />
-                </i>
-              }>
-              {context.currentUser.profile && <span>Sandboxes</span>}
-            </Menu.Item>
+
             {context.connections.length > 0 && context.connections.filter((ac) => ac.providerCategory === "rdbms").length > 0 && (
               <SubMenu
                 key='rdbms'
@@ -185,7 +173,15 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
                 {context.connections
                   .filter((ac) => ac.providerCategory === "rdbms")
                   .map((cp) => (
-                    <Menu.Item key={cp.id}>{cp.name}</Menu.Item>
+                    <Menu.Item
+                      key={cp.id}
+                      onClick={(e) =>
+                        history.push(
+                          `/${context.currentUser.profile?.orgSlugId}/workspace/${context.currentUser.profile?.workspaceId}/rdbms/${cp.id}`
+                        )
+                      }>
+                      {cp.name}
+                    </Menu.Item>
                   ))}
               </SubMenu>
             )}

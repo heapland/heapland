@@ -2,9 +2,11 @@ package web.services
 
 import java.io.File
 
-import com.gigahex.aws.S3DataService
-import com.gigahex.services.fs.{FileListingResult, FileSummary}
-import com.gigahex.services.{AWSS3Connection, DataServiceProvider, DatabaseServer, DatabaseServiceProvider, MariaDBConnection, MySQLConnection, PgConnection, ServiceConnection}
+import com.heapland.aws.S3DataService
+import com.heapland.services.fs.FileSummary
+import com.heapland.services.MariaDBConnection
+import com.heapland.services.fs.{FileListingResult, FileSummary}
+import com.heapland.services.{DataServiceProvider, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult, ServiceConnection}
 
 import scala.util.{Failure, Try}
 
@@ -30,7 +32,7 @@ class DatabaseServiceManager[T <: ServiceConnection](connection: T, dbService: D
   type QueryResult = Vector[Map[String, Object]]
    private val dmlKeywords = Set("create", "insert", "update", "delete", "drop")
 
-  def getSummary(): Try[DatabaseServer] = dbService.getDBInfo(connection)
+  def getSummary(name: String): Try[DatabaseServer] = dbService.getDBInfo(connection).map(_.copy(connectionName = name))
 
   def getCatalogs(): Try[List[String]] = dbService.getCatalogs(connection)
 
@@ -38,14 +40,16 @@ class DatabaseServiceManager[T <: ServiceConnection](connection: T, dbService: D
 
   def listTables(schema: String): Try[List[String]] = dbService.listTables(schema, connection)
 
-  def executeQuery(q: String): Try[Either[Int, QueryResult]] = {
+  def getTableData(schema: String, table: String): Try[QueryExecutionResult] = dbService.tableDataView(schema, table, connection)
+
+  def executeQuery(q: String): Try[QueryExecutionResult] = {
     val query = q.toLowerCase().trim.split(" ").headOption
     query match {
       case None => Failure(new RuntimeException("Invalid query provided"))
       case Some(value) => if(dmlKeywords.contains(value)){
-        dbService.executeUpdate(q, connection).map(Left(_))
+        dbService.executeUpdate(q, connection).map(c => QueryExecutionResult(Seq.empty, Vector.empty, c))
       } else {
-        dbService.executeQuery(q, connection).map(Right(_))
+        dbService.executeQuery(q, connection)
       }
     }
   }
