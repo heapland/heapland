@@ -1,11 +1,12 @@
 package web.actors.clusters
 
 import akka.actor.{Actor, ActorLogging, Props}
-import com.gigahex.commons.models.RunStatus
-import com.gigahex.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.RunStatus
 import web.actors.clusters.ClusterProcessMonitor.{GetProcessStatus, KillProcess, RestartProcess, StartProcess, UpdateProcessStatus}
 import web.services.ClusterService
 import play.api.libs.ws.WSClient
+
 import scala.concurrent.ExecutionContext
 import scala.sys.process._
 import concurrent.duration._

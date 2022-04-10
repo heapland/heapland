@@ -1,6 +1,7 @@
 package web.models
 
-import com.gigahex.commons.models.{AuthMethod, BasicSparkConfig, ClusterStatus, DeploymentAction, DeploymentActionLog, DeploymentActionLogReq, DeploymentActionUpdate, DeploymentRun, DeploymentRunInstance, DeploymentRunResult, DeploymentView, JobConfig, NewDeploymentRun, ReqDeploymentJobByName, RunCommand, RunSSHCommand, RunScript, RunSparkAppAction, RunSparkSubmission, RunStatus, RuntimeSparkConfig, TriggerMethod}
+import com.heapland.commons.models.DeploymentActionLogReq
+import com.heapland.commons.models.{AuthMethod, BasicSparkConfig, ClusterStatus, DeploymentAction, DeploymentActionLog, DeploymentActionLogReq, DeploymentActionUpdate, DeploymentRun, DeploymentRunInstance, DeploymentRunResult, DeploymentView, NewDeploymentRun, ReqDeploymentJobByName, RunCommand, RunSSHCommand, RunScript, RunSparkAppAction, RunSparkSubmission, RunStatus, RuntimeSparkConfig, TriggerMethod}
 import play.api.libs.json._
 
 case class DeploymentRunHistory(name: String, runs: Seq[DeploymentRunInstance])

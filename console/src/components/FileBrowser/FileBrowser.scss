@@ -16,10 +16,11 @@ div.file-info-drawer {
 }
 
 .file-browser-controls {
-  height: 52px;
-  padding: 10px 20px 10px 20px;
+  height: 45px;
+  padding: 10px;
   border-top: 1px solid #eee;
   background: $lt-bg;
+
   input.ant-input {
     border: 1px solid $lt-card-bg;
 
@@ -35,6 +36,19 @@ div.file-info-drawer {
     border: none;
     justify-content: center;
 
+    span {
+      margin-left: 4px;
+    }
+  }
+
+  button.control-btn {
+    font-size: 12px;
+    svg {
+      font-size: 13px;
+    }
+  }
+
+  button.ant-btn-icon-only {
     svg {
       color: $lt-font-dull-color;
       transition: all 0.5s;

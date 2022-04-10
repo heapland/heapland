@@ -5,10 +5,10 @@ import java.nio.file.Paths
 
 import akka.actor.ActorSystem
 import akka.stream.Materializer
-import com.gigahex.aws.S3DataService
-import com.gigahex.postgres.{MySQLDatabaseService, PostgresDBService}
-import com.gigahex.services.fs.FailedFileListing
-import com.gigahex.services.{AWSS3Connection, MySQLConnection, PgConnection, ServiceConnection}
+import com.heapland.aws.S3DataService
+import com.heapland.services.MySQLConnection
+import com.heapland.services.{AWSS3Connection, ServiceConnection}
+import com.heapland.services.fs.FailedFileListing
 import com.mohiva.play.silhouette.api.{HandlerResult, Silhouette}
 import controllers.AssetsFinder
 import javax.inject.Inject

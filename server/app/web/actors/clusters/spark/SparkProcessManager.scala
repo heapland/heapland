@@ -2,7 +2,7 @@ package web.actors.clusters.spark
 
 import java.io.File
 
-import com.gigahex.commons.models.RunStatus
+import com.heapland.commons.models.RunStatus
 import web.actors.clusters.ExternalProcessRunner
 import web.actors.clusters.kafka.KafkaProcessManager
 import web.models.cloud.ClusterProcess

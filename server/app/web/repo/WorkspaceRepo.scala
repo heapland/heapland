@@ -1,6 +1,7 @@
 package web.repo
 
 import com.goterl.lazycode.lazysodium.utils.KeyPair
+import com.heapland.services.QueryView
 import web.models.{WorkspaceAPIKey, WorkspaceId}
 import web.models.rbac.MemberProfile
 import web.services.SecretStore
@@ -10,6 +11,7 @@ import web.models.requests.{ConnectionProvider, ConnectionView, CreateOrgWorkspa
 import scala.concurrent.{ExecutionContext, Future}
 
 trait WorkspaceRepo {
+
   val ec: ExecutionContext
 
   /**
@@ -64,5 +66,12 @@ trait WorkspaceRepo {
 
   def getConnection(workspaceId: Long, connectionId: Long): Future[Either[Throwable, Option[WorkspaceConnection]]]
 
+  def addDBQuery(connectionId: Long, name: String, query: String): Future[Either[Throwable, Long]]
+
+  def updateDBQuery(connectionId: Long, queryId: Long, name: String, query: String): Future[Either[Throwable, Boolean]]
+
+  def listQueries(connectionId: Long): Future[Either[Throwable, List[QueryView]]]
+
+  def getQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Option[QueryView]]]
 
 }

@@ -7,6 +7,7 @@ import { FormInstance } from "antd/lib/form";
 import { ConnectionConfig } from "../../../components/connections/ConnectionConfig";
 import { S3Connection } from "../../../components/connections/S3Connection";
 import { PgConnection } from "../../../components/connections/PostgresConnection";
+import { MySQLConnection } from "../../../components/connections/MySQLConnection";
 
 export const AddConnectionProvider: FC<{
   service: string;
@@ -43,7 +44,9 @@ export const AddConnectionProvider: FC<{
     <>
       <div style={{ padding: "10px" }}>
         {service === "s3" && <S3Connection />}
-        {service === "postgres" && <PgConnection />}
+        {service === "postgresql" && <PgConnection />}
+        {service === "mysql" && <MySQLConnection />}
+        {service === "mariadb" && <MySQLConnection />}
       </div>
     </>
   );

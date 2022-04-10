@@ -1,8 +1,9 @@
 package web.models.cluster
 
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
-import com.gigahex.commons.models.{ClusterStatus, RunStatus}
-import com.gigahex.commons.models.RunStatus.RunStatus
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.ClusterStatus
+import com.heapland.commons.models.RunStatus
+import com.heapland.commons.models.RunStatus.RunStatus
 import web.models.cloud.ClusterProcess
 import web.utils.MetricConverter
 import play.api.libs.json.Json

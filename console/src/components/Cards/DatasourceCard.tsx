@@ -12,11 +12,11 @@ interface CardProps {
   onClickAdd: (name: string) => void;
 }
 
-const ConnectionIcon: FC<{ name: string }> = ({ name }) => {
+export const ConnectionIcon: FC<{ name: string }> = ({ name }) => {
   switch (name.toLowerCase()) {
     case "s3":
       return <img src={S3Img} />;
-    case "postgres":
+    case "postgresql":
       return <img src={PostgresImg} />;
 
     case "mysql":

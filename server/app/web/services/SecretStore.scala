@@ -1,12 +1,13 @@
 package web.services
 
-import com.gigahex.commons.models.{AWSUserKeys, AccountCredential, DatabricksToken, GCPCredentialJson, SecretNames, SecretPool}
+import com.heapland.commons.models.SecretNames
 import com.goterl.lazycode.lazysodium.utils.{Key, KeyPair}
 import com.goterl.lazycode.lazysodium.{LazySodiumJava, SodiumJava}
+import com.heapland.commons.models
+import com.heapland.commons.models.{AWSUserKeys, AccountCredential, DatabricksToken, GCPCredentialJson, IntegrationType, SecretPool}
 import javax.inject.{Inject, Singleton}
 import web.models.rbac.{IntegrationKey, WorkspaceKey}
-
-import com.gigahex.commons.models.IntegrationType.IntegrationType
+import com.heapland.commons.models.IntegrationType.IntegrationType
 import play.api.cache.SyncCacheApi
 import scalikejdbc._
 import scalikejdbc.config.DBs
@@ -121,15 +122,15 @@ class SecretStore @Inject()(
 
           keyId.map { id =>
             integrationType match {
-              case com.gigahex.commons.models.IntegrationType.EMR =>
+              case IntegrationType.EMR =>
                 AWSUserKeys(
                   id,
                   "",
                   ""
                 )
-              case com.gigahex.commons.models.IntegrationType.DATABRICKS =>
+              case models.IntegrationType.DATABRICKS =>
                 DatabricksToken("")
-              case com.gigahex.commons.models.IntegrationType.GCP =>
+              case models.IntegrationType.GCP =>
                 GCPCredentialJson("")
             }
           }

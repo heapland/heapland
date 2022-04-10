@@ -2,6 +2,7 @@ package web.controllers.spark
 
 import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.Materializer
+import com.heapland.commons.models.RunStatus
 import com.mohiva.play.silhouette.api.Silhouette
 import javax.inject.{Inject, Named}
 import web.actors.clusters.ClusterManager.StartLocalSpark
@@ -11,7 +12,6 @@ import play.api.cache.SyncCacheApi
 import play.api.i18n.I18nSupport
 import play.api.libs.json.{JsError, Json, Reads}
 import play.api.mvc._
-import com.gigahex.commons.models.RunStatus
 import controllers.AssetsFinder
 import web.actors.clusters.spark.SparkProcesses
 import web.models.cluster.{SparkClusterJsonFormatter, SparkMasterSummary}

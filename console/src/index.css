@@ -4,13 +4,22 @@
 }
 
 html[data-theme="light"] {
-  --background-color: #fff;
+  --background-color: #f0f2f5;
   --hover-bg: #eee;
   --border-color: #eee;
+  --nav-title: #a5a1a1;
+  --table-header: #e8ecf1;
 }
 
 html[data-theme="dark"] {
   --background-color: #212a2e;
+}
+
+div.nav-item-title {
+  font-size: 12px;
+  margin-bottom: 4px;
+  font-weight: bold;
+  color: var(--nav-title);
 }
 
 body {

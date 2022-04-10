@@ -145,8 +145,8 @@ lazy val mysql = (project in file("modules/mysql"))
 lazy val mariadb = (project in file("modules/mariadb"))
   .settings(projectSettings)
   .settings(
-    name := "heapland-mysql",
-    moduleName := "heapland-mysql",
+    name := "heapland-mariadb",
+    moduleName := "heapland-mariadb",
     libraryDependencies ++= Seq(
       "org.mariadb.jdbc" % "mariadb-java-client" % "3.0.3"
     )
@@ -184,7 +184,6 @@ lazy val `heapland-server`  = (project in file("server"))
       "com.typesafe.play"          %% "play-mailer"                     % versions.playMailer,
       "com.typesafe.play"          %% "play-mailer-guice"               % versions.playMailer,
       "net.java.dev.jna"           % "jna-platform"                     % "5.9.0",
-      "org.postgresql"             % "postgresql"                       % "42.2.16",
       "net.codingwell"             %% "scala-guice"                     % "4.2.5",
       "org.apache.commons"         % "commons-compress"                 % "1.21",
       "org.flywaydb"               %% "flyway-play"                     % versions.flywayPlay,
@@ -201,4 +200,4 @@ lazy val `heapland-server`  = (project in file("server"))
   )
   .enablePlugins(PlayScala, DebianPlugin, JavaServerAppPackaging, SystemdPlugin)
   .aggregate(models, aws,postgres, mysql, mariadb, cassandra)
-  .dependsOn(models, aws, postgres, mysql, mariadb, cassandra)
+  .dependsOn(models,aws,postgres,mysql,mariadb,cassandra)

@@ -3,7 +3,7 @@ package web.actors.clusters.hadoop
 import java.io.{File, FileWriter, IOException}
 import java.nio.file.{Files, Paths}
 
-import com.gigahex.commons.models.RunStatus
+import com.heapland.commons.models.RunStatus
 import web.actors.clusters.ExternalProcessRunner
 import web.models.cloud.ClusterProcess
 import web.models.cluster.HDFSProcesses

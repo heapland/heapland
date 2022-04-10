@@ -1,14 +1,19 @@
 import { message } from "antd";
+import { DBQuery, DBSummary, QueryExecutionResult } from "../models/DatabaseBrowser";
 import { FailedFileListing, FileListing, FileSummary } from "../models/FileBrowser";
 import { PubKeyResponse } from "./AuthService";
 import { IErrorHandler } from "./IErrorHander";
-import { InternalServerError } from "./SparkService";
-import WebService from "./WebService";
+import { BadConnection, InternalServerError } from "./SparkService";
+import WebService, { IHttpResponse } from "./WebService";
 import { FailedResponse } from "./Workspace";
 const _sodium = require("libsodium-wrappers");
 
 interface OpResult {
   success: boolean;
+}
+
+interface QueryUpdateResult {
+  success: number;
 }
 
 export interface ConnectionMeta {
@@ -87,6 +92,185 @@ class ConnectionService extends IErrorHandler {
         this.showError(body.message);
       } else {
         const err = this.getDefaultError("Fetching the connections");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  getDBSummary = async (dbId: number, onSuccess: (summary: DBSummary) => void, onFailure: (message: BadConnection) => void) => {
+    try {
+      const response = this.webAPI.get<DBSummary | BadConnection>(`/web/v1/rdbms/${dbId}/summary`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as DBSummary;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as BadConnection;
+        onFailure(body);
+      } else {
+        const err = this.getDefaultError("Fetching the connections");
+        this.showError(err.message);
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  getTableData = async (dbId: number, table: string, schema: string, onSuccess: (summary: QueryExecutionResult) => void) => {
+    try {
+      const response = this.webAPI.get<QueryExecutionResult | InternalServerError>(
+        `/web/v1/rdbms/${dbId}/schemas/${schema}/tables/${table}/data`
+      );
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as QueryExecutionResult;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the table data");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listCatalogs = async (dbId: number, onSuccess: (summary: string[]) => void) => {
+    try {
+      const response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/catalogs`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as string[];
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the catalogs");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listSchemas = async (dbId: number, onSuccess: (summary: string[]) => void) => {
+    try {
+      const response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as string[];
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the schemas");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listQueries = async (dbId: number, onSuccess: (queries: DBQuery[]) => void) => {
+    try {
+      const response = this.webAPI.get<DBQuery[] | InternalServerError>(`/web/v1/rdbms/${dbId}/queries`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as DBQuery[];
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the queries");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  getQuery = async (dbId: number, queryId: number, onSuccess: (query: DBQuery) => void) => {
+    try {
+      const response = this.webAPI.get<DBQuery | InternalServerError>(`/web/v1/rdbms/${dbId}/queries/${queryId}`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as DBQuery;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the queries");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  executeQuery = async (dbId: number, query: string): Promise<IHttpResponse<QueryExecutionResult | InternalServerError>> => {
+    const response = this.webAPI.put<QueryExecutionResult | InternalServerError>(`/web/v1/rdbms/${dbId}/execute`, {
+      q: query,
+    });
+    return response;
+  };
+
+  addQuery = async (dbId: number, name: string, text: string, onSuccess: (queryId: number) => void) => {
+    try {
+      const response = this.webAPI.post<number | InternalServerError>(`/web/v1/rdbms/${dbId}/queries`, {
+        name: name,
+        text: text,
+      });
+
+      const r = await response;
+      if (r.status === 201 && r.parsedBody) {
+        const result = r.parsedBody as number;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Save the query");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  updateQuery = async (dbId: number, qId: number, name: string, text: string, onSuccess: (res: OpResult) => void) => {
+    try {
+      const response = this.webAPI.put<OpResult | InternalServerError>(`/web/v1/rdbms/${dbId}/queries/${qId}`, {
+        name: name,
+        text: text,
+      });
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as OpResult;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Save the query");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listTables = async (dbId: number, schema: string, onSuccess: (summary: string[]) => void) => {
+    try {
+      const response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as string[];
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the schemas");
         this.showError(err.message);
       }
     } catch (e) {}

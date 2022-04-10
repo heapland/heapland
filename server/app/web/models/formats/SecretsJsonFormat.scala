@@ -1,6 +1,7 @@
 package web.models.formats
 
-import com.gigahex.commons.models.{AWSAccountCredential, AWSUserKeys, ClusterProvider, DBCredentials, SaveSecretPool, SecretPool, SecretPoolType, UserSecret}
+import com.heapland.commons.models.SaveSecretPool
+import com.heapland.commons.models.{AWSAccountCredential, AWSUserKeys, ClusterProvider, DBCredentials, SaveSecretPool, SecretPool, SecretPoolType, UserSecret}
 import web.models.cloud.CloudCluster
 import web.models.rbac.IntegrationKey
 import play.api.libs.json._

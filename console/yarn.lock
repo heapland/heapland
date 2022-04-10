@@ -1735,19 +1735,19 @@
   dependencies:
     "@types/whatwg-streams" "^0.0.7"
 
-"@monaco-editor/loader@^1.2.0":
-  version "1.2.0"
-  resolved "https://registry.yarnpkg.com/@monaco-editor/loader/-/loader-1.2.0.tgz#373fad69973384624e3d9b60eefd786461a76acd"
-  integrity sha512-cJVCG/T/KxXgzYnjKqyAgsKDbH9mGLjcXxN6AmwumBwa2rVFkwvGcUj1RJtD0ko4XqLqJxwqsN/Z/KURB5f1OQ==
+"@monaco-editor/loader@^1.3.0":
+  version "1.3.0"
+  resolved "https://registry.yarnpkg.com/@monaco-editor/loader/-/loader-1.3.0.tgz#659fbaf1d612ea67b2a0519a18612d1c4813e444"
+  integrity sha512-N3mGq1ktC3zh7WUx3NGO+PSDdNq9Vspk/41rEmRdrCqV9vNbBTRzAOplmUpNQsi+hmTs++ERMBobMERb8Kb+3g==
   dependencies:
     state-local "^1.0.6"
 
-"@monaco-editor/react@^4.3.1":
-  version "4.3.1"
-  resolved "https://registry.yarnpkg.com/@monaco-editor/react/-/react-4.3.1.tgz#d65bcbf174c39b6d4e7fec43d0cddda82b70a12a"
-  integrity sha512-f+0BK1PP/W5I50hHHmwf11+Ea92E5H1VZXs+wvKplWUWOfyMa1VVwqkJrXjRvbcqHL+XdIGYWhWNdi4McEvnZg==
+"@monaco-editor/react@^4.4.1":
+  version "4.4.1"
+  resolved "https://registry.yarnpkg.com/@monaco-editor/react/-/react-4.4.1.tgz#2e2b9b369f3082b0e14f47cdbe35658fd56c7c7d"
+  integrity sha512-95E/XPC4dbm/7qdkhSsU/a1kRgcn2PYhRTVIc+/cixWCZrwRURW1DRPaIZ2lOawBJ6kAOLywxuD4A4UmbT0ZIw==
   dependencies:
-    "@monaco-editor/loader" "^1.2.0"
+    "@monaco-editor/loader" "^1.3.0"
     prop-types "^15.7.2"
 
 "@nodelib/fs.scandir@2.1.4":
@@ -6418,6 +6418,11 @@ hosted-git-info@^2.1.4:
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.8.8.tgz#7539bd4bc1e0e0a895815a2e0262420b12858488"
   integrity sha512-f/wzC2QaWBs7t9IYqB4T3sR1xviIViXJRJTWBlx2Gf3g0Xi5vI7Yy4koXQ1c9OYDGHN9sBy1DQ2AB8fqZBWhUg==
 
+hotkeys-js@3.8.7:
+  version "3.8.7"
+  resolved "https://registry.yarnpkg.com/hotkeys-js/-/hotkeys-js-3.8.7.tgz#c16cab978b53d7242f860ca3932e976b92399981"
+  integrity sha512-ckAx3EkUr5XjDwjEHDorHxRO2Kb7z6Z2Sxul4MbBkN8Nho7XDslQsgMJT+CiJ5Z4TgRxxvKHEpuLE3imzqy4Lg==
+
 hpack.js@^2.1.6:
   version "2.1.6"
   resolved "https://registry.yarnpkg.com/hpack.js/-/hpack.js-2.1.6.tgz#87774c0949e513f42e84575b3c45681fade2a0b2"
@@ -10852,6 +10857,13 @@ react-github-btn@^1.2.1:
   integrity sha512-/gXD01mHAOhW0xYuNJFDn08OGjaMXOjcg6GCKVPdHvQcWzswH4aT85DLDAAJ6Zhw/71veSIH4Kx1BTBfy69SsA==
   dependencies:
     github-buttons "^2.8.0"
+
+react-hotkeys-hook@^3.4.4:
+  version "3.4.4"
+  resolved "https://registry.yarnpkg.com/react-hotkeys-hook/-/react-hotkeys-hook-3.4.4.tgz#52ba5d8ef5e47cc2e776c70a9036d518e0993d51"
+  integrity sha512-vaORq07rWgmuF3owWRhgFV/3VL8/l2q9lz0WyVEddJnWTtKW+AOgU5YgYKuwN6h6h7bCcLG3MFsJIjCrM/5DvQ==
+  dependencies:
+    hotkeys-js "3.8.7"
 
 react-icons@^4.2.0:
   version "4.3.1"

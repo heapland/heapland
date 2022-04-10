@@ -4,7 +4,7 @@ import akka.actor.{ActorRef, ActorSystem}
 import akka.stream.Materializer
 import akka.stream.scaladsl.Source
 import akka.util.Timeout
-import com.gigahex.commons.models.ClusterStatus.ClusterStatus
+import com.heapland.commons.models.ClusterStatus.ClusterStatus
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.AssetsFinder
 import javax.inject.{Inject, Named}

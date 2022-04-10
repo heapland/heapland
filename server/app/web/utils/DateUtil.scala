@@ -4,7 +4,7 @@ import java.lang.management.OperatingSystemMXBean
 import java.text.StringCharacterIterator
 import java.time.{Instant, ZoneId, ZonedDateTime}
 
-import com.gigahex.commons.models.RunStatus.{Value, values}
+import com.heapland.commons.models.RunStatus.{Value, values}
 import web.utils.TimeUnit.TimeUnit
 
 object TimeUnit extends Enumeration {

@@ -2,7 +2,8 @@ package web.repo.pg
 
 import java.io.{BufferedReader, InputStreamReader}
 
-import com.gigahex.commons.models.{ClusterProvider, ClusterStatus, RunStatus}
+import com.heapland.commons.models.ClusterStatus
+import com.heapland.commons.models.{ClusterProvider, ClusterStatus, RunStatus}
 import javax.inject.Inject
 import web.models.cloud.ClusterProcess
 import web.models.cluster.{ClusterPackage, KafkaClusterInfo, KafkaConfigurationRequest, KafkaPackage, KafkaProcesses}
