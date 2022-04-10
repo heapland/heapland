@@ -54,7 +54,7 @@ import scala.concurrent.duration.FiniteDuration
 /**
   * The Guice module which wires all Silhouette dependencies.
   */
-class GigahexModule extends AbstractModule with ScalaModule with AkkaGuiceSupport {
+class HeaplandModule extends AbstractModule with ScalaModule with AkkaGuiceSupport {
 
   private lazy val blockingEC = ExecutionContext.fromExecutor(Executors.newCachedThreadPool())
 

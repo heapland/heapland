@@ -234,7 +234,7 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
               <img src={BrandLogo} />
             </div>
           </Dropdown>
-          <GitHubButton href='https://github.com/gigahexhq/console' data-show-count='true' aria-label='Star gigahexhq/console on GitHub'>
+          <GitHubButton href='https://github.com/heapland/heapland' data-show-count='true' aria-label='Star heapland/heapland on GitHub'>
             Star
           </GitHubButton>
         </div>

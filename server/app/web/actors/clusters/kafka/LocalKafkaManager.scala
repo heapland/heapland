@@ -28,7 +28,7 @@ class LocalKafkaManager(appConfig: Configuration, pkg: KafkaPackage, clusterServ
     with ClusterActorBuilder {
 
   private implicit val dispatcher: ExecutionContextExecutor = context.dispatcher
-  private val rootDir     = s"${appConfig.get[String]("gigahex.packages")}/packages"
+  private val rootDir     = s"${appConfig.get[String]("heapland.packages")}/packages"
 
   private val kpm         = KafkaProcessManager(s"$rootDir/kafka_${pkg.scalaVersion}-${pkg.version}")
 

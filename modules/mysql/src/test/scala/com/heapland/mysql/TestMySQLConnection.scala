@@ -10,7 +10,7 @@ class TestMySQLConnection extends AnyFlatSpec with Matchers {
 
   val conn = MySQLConnection(
     name = "test",
-    database = "gigahex_launcher",
+    database = "heapland_launcher",
     username = "root",
     hostname = "127.0.0.1",
     password = "gigapass"

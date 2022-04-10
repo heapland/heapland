@@ -17,7 +17,7 @@ const { Column } = Table;
 const deleteCluster = (cId: number, name: string, onClusterDelete: (id: number) => void) => {
   confirm({
     title: `Do you want to delete the cluster - ${name}`,
-    content: "Once deleted, you won't be able to deploy jobs on this cluster through Gigahex console.",
+    content: "Once deleted, you won't be able to deploy jobs on this cluster through Heapland console.",
     onOk() {
       onClusterDelete(cId);
     },

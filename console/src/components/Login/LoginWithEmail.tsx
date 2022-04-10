@@ -152,10 +152,10 @@ const LoginWithEmailComponent: React.FC<ILoginProps> = ({ user, authToken, updat
             {state.confirmation.success && (
               <>
                 <div className='brandDiv'>
-                  <img src={BrandLogo} alt='Gigahex' />
+                  <img src={BrandLogo} alt='Heapland' />
                 </div>
                 <h3 className='title-centerd' style={{ marginBottom: 20 }}>
-                  Log in to Gigahex
+                  Log in to Heapland
                 </h3>
                 <form className='formContainer' onSubmit={handleSubmit} autoComplete='off' style={{ width: 400 }}>
                   <div className='inputWrapper'>
@@ -169,7 +169,13 @@ const LoginWithEmailComponent: React.FC<ILoginProps> = ({ user, authToken, updat
                     <span>
                       <img src={KeyIcon} alt='password' />
                     </span>
-                    <input type='password' placeholder='Your password' value={state.password} name='password' onChange={handleInputChange} />
+                    <input
+                      type='password'
+                      placeholder='Your password'
+                      value={state.password}
+                      name='password'
+                      onChange={handleInputChange}
+                    />
                     {state.errors.password && <FieldError text={state.errors.password} visible={true} />}
                   </div>
                   <div className='remember-me'>

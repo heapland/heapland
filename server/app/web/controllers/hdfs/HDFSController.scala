@@ -143,7 +143,7 @@ class HDFSController @Inject()(@Named("spark-cluster-manager") clusterManager: A
           case Some(pd) => if(pd.status == RunStatus.Running){
             val qstringWithUser = request.rawQueryString.replaceAll("user_name",System.getProperty("user.name"))
             val url = s"http://${pd.host}:50070/webhdfs/v1/${path}?${qstringWithUser}"
-            val rootpath = configuration.get[String]("gigahex.tmp")
+            val rootpath = configuration.get[String]("heapland.tmp")
             val uploadedFile = request.body.file("hdfsFile")
             uploadedFile match {
               case None => Future(NotFound)

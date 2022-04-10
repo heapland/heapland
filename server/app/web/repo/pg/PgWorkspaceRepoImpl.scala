@@ -93,7 +93,7 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
       case e: IllegalArgumentException => Left(e)
       case ex: Exception =>
         ex.printStackTrace()
-        Left(new RuntimeException("Internal processing error. Contact support@gigahex.com"))
+        Left(new RuntimeException("Internal processing error. Contact support@heapland.com"))
     }
 
   override def listWorkspaces(orgId: Long): Future[Seq[WorkspaceView]] = Future {

@@ -62,7 +62,7 @@ class SystemInitializer @Inject()(memberService: MemberService,
           result.onComplete {
             case Failure(exception) => exception.printStackTrace()
             case Success(optMember) =>
-              println("> Welcome to Gigahex! \uD83D\uDC4B")
+              println("> Welcome to heapland! \uD83D\uDC4B")
               if(optMember.isEmpty){
                 println(s"> username: ${newMember.email}, password: ${newMember.password}")
               }

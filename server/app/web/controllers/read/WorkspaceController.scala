@@ -103,7 +103,7 @@ class WorkspaceController @Inject()(
   }
 
   def assetsAt(file: String) = Action { implicit request =>
-    val img = new File(s"${configuration.get[String]("gigahex.images")}/${file}")
+    val img = new File(s"${configuration.get[String]("heapland.images")}/${file}")
     if (img.exists()) {
       Ok.sendFile(img)
     } else {
@@ -135,7 +135,7 @@ class WorkspaceController @Inject()(
   def uploadOrganisationLogo = silhouette.UserAwareAction.async(parse.multipartFormData) { request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasOrgManagePermission(profile, roles, profile.orgId, profile.workspaceId)) {
-        val rootpath = configuration.get[String]("gigahex.images")
+        val rootpath = configuration.get[String]("heapland.images")
 
         request.body
           .file("picture")

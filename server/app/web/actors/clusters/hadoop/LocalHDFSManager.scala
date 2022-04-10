@@ -30,10 +30,10 @@ class LocalHDFSManager(appConfig: Configuration, pkg: HadoopPackage, clusterServ
     with ClusterActorBuilder {
 
   implicit val dispatcher = context.dispatcher
-  private val rootDir     = s"${appConfig.get[String]("gigahex.packages")}/packages"
+  private val rootDir     = s"${appConfig.get[String]("heapland.packages")}/packages"
   private val hdfsHomeDir = s"$rootDir/hadoop-${pkg.version}"
   private val hpm         = HDFSProcessManager(hdfsHomeDir, pkg.clusterId, clusterService)
-  private val softLinkDir = AppSettings.getBinDir(appConfig.get[String]("gigahex.packages"))
+  private val softLinkDir = AppSettings.getBinDir(appConfig.get[String]("heapland.packages"))
 
   private def getDownloadUrl(version: String) = s"${AppSettings.hadoopCDN}/common/hadoop-$version.tar.gz"
 

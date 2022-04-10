@@ -82,7 +82,7 @@ class PgMemberRepoImpl @Inject()(blockingEC: ExecutionContext, apiKeyGenerator: 
         if (e.getMessage.contains("unique constraint")) {
           Left(new RuntimeException("This organisation id is already reserved, try a different one."))
         } else {
-          Left(new RuntimeException("Internal processing error. Contact support@gigahex.com"))
+          Left(new RuntimeException("Internal processing error. Contact support@heapland.com"))
         }
     }
 

@@ -33,12 +33,12 @@ class LocalSparkManager(appConfig: Configuration, pkg: SparkPackage, clusterServ
     with ActorLogging {
 
   private implicit val dispatcher = context.dispatcher
-  private val rootDir             = s"${appConfig.get[String]("gigahex.packages")}/gigahex/packages"
+  private val rootDir             = s"${appConfig.get[String]("heapland.packages")}/heapland/packages"
   private val binPath             = s"${rootDir}/spark-${pkg.version}-bin-hadoop${pkg.hadoopBinaryVersion}/bin"
   private val confDir             = s"${rootDir}/spark-${pkg.version}-bin-hadoop${pkg.hadoopBinaryVersion}/conf"
   private val eventDir            = s"${rootDir}/spark-${pkg.version}-bin-hadoop${pkg.hadoopBinaryVersion}/events"
   private val spm                 = SparkProcessManager(s"${rootDir}/spark-${pkg.version}-bin-hadoop${pkg.hadoopBinaryVersion}", clusterService)
-  private val softLinkDir = AppSettings.getBinDir(appConfig.get[String]("gigahex.packages"))
+  private val softLinkDir = AppSettings.getBinDir(appConfig.get[String]("heapland.packages"))
 
   private val defaultSparkConf = Map(
     "spark.eventLog.dir"            -> s"file://$eventDir",

@@ -273,7 +273,7 @@ class ClusterRepoImpl(blockingEC: ExecutionContext) extends ClusterRepo {
                                  optionName: String,
                                  addOns: Seq[String]): ContainerSandbox = {
     val serviceOption = serviceOptions.find(_.id.equalsIgnoreCase(optionName)).get
-    val imageName     = "gigahex/" + serviceOption.services.map(_.name).sortBy(_.charAt(0)).mkString("-") + ":" + version
+    val imageName     = "heapland/" + serviceOption.services.map(_.name).sortBy(_.charAt(0)).mkString("-") + ":" + version
     val apps = serviceOption.services.map { ds =>
       ContainerAppDef(ds.name, ds.version, ServiceOptionId.getServicePorts(ServiceOptionId.withName(serviceOption.id), ds.name))
     }

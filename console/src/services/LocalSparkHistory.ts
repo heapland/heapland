@@ -113,7 +113,6 @@ export class LocalSparkMasterWeb extends IErrorHandler {
         .catch((e) => {
           this.notifyError(`Failed processing request for Spark cluster`);
         });
-      // const data = fs.readFileSync("/Users/shad/.gigahex/master.html", "utf8");
     } catch (e) {
       this.notifyError("Unable to fetch spark applications from history server. Make sure its running.");
     }

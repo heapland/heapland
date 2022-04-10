@@ -1,8 +1,8 @@
 package com.heapland.commons.constants
 
 object Headers {
-  val GIGAHEX_JOB_ID = "X-JOB-ID"
-  val GIGAHEX_JOB_RUN_ID = "X-JOB-RUN-ID"
+  val heapland_JOB_ID = "X-JOB-ID"
+  val heapland_JOB_RUN_ID = "X-JOB-RUN-ID"
   val USER_TIMEZONE = "X-TIMEZONE"
   val LOGS_SCROLL = "X-SCROLLID"
   val LAST_OFFSET = "X-OFFSET"

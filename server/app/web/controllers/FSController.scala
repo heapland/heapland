@@ -215,7 +215,7 @@ class FSController @Inject()(
               request.body
                 .file("file")
                 .flatMap { f =>
-                  val rootpath = configuration.get[String]("gigahex.tmp")
+                  val rootpath = configuration.get[String]("heapland.tmp")
                   val filename    = Paths.get(f.filename).getFileName
                   val tmpFilePath = s"${rootpath}/${filename}"
                   val tmpFile = new File(tmpFilePath)

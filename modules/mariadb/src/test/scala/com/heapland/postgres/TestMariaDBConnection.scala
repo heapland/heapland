@@ -9,7 +9,7 @@ import org.scalatest.matchers.must.Matchers
 
 /**
   * Start the docker mariadb
-  * docker run --env MARIADB_USER=maria --env MARIADB_PASSWORD=secret --env MARIADB_DATABASE=gigahex --env MARIADB_ROOT_PASSWORD=root -p 3307:3306  mariadb:latest
+  * docker run --env MARIADB_USER=maria --env MARIADB_PASSWORD=secret --env MARIADB_DATABASE=heapland --env MARIADB_ROOT_PASSWORD=root -p 3307:3306  mariadb:latest
   */
 class TestMariaDBConnection extends AnyFlatSpec with Matchers {
 

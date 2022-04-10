@@ -92,7 +92,12 @@ const JobsTabPane: FC<{}> = () => {
   }, []);
 
   return (
-    <Table dataSource={state.allCluster} rowKey={(r: IAppCluster) => r.id} pagination={false} className='tbl-applications' style={{ minHeight: 200 }}>
+    <Table
+      dataSource={state.allCluster}
+      rowKey={(r: IAppCluster) => r.id}
+      pagination={false}
+      className='tbl-applications'
+      style={{ minHeight: 200 }}>
       <Column title='NAME' dataIndex='name' key='id' className='table-cell-light' render={renderName} />
       <Column title='USER' dataIndex='user' key='id' className='table-cell-light' />
       <Column title='STATE' dataIndex='state' key='id' className='table-cell-light' render={renderCurrentState} />
@@ -115,7 +120,7 @@ const WorkspaceDashboard: FC = () => {
             <Hexagon size={48} />
           </div>
           <div>
-            <div className='header-title'>Gigahex.com</div>
+            <div className='header-title'>Heapland.com</div>
             <div className='header-desc'>WORKPACE DASHBOARD</div>
           </div>
         </Col>
