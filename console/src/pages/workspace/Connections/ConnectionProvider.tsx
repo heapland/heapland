@@ -8,6 +8,7 @@ import { ConnectionConfig } from "../../../components/connections/ConnectionConf
 import { S3Connection } from "../../../components/connections/S3Connection";
 import { PgConnection } from "../../../components/connections/PostgresConnection";
 import { MySQLConnection } from "../../../components/connections/MySQLConnection";
+import { KafkaConnection } from "../../../components/connections/KafkaConnection";
 
 export const AddConnectionProvider: FC<{
   service: string;
@@ -47,6 +48,7 @@ export const AddConnectionProvider: FC<{
         {service === "postgresql" && <PgConnection />}
         {service === "mysql" && <MySQLConnection />}
         {service === "mariadb" && <MySQLConnection />}
+        {service === "kafka" && <KafkaConnection />}
       </div>
     </>
   );

@@ -16,13 +16,13 @@ import LoginWithEmail from "../components/Login/LoginWithEmail";
 import ClusterDashboard from "../pages/workspace/Clusters/ClusterDashboard";
 import SparkClusterDashboard from "../pages/workspace/Clusters/SparkClusterDashboard";
 import ClusterBuilder from "../pages/workspace/Clusters/ClusterBuilder";
-import HostsList from "../pages/workspace/HostList/HostList";
 import KafkaClusterDashboard from "../pages/workspace/Clusters/KafkaClusterDashboard";
 import HDFSClusterDashboard from "../pages/workspace/Clusters/HDFSClusterDashboard";
-import AddDatasource from "../pages/workspace/AddDatasource/AddDatasource";
+import AddDatasource from "../pages/workspace/Connections/AddConnection";
 import { FileBrowser, FileManager } from "../components/FileBrowser/FileBrowser";
 import DatabaseBrowse from "../pages/workspace/DatabaseBrowser/DatabaseBrowser";
 import DatabaseBrowser from "../pages/workspace/DatabaseBrowser/DatabaseBrowser";
+import ConnectionList from "../pages/workspace/Connections/ConnectionList";
 
 const routes = (
   <div>
@@ -61,11 +61,13 @@ const routes = (
         exact
         render={(props) => <WorkspaceMain index='0' slugId={props.match.params.slugId} content={<Clusters />} {...props} />}
       />
+
       <Route
-        path='/:slugId/workspace/:workspaceId/hosts'
+        path='/:slugId/workspace/:workspaceId/connections'
         exact
-        render={(props) => <WorkspaceMain index='10' slugId={props.match.params.slugId} content={<HostsList />} {...props} />}
+        render={(props) => <WorkspaceMain index='0' slugId={props.match.params.slugId} content={<ConnectionList />} {...props} />}
       />
+
       <Route
         path='/:slugId/workspace/:workspaceId/fs/:connectionId'
         exact

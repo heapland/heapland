@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 
-GHX_HOME=${HOME}/gigahex
+GHX_HOME=${HOME}/heapland
 VERSION=0.3.1
-PID_FILE=${GHX_HOME}/gigahex-server-$VERSION/RUNNING_PID
+PID_FILE=${GHX_HOME}/heapland-server-$VERSION/RUNNING_PID
 OS="`uname`"
 green="\033[32m"
 red="\033[31m"
@@ -15,9 +15,9 @@ function usage()
     echo "Option   Description"
     echo "------------------------------------"
     echo 'help     Show usage'
-    echo "start    Start the gigahex service"
-    echo "stop     Stop the gigahex service"
-    echo "reset    Reset the gigahex service"
+    echo "start    Start the heapland service"
+    echo "stop     Stop the heapland service"
+    echo "reset    Reset the heapland service"
     echo ""
 }
 
@@ -25,9 +25,9 @@ function setup_db()
 {
     #Setup the database
 
-    sudo -u postgres bash -c "psql -c \"CREATE DATABASE gigahexdb;\"" > /dev/null 2>&1
+    sudo -u postgres bash -c "psql -c \"CREATE DATABASE heaplanddb;\"" > /dev/null 2>&1
     sudo -u postgres bash -c "psql -c \"CREATE USER hextron WITH ENCRYPTED PASSWORD 'hextron';\"" > /dev/null 2>&1
-    sudo -u postgres bash -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE gigahexdb to hextron;\"" > /dev/null 2>&1
+    sudo -u postgres bash -c "psql -c \"GRANT ALL PRIVILEGES ON DATABASE heaplanddb to hextron;\"" > /dev/null 2>&1
 }
 
 function start_db()
@@ -43,13 +43,13 @@ function start_db()
 function start()
 {
 
-    flash=`cat ${GHX_HOME}/gigahex-server-$VERSION/sbin/flash`
+    flash=`cat ${GHX_HOME}/heapland-server-$VERSION/sbin/flash`
     echo "$flash"
     echo ""
     echo "> Starting the Gigahex Data Platform"
     #Make sure it is stopped, before starting
-    ${GHX_HOME}/gigahex-server-$VERSION/sbin/${OS}/caddy stop > /dev/null 2>&1
-    ${GHX_HOME}/gigahex-server-$VERSION/sbin/${OS}/caddy run --config ${GHX_HOME}/gigahex-server-$VERSION/sbin/Caddyfile > ${GHX_HOME}/logs/proxy.log 2>&1 &
+    ${GHX_HOME}/heapland-server-$VERSION/sbin/${OS}/caddy stop > /dev/null 2>&1
+    ${GHX_HOME}/heapland-server-$VERSION/sbin/${OS}/caddy run --config ${GHX_HOME}/heapland-server-$VERSION/sbin/Caddyfile > ${GHX_HOME}/logs/proxy.log 2>&1 &
 
     #Setup the database
     start_db
@@ -60,7 +60,7 @@ function start()
     fi
 
     export JAVA_OPTS="--add-opens java.base/java.lang=ALL-UNNAMED"
-    ${GHX_HOME}/gigahex-server-$VERSION/bin/gigahex-server -Dconfig.resource=application.linux.conf -Dhttp.port=9000
+    ${GHX_HOME}/heapland-server-$VERSION/bin/heapland-server -Dconfig.resource=application.linux.conf -Dhttp.port=9000
 
 
 }
@@ -71,7 +71,7 @@ function reset()
     stop
     start_db
     sleep 2
-    sudo -u postgres bash -c "psql -c \"DROP DATABASE gigahexdb;\"" > /dev/null 2>&1
+    sudo -u postgres bash -c "psql -c \"DROP DATABASE heaplanddb;\"" > /dev/null 2>&1
     start
 
 }
@@ -79,7 +79,7 @@ function reset()
 function stop()
 {
     echo "> Terminating Gigahex Data Platform"
-    ${GHX_HOME}/gigahex-server-$VERSION/sbin/${OS}/caddy stop > ${GHX_HOME}/logs/proxy.log 2>&1
+    ${GHX_HOME}/heapland-server-$VERSION/sbin/${OS}/caddy stop > ${GHX_HOME}/logs/proxy.log 2>&1
     echo "> Stopping the postgresql server"
     sudo service postgresql stop > /dev/null 2>&1
     if test -f "$PID_FILE"; then

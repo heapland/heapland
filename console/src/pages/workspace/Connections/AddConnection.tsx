@@ -8,8 +8,9 @@ import Connections, { ConnectionMeta } from "../../../services/Connections";
 
 const AddDatasource: FC<{ orgSlugId: string; workspaceId: number }> = ({ orgSlugId, workspaceId }) => {
   const [selectedKey, setSelectedKey] = React.useState("file-system");
-  const [sourceDrawer, setSrouceDrawer] = React.useState<{ isOpen: boolean; name: string }>({
+  const [sourceDrawer, setSrouceDrawer] = React.useState<{ isOpen: boolean; name: string; isAvailable: boolean }>({
     isOpen: false,
+    isAvailable: true,
     name: "",
   });
   const selectMenu = (e: any) => {
@@ -21,7 +22,7 @@ const AddDatasource: FC<{ orgSlugId: string; workspaceId: number }> = ({ orgSlug
   };
 
   const openSourceDrawer = (name: string) => {
-    setSrouceDrawer({ ...sourceDrawer, isOpen: true, name: name });
+    setSrouceDrawer({ ...sourceDrawer, isOpen: true, name: name, isAvailable: name !== "kafka" });
   };
 
   const [connections, setConnections] = React.useState<{ loading: boolean; connProviders: ConnectionMeta[] }>({
@@ -90,7 +91,13 @@ const AddDatasource: FC<{ orgSlugId: string; workspaceId: number }> = ({ orgSlug
         </div>
       </div>
 
-      <ServiceConnectionBuilder service={sourceDrawer.name} isOpen={sourceDrawer.isOpen} editMode={false} onClose={onCloseDrawer} />
+      <ServiceConnectionBuilder
+        available={sourceDrawer.isAvailable}
+        service={sourceDrawer.name}
+        isOpen={sourceDrawer.isOpen}
+        editMode={false}
+        onClose={onCloseDrawer}
+      />
     </div>
   );
 };

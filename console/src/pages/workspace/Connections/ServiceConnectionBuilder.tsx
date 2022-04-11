@@ -19,6 +19,7 @@ const ServiceConnectionBuilder: React.FC<{
   isOpen: boolean;
   onClose: () => void;
   editMode: boolean;
+  available: boolean;
   connectionId?: number;
   initialValues?: any;
 }> = ({ service, isOpen, connectionId, editMode, onClose, initialValues }) => {

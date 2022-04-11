@@ -9,7 +9,7 @@ export const MainRedirect: React.FC = () => {
     console.log("in main redirect");
     console.log(context.currentUser);
     if (context.currentUser.loggedIn && context.currentUser.profile) {
-      history.push(`/${context.currentUser.profile.orgSlugId}/workspace/${context.currentUser.profile.workspaceId}/clusters`);
+      history.push(`/${context.currentUser.profile.orgSlugId}/workspace/${context.currentUser.profile.workspaceId}/connections`);
     } else if (context.currentUser.loggedIn) {
       history.push(`/onboard`);
     } else {

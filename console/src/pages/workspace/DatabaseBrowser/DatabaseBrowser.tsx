@@ -1,4 +1,4 @@
-import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton } from "antd";
+import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { FaDatabase, FaTable } from "react-icons/fa";
 import { BiPlay, BiCaretDown } from "react-icons/bi";
@@ -13,9 +13,11 @@ import { ConnectionIcon } from "../../../components/Cards/DatasourceCard";
 import Sider from "antd/lib/layout/Sider";
 import { Content, Header } from "antd/lib/layout/layout";
 import TablePane from "./TablePane";
-import ServiceConnectionBuilder from "../AddDatasource/ServiceConnectionBuilder";
+import ServiceConnectionBuilder from "../Connections/ServiceConnectionBuilder";
 import { DBQuery } from "../../../models/DatabaseBrowser";
 import QueryPane from "./QueryPane";
+import { UserContext } from "../../../store/User";
+import { history } from "../../../configureStore";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -36,14 +38,17 @@ const DBBrowserHeader: FC<{
   schemas: string[];
   onEdit: () => void;
   onNewQuery: () => void;
-}> = ({ name, productName, version, onEdit, onNewQuery }) => {
+  deleteWarning: (name: string) => void;
+}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning }) => {
   const editDatabase = () => {};
   const databaseMenu = (
     <Menu>
       <Menu.Item key='0' onClick={(e) => onEdit()}>
         Edit Database
       </Menu.Item>
-      <Menu.Item key='1'>Delete connection</Menu.Item>
+      <Menu.Item key='1' onClick={(e) => deleteWarning(name)}>
+        Delete connection
+      </Menu.Item>
       <Menu.Divider />
       <Menu.Item key='3' onClick={(e) => onNewQuery()}>
         Add Query
@@ -71,6 +76,7 @@ const DBBrowserHeader: FC<{
 };
 
 const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: number }> = ({ orgSlugId, workspaceId, databaseId }) => {
+  const context = React.useContext(UserContext);
   const [dbState, setDBState] = useState<{
     loading: boolean;
     connectionName: string;
@@ -272,6 +278,31 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
   }, [dbState.selectedSchema, databaseId]);
 
+  const handleDeleteConnection = () => {
+    Connections.deleteConnection(databaseId, (r) => {
+      message.success("Database Connection was deleted");
+      Connections.listConnections((c) => {
+        context.updateConnections(c);
+      });
+      history.push(`/${orgSlugId}/workspace/${workspaceId}/connections`);
+    });
+  };
+
+  const deleteWarning = (name: string) => {
+    Modal.warning({
+      title: (
+        <span>
+          Delete <b>{name}</b>
+        </span>
+      ),
+      content: `Are you sure you want to delete the connection?`,
+      onOk: handleDeleteConnection,
+      okCancel: true,
+      okText: "Yes",
+      cancelText: "No",
+    });
+  };
+
   return (
     <Layout className='database-browser-wrapper ant-layout-has-sider'>
       {!dbState.hasError && (
@@ -296,6 +327,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               version={dbState.version}
               onEdit={enableEditMode}
               onNewQuery={onNewQuery}
+              deleteWarning={deleteWarning}
             />
           </Skeleton>
 
@@ -435,6 +467,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         connectionId={databaseId}
         editMode={true}
         onClose={hideEditMode}
+        available={true}
         initialValues={{ name: dbState.connectionName }}
       />
     </Layout>

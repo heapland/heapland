@@ -32,7 +32,7 @@ import { FaFile, FaFileCsv, FaFileImage, FaFilePdf } from "react-icons/fa";
 import VirtualList from "rc-virtual-list";
 import ContentLoader from "react-content-loader";
 import Connections from "../../services/Connections";
-import ServiceConnectionBuilder from "../../pages/workspace/AddDatasource/ServiceConnectionBuilder";
+import ServiceConnectionBuilder from "../../pages/workspace/Connections/ServiceConnectionBuilder";
 import { cwd } from "process";
 import WebService from "../../services/WebService";
 import { UploadChangeParam } from "antd/lib/upload";
@@ -342,6 +342,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
 
       <ServiceConnectionBuilder
         service={storageService}
+        available={true}
         isOpen={editMode}
         connectionId={connectionId}
         editMode={true}
