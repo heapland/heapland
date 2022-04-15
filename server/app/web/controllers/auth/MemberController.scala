@@ -9,6 +9,7 @@ import play.api.http.HeaderNames
 import play.api.i18n.I18nSupport
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents, InjectedController, RequestHeader}
+import play.filters.csrf.CSRF
 import utils.auth.DefaultEnv
 import web.controllers.handlers.SecuredWebRequestHandler
 import web.models.requests.{CreateOrUpdateOrg, OrgRequestsJsonFormat}
@@ -44,7 +45,8 @@ class MemberController @Inject()(
 
 
   def accountDetails = silhouette.UserAwareAction.async { implicit request =>
-
+//    val csrfToken = CSRF.getToken.map(_.value)
+//    println(csrfToken.getOrElse("No csrf token in account"))
     val result = request.identity match {
       case Some(m) if m.id.isDefined =>
         for {

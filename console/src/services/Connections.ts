@@ -112,9 +112,7 @@ class ConnectionService extends IErrorHandler {
         const err = this.getDefaultError("Fetching the connections");
         this.showError(err.message);
       }
-    } catch (e) {
-      console.log(e);
-    }
+    } catch (e) {}
   };
 
   getTableData = async (dbId: number, table: string, schema: string, onSuccess: (summary: QueryExecutionResult) => void) => {

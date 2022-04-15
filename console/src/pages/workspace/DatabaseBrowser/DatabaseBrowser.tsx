@@ -270,7 +270,6 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   };
 
   useEffect(() => {
-    console.log(dbState.selectedSchema);
     if (dbState.selectedSchema) {
       Connections.listTables(databaseId, dbState.selectedSchema, (tables) => {
         setDBTables({ ...dbTables, tables: tables, loading: false });
@@ -424,12 +423,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   {pane.objectType === "table" && (
                     <TabPane
                       tab={
-                        <div
-                          className='db-tab-header'
-                          aria-details={pane.name}
-                          onAuxClick={(e) => {
-                            console.log(e.currentTarget.getAttribute("aria-details"));
-                          }}>
+                        <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
                           <FaTable />
                           <div>{pane.name}</div>
                         </div>
@@ -441,12 +435,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   {pane.objectType === "query" && (
                     <TabPane
                       tab={
-                        <div
-                          className='db-tab-header'
-                          aria-details={pane.name}
-                          onAuxClick={(e) => {
-                            console.log(e.currentTarget.getAttribute("aria-details"));
-                          }}>
+                        <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
                           <MdCode />
                           <div>{pane.name}</div>
                         </div>
@@ -462,6 +451,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         </div>
       </Content>
       <ServiceConnectionBuilder
+        orgSlugId={orgSlugId}
+        workspaceId={workspaceId}
         service={dbState.productName}
         isOpen={dbState.editMode}
         connectionId={databaseId}

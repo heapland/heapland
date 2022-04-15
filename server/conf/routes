@@ -48,10 +48,9 @@ GET         /web/v1/orgs                         web.controllers.auth.MemberCont
 #Orgs and Workspace
 POST        /web/v1/workspace                    web.controllers.read.WorkspaceController.createWorkspace
 GET         /web/v1/workspaces                   web.controllers.read.WorkspaceController.listWorkspaces
-POST        /web/v1/onboard                         web.controllers.read.WorkspaceController.onboardMember
+POST        /web/v1/onboard                      web.controllers.read.WorkspaceController.onboardMember
 
 #Connections
-+ nocsrf
 POST        /web/v1/connections                        web.controllers.read.WorkspaceController.addConnection
 + nocsrf
 PUT         /web/v1/connections/:connectionId          web.controllers.read.WorkspaceController.updateConnection(connectionId: Long)

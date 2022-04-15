@@ -1,4 +1,6 @@
 import dotenv from "dotenv";
+import { getCookie, setCookie } from "typescript-cookie";
+
 export interface IHttpResponse<T> extends Response {
   parsedBody?: T;
 }
@@ -96,6 +98,7 @@ export default class WebService {
       credentials: "include",
       mode: "cors",
       headers: {
+        "Csrf-Token": getCookie("PLAY_CSRF_TOKEN"),
         Accept: "application/json",
         "Content-Type": "application/json",
       },
@@ -118,6 +121,7 @@ export default class WebService {
       cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
       credentials: "include",
       headers: {
+        "Csrf-Token": getCookie("PLAY_CSRF_TOKEN"),
         "X-TIMEZONE": Intl.DateTimeFormat().resolvedOptions().timeZone,
         Accept: "application/json",
         "Content-Type": "application/json",
@@ -137,6 +141,7 @@ export default class WebService {
       body: JSON.stringify(body),
       credentials: "include",
       headers: {
+        "Csrf-Token": getCookie("PLAY_CSRF_TOKEN"),
         Accept: "application/json",
         "Content-Type": "application/json",
       },

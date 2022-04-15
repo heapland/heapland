@@ -30,7 +30,11 @@ const mapStateToProps = (state: AppState) => ({
   user: state.auth,
 });
 
-const CreateOrgWorkspace: FC<{ isAppLoaded: boolean; updateLogin?: typeof updateLogin; user?: User }> = ({ isAppLoaded, updateLogin, user }) => {
+const CreateOrgWorkspace: FC<{ isAppLoaded: boolean; updateLogin?: typeof updateLogin; user?: User }> = ({
+  isAppLoaded,
+  updateLogin,
+  user,
+}) => {
   const [state, setState] = useState<IState>({
     personalAcc: true,
     loading: false,
@@ -75,7 +79,7 @@ const CreateOrgWorkspace: FC<{ isAppLoaded: boolean; updateLogin?: typeof update
             const accDetail = account as MemberInfo;
             context.updateUser(accDetail.id, accDetail.name, accDetail.email, true, accDetail.profile);
             if (accDetail.hasProfile) {
-              history.push(`/${r.orgSlugId}/workspace/${r.workspaceId}/clusters`);
+              history.push(`/${r.orgSlugId}/workspace/${r.workspaceId}/connections`);
             }
           }
         });
@@ -135,7 +139,14 @@ const CreateOrgWorkspace: FC<{ isAppLoaded: boolean; updateLogin?: typeof update
           <p className='desc'>Workspace simplifies managing mulitple clusters and distributed jobs like Spark.</p>
         </div>
         <div className='form-container'>
-          <Form layout={"vertical"} fields={fieldData} name='basic' onFinish={onFinish} requiredMark={false} initialValues={{ accountType: "personal" }} className='create-form wizard-form'>
+          <Form
+            layout={"vertical"}
+            fields={fieldData}
+            name='basic'
+            onFinish={onFinish}
+            requiredMark={false}
+            initialValues={{ accountType: "personal" }}
+            className='create-form wizard-form'>
             <Form.Item name='name' label='Workspace Name' rules={[{ required: true, message: "Please enter Workspace Name" }]}>
               <Input placeholder='Workspace Name' />
             </Form.Item>

@@ -139,6 +139,8 @@ const FileSummaryView: React.FC<{
 };
 
 export const FileBrowser: React.FC<FileBrowserProps> = ({
+  orgSlugId,
+  workspaceId,
   connectionId,
   storageService,
   name,
@@ -341,6 +343,8 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
       </Skeleton>
 
       <ServiceConnectionBuilder
+        orgSlugId={orgSlugId}
+        workspaceId={workspaceId}
         service={storageService}
         available={true}
         isOpen={editMode}
@@ -355,7 +359,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
   );
 };
 
-export const FileManager: React.FC<{ connectionId: number }> = ({ connectionId }) => {
+export const FileManager: React.FC<{ orgSlugId: string; workspaceId: number; connectionId: number }> = ({
+  orgSlugId,
+  workspaceId,
+  connectionId,
+}) => {
   const [directoryForm] = Form.useForm();
   const [fileStatus, setFileStatus] = React.useState<{
     isValid: boolean;
@@ -425,16 +433,13 @@ export const FileManager: React.FC<{ connectionId: number }> = ({ connectionId }
 
   React.useEffect(() => {
     if (fileStatus.cwd.length === 0) {
-      console.log("listing root objects");
       listRootObjects();
     } else {
-      console.log("listing file objects");
       listObjects(fileStatus.cwd.join(""));
     }
   }, [fileStatus.cwd, fileStatus.refreshStatus]);
 
   const closeEditDrawer = () => {
-    console.log("setting edit drawer as");
     setFileStatus({ ...fileStatus, editMode: false });
   };
 
@@ -508,6 +513,8 @@ export const FileManager: React.FC<{ connectionId: number }> = ({ connectionId }
       <Skeleton avatar paragraph={{ rows: 4 }} loading={fileStatus.loading}>
         {fileStatus.listing && (
           <FileBrowser
+            orgSlugId={orgSlugId}
+            workspaceId={workspaceId}
             connectionId={connectionId}
             cwd={fileStatus.cwd}
             items={fileStatus.listing.files}

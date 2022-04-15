@@ -15,6 +15,7 @@ import { AppState } from "../../reducers";
 import { connect } from "react-redux";
 import { history } from "../../configureStore";
 import { UserContext } from "../../store/User";
+import Connections from "../../services/Connections";
 const { Content } = Layout;
 
 function useQuery() {
@@ -67,12 +68,10 @@ const LoginWithEmailComponent: React.FC<ILoginProps> = ({ user, authToken, updat
   });
 
   React.useEffect(() => {
-    console.log(context.currentUser);
     if (context.currentUser.loggedIn) {
       history.push("/");
     } else {
       AuthService.accountInfo().then((account) => {
-        console.log(account);
         if (account.exist) {
           history.push("/");
         } else if (authToken) {
@@ -95,6 +94,11 @@ const LoginWithEmailComponent: React.FC<ILoginProps> = ({ user, authToken, updat
           if (account.exist) {
             const member = account as MemberInfo;
             context.updateUser(member.id, member.name, member.email, true, member.profile);
+            if (member.profile) {
+              Connections.listConnections((conn) => {
+                context.updateConnections(conn);
+              });
+            }
             history.push(`/`);
           }
         });

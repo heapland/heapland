@@ -30,6 +30,8 @@ export interface FileSummary {
 }
 
 export interface FileBrowserProps {
+  orgSlugId: string;
+  workspaceId: number;
   connectionId: number;
   storageService: string;
   editMode: boolean;

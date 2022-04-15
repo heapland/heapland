@@ -122,16 +122,13 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
     <Layout className='main-app-wrapper'>
       <Sider trigger={null} collapsed={false} className='workspace-side-nav hex-sider-light'>
         <div className='workspace-header'>
-          <Dropdown overlay={orgMenu} trigger={["click"]} overlayStyle={{ width: 200 }}>
-            <div className={`logo`}>
-              <Hexagon size={state.collapsed ? 23 : 20} />
-              {user && (
-                <span className='brand-name'>
-                  {context.currentUser.profile && `${trimText(context.currentUser.profile.workspaceName)}`}
-                </span>
-              )}
-            </div>
-          </Dropdown>
+          <div className={`logo`}>
+            <Hexagon size={state.collapsed ? 23 : 20} />
+            {user && (
+              <span className='brand-name'>{context.currentUser.profile && `${trimText(context.currentUser.profile.workspaceName)}`}</span>
+            )}
+          </div>
+
           <Dropdown overlay={orgMenu} trigger={["click"]} overlayStyle={{ width: 200 }}>
             <div className={`logo`}>
               {context.currentUser.profile && (
@@ -229,11 +226,10 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
         </CustomScroll>
 
         <div className='brand-footer'>
-          <Dropdown overlay={orgMenu} trigger={["click"]} overlayStyle={{ width: 200 }}>
-            <div className='brand-logo-container'>
-              <img src={BrandLogo} />
-            </div>
-          </Dropdown>
+          <div className='brand-logo-container'>
+            <img src={BrandLogo} />
+          </div>
+
           <GitHubButton href='https://github.com/heapland/heapland' data-show-count='true' aria-label='Star heapland/heapland on GitHub'>
             Star
           </GitHubButton>

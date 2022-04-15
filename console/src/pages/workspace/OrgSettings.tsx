@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Table, Upload, PageHeader, Form, message, Input, Button } from "antd";
 import Workspace, { OrgDetail } from "../../services/Workspace";
 import ImgCrop from "antd-img-crop";
+import { getCookie, setCookie } from "typescript-cookie";
 import { UploadChangeParam, UploadFile } from "antd/lib/upload/interface";
 import { useForm } from "antd/lib/form/Form";
 import { history } from "../../configureStore";
@@ -128,6 +129,9 @@ const OrgSetting: React.FC<{}> = () => {
                 <Upload
                   action={`${web.getEndpoint()}/web/v1/org/upload-logo`}
                   withCredentials={true}
+                  headers={{
+                    "Csrf-Token": getCookie("PLAY_CSRF_TOKEN"),
+                  }}
                   name='picture'
                   listType='picture-card'
                   accept='image/png,image/jpg,image/jpeg'

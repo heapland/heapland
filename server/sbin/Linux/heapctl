@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-GHX_HOME=${HOME}/heapland
-VERSION=0.3.1
+GHX_HOME=/opt/heapland
+VERSION=0.1.0
 PID_FILE=${GHX_HOME}/heapland-server-$VERSION/RUNNING_PID
 OS="`uname`"
 green="\033[32m"
@@ -9,9 +9,9 @@ red="\033[31m"
 reset="\033[0m"
 function usage()
 {
-    echo "Gigahex CLI"
+    echo "Heapland CLI"
     echo ""
-    echo "gxc [options]"
+    echo "heapctl [options]"
     echo "Option   Description"
     echo "------------------------------------"
     echo 'help     Show usage'
@@ -46,7 +46,7 @@ function start()
     flash=`cat ${GHX_HOME}/heapland-server-$VERSION/sbin/flash`
     echo "$flash"
     echo ""
-    echo "> Starting the Gigahex Data Platform"
+    echo "> Starting the Heapland Platform"
     #Make sure it is stopped, before starting
     ${GHX_HOME}/heapland-server-$VERSION/sbin/${OS}/caddy stop > /dev/null 2>&1
     ${GHX_HOME}/heapland-server-$VERSION/sbin/${OS}/caddy run --config ${GHX_HOME}/heapland-server-$VERSION/sbin/Caddyfile > ${GHX_HOME}/logs/proxy.log 2>&1 &

@@ -6,6 +6,8 @@ import { useForm } from "antd/lib/form/Form";
 import { AddConnectionProvider } from "./ConnectionProvider";
 import { ConnectionConfig } from "../../../components/connections/ConnectionConfig";
 import Connections from "../../../services/Connections";
+import { history } from "../../../configureStore";
+import { UserContext } from "../../../store/User";
 
 const connectionRegistry = {
   s3: "com.heapland.services.AWSS3Connection",
@@ -15,6 +17,8 @@ const connectionRegistry = {
 };
 
 const ServiceConnectionBuilder: React.FC<{
+  orgSlugId: string;
+  workspaceId: number;
   service: string;
   isOpen: boolean;
   onClose: () => void;
@@ -22,10 +26,10 @@ const ServiceConnectionBuilder: React.FC<{
   available: boolean;
   connectionId?: number;
   initialValues?: any;
-}> = ({ service, isOpen, connectionId, editMode, onClose, initialValues }) => {
+}> = ({ orgSlugId, workspaceId, service, isOpen, connectionId, editMode, onClose, initialValues }) => {
   const [builderForm] = useForm();
   console.log(initialValues);
-
+  const context = React.useContext(UserContext);
   const onFinish = (values: any) => {
     values["_type"] = connectionRegistry[service.toLowerCase()];
     if (editMode) {
@@ -37,6 +41,10 @@ const ServiceConnectionBuilder: React.FC<{
     } else {
       Connections.saveConnection(values["name"], service, JSON.stringify(values), 1, (r) => {
         message.success(`Connection has been saved`);
+        Connections.listConnections((c) => {
+          context.updateConnections(c);
+        });
+        history.push(`/${orgSlugId}/workspace/${workspaceId}/connections`);
         onClose();
       });
     }

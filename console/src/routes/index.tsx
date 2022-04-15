@@ -76,7 +76,13 @@ const routes = (
             index='fs'
             slugId={props.match.params.slugId}
             subIndex={props.match.params.connectionId}
-            content={<FileManager connectionId={Number(props.match.params.connectionId)} />}
+            content={
+              <FileManager
+                connectionId={Number(props.match.params.connectionId)}
+                workspaceId={Number(props.match.params.workspaceId)}
+                orgSlugId={props.match.params.slugId}
+              />
+            }
             {...props}
           />
         )}

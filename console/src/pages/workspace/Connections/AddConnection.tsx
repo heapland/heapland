@@ -92,6 +92,8 @@ const AddDatasource: FC<{ orgSlugId: string; workspaceId: number }> = ({ orgSlug
       </div>
 
       <ServiceConnectionBuilder
+        orgSlugId={orgSlugId}
+        workspaceId={workspaceId}
         available={sourceDrawer.isAvailable}
         service={sourceDrawer.name}
         isOpen={sourceDrawer.isOpen}

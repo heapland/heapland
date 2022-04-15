@@ -17,6 +17,7 @@ import play.api.i18n.I18nSupport
 import play.api.libs.json._
 import play.api.mvc._
 import play.api.{Configuration, Logging}
+import play.filters.csrf.{CSRF, CSRFAddToken}
 import utils.auth.DefaultEnv
 import web.models._
 import web.models.formats.AuthResponseFormats
@@ -32,6 +33,7 @@ class AuthController @Inject()(
     memberService: MemberService,
     credentialsProvider: EmailCredentialsProvider,
     configuration: Configuration,
+    addToken: CSRFAddToken,
     clock: Clock
 )(
     implicit
@@ -59,8 +61,10 @@ class AuthController @Inject()(
     }
   }
 
-  def signIn = silhouette.UnsecuredAction.async(validateJson[SignInRequest]) { implicit request =>
+  def signIn = addToken(silhouette.UnsecuredAction.async(validateJson[SignInRequest]) { implicit request =>
     val credentialsOpt = getCredentials(request)
+    val csrfToken = CSRF.getToken.map(_.value)
+    println(csrfToken.getOrElse("No csrf token"))
     credentialsOpt match {
       case None =>
         Future {
@@ -77,7 +81,6 @@ class AuthController @Inject()(
         memberOpt
           .flatMap {
             case Some(m) =>
-
                 authenticateUser(m, request.body.rememberMe)
 
             case None => Future.failed(new IdentityNotFoundException("Couldn't find user"))
@@ -93,7 +96,7 @@ class AuthController @Inject()(
           }
     }
 
-  }
+  })
 
   /**
     * Handles the Sign Out action.
@@ -121,6 +124,7 @@ class AuthController @Inject()(
         case authenticator => authenticator
       }
       .flatMap { authenticator =>
+
         silhouette.env.eventBus.publish(LoginEvent(user, request))
         silhouette.env.authenticatorService.init(authenticator).flatMap { v =>
           silhouette.env.authenticatorService.embed(v, result)

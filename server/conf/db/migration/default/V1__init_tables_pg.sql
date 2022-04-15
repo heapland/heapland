@@ -217,34 +217,3 @@ dt_added TIMESTAMP,
 FOREIGN KEY (cluster_id) REFERENCES clusters(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF NOT EXISTS package_repository (
-id BIGSERIAL,
-name VARCHAR(500),
-version VARCHAR(20),
-is_deprecated BOOLEAN
-);
-
-CREATE TABLE IF NOT EXISTS kafka_clusters (
-cluster_id BIGINT,
-version VARCHAR(10),
-scala_version VARCHAR(10),
-configuration_params TEXT,
-host_username VARCHAR(100),
-encrypted_pkey TEXT,
-hosts TEXT,
-is_local BOOLEAN DEFAULT TRUE,
-FOREIGN KEY (cluster_id) REFERENCES clusters(id) ON DELETE CASCADE
-);
-
-
-CREATE TABLE IF NOT EXISTS hadoop_clusters (
-cluster_id BIGINT,
-version VARCHAR(10),
-core_site TEXT,
-hdfs_site TEXT,
-host_username VARCHAR(100),
-encrypted_pkey TEXT,
-hosts TEXT,
-is_local BOOLEAN DEFAULT TRUE,
-FOREIGN KEY (cluster_id) REFERENCES clusters(id) ON DELETE CASCADE
-);
