@@ -121,7 +121,7 @@ class HDFSController @Inject()(@Named("spark-cluster-manager") clusterManager: A
           case Some(pd) => if(pd.status == RunStatus.Running){
             val qstringWithUser = request.rawQueryString.replaceAll("user_name",System.getProperty("user.name"))
             val url = s"http://${pd.host}:50070/webhdfs/v1/${path}?${qstringWithUser}"
-            println(s"URL : ${url}")
+
             ws.url(url).put(EmptyBody).map{ response =>
               Ok(response.body).as("application/json")
             }

@@ -52,7 +52,6 @@ POST        /web/v1/onboard                      web.controllers.read.WorkspaceC
 
 #Connections
 POST        /web/v1/connections                        web.controllers.read.WorkspaceController.addConnection
-+ nocsrf
 PUT         /web/v1/connections/:connectionId          web.controllers.read.WorkspaceController.updateConnection(connectionId: Long)
 DELETE      /web/v1/connections/:connectionId          web.controllers.read.WorkspaceController.deleteConnection(connectionId: Long)
 GET         /web/v1/connections                        web.controllers.read.WorkspaceController.listConnections

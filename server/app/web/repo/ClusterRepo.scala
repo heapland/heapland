@@ -308,7 +308,7 @@ class ClusterRepoImpl(blockingEC: ExecutionContext) extends ClusterRepo {
             }
 
           case Some(id) =>
-            println(id)
+
             id
         }
       }

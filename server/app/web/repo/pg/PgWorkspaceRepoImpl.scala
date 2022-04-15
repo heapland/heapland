@@ -313,7 +313,6 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
     blocking {
       Try {
         DB localTx { implicit session =>
-        println(query)
           sql"""UPDATE queries SET name = ${name}, qtext = ${query} WHERE db_id = ${connectionId} AND id = ${queryId}
              """
             .update()

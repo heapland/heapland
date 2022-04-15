@@ -45,8 +45,7 @@ class MemberController @Inject()(
 
 
   def accountDetails = silhouette.UserAwareAction.async { implicit request =>
-//    val csrfToken = CSRF.getToken.map(_.value)
-//    println(csrfToken.getOrElse("No csrf token in account"))
+
     val result = request.identity match {
       case Some(m) if m.id.isDefined =>
         for {

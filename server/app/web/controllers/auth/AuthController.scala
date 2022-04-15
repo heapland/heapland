@@ -64,7 +64,6 @@ class AuthController @Inject()(
   def signIn = addToken(silhouette.UnsecuredAction.async(validateJson[SignInRequest]) { implicit request =>
     val credentialsOpt = getCredentials(request)
     val csrfToken = CSRF.getToken.map(_.value)
-    println(csrfToken.getOrElse("No csrf token"))
     credentialsOpt match {
       case None =>
         Future {
