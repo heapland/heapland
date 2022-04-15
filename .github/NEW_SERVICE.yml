@@ -1,0 +1,34 @@
+name: Request service support
+description: Request a new data service integration
+title: "Add support for [ServiceName]"
+labels: ["triage"]
+assignees:
+  - amezng
+body:
+  - type: input
+    id: service
+    attributes:
+      label: Service Name
+      description: Name of the service
+      placeholder: ex. Cassandra
+    validations:
+      required: true
+  - type: dropdown
+    id: importance
+    attributes:
+      label: Service importance
+      options:
+        - Good to have
+        - Important
+        - Urgent
+    validations:
+      required: true
+  - type: dropdown
+    id: hosted
+    attributes:
+      label: Where is the service hosted?
+      multiple: true
+      options:
+        - Desktop/Laptop
+        - OnPrem
+        - Cloud
