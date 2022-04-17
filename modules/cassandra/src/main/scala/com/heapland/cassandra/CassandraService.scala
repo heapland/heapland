@@ -4,11 +4,8 @@ import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 
 import com.datastax.oss.driver.api.core.{CqlIdentifier, CqlSession}
-import com.datastax.oss.driver.api.core.`type`.DataType
 import com.datastax.oss.driver.api.core.cql.{ResultSet, Row}
-import com.datastax.oss.driver.internal.core.metadata.DefaultEndPoint
-import com.heapland.services.CassandraConnection
-import com.heapland.services.{CassandraConnection, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult}
+import com.heapland.services.{CassandraConnection, ColumnMeta, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -21,13 +18,14 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
 
   private def usingSession[T](config: CassandraConnection)(handler: CqlSession => T): Try[T] = {
     val connectionId = config.contactPoints.mkString(",")
-    val session = connections.computeIfAbsent(
-      connectionId,
-      (_) => {
-        val endpoints = config.contactPoints.map(x => new InetSocketAddress(x.split(":")(0), x.split(":")(1).toInt))
+    if(connections.containsKey(connectionId)){
+      Try(handler(connections.get(connectionId)))
+    } else {
+      Try {
+        val endpoints = config.contactPoints.split("\n").map(x => new InetSocketAddress(x.split(":")(0), x.split(":")(1).toInt))
         var sessionBuilder = CqlSession
           .builder()
-          .addContactPoints(endpoints.asJavaCollection)
+          .addContactPoints(endpoints.toList.asJavaCollection)
           .withLocalDatacenter(config.datacenter)
 
         sessionBuilder =
@@ -37,14 +35,12 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
 
           }
         sessionBuilder.build()
-
+      }.map { newSession =>
+        connections.put(connectionId, newSession)
+        handler(newSession)
       }
-    )
-
-    Try(handler(session))
+    }
   }
-
-
 
   override def getDBInfo(config: CassandraConnection): Try[DatabaseServer] = {
     usingSession(config) { session =>
@@ -84,23 +80,27 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
   }
 
   private def buildMap(row: Row, columns: mutable.HashSet[CqlIdentifier]): Map[String, Object] = {
-    columns.map {
-      id => (id.toString -> row.getObject(id))
+    columns.map { id =>
+      (id.toString -> row.getObject(id))
     }.toMap
 
   }
 
-  override def tableDataView(schema: String, table: String, config: CassandraConnection): Try[QueryExecutionResult] = ???
+  override def tableDataView(schema: String, table: String, config: CassandraConnection): Try[QueryExecutionResult] =
+    executeQuery(s"SELECT * FROM ${schema}.${table} LIMIT 10", config)
 
   override def executeQuery(q: String, config: CassandraConnection): Try[QueryExecutionResult] = usingSession(config) { session =>
-    val rs        = session.execute(q)
-    val colDefs = rs.getColumnDefinitions
+    val rs          = session.execute(q)
+    val colDefs     = rs.getColumnDefinitions
     val columnNames = mutable.HashSet.empty[CqlIdentifier]
-    for(i <- 0 to colDefs.size() - 1){
-      columnNames.add(colDefs.get(i).getName)
+    val columnMetas = mutable.HashSet.empty[ColumnMeta]
+    for (i <- 0 to colDefs.size() - 1) {
+      val colDef = colDefs.get(i)
+      columnNames.add(colDef.getName)
+      columnMetas.add(ColumnMeta(name = colDef.getName.toString, colDef.getType.toString))
     }
     val result = rs.asScala.map(row => buildMap(row, columnNames)).toVector
-    QueryExecutionResult(Seq.empty, result)
+    QueryExecutionResult(columnMetas.toSeq, result)
   }
 
   override def executeUpdate(q: String, config: CassandraConnection): Try[Int] = executeQuery(q, config).map(_.result.size)

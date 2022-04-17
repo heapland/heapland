@@ -163,6 +163,18 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               editMode: false,
               selectedSchema: "public",
             });
+          } else if (s.productName.toLowerCase() == "cassandra") {
+            setDBState({
+              ...dbState,
+              loading: false,
+              connectionName: s.connectionName,
+              productName: s.productName,
+              version: `${s.majorVersion}.${s.minorVersion}`,
+              schemas: schemas,
+              hasError: false,
+              editMode: false,
+              selectedSchema: schemas[0],
+            });
           } else {
             setDBState({
               ...dbState,
@@ -332,9 +344,9 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
 
           {dbState.schemas.length > 0 && (
             <div className='db-side-nav-segment'>
-              <div className='nav-item-title'>SCHEMA</div>
+              <div className='nav-item-title'>{dbState.productName.toLowerCase() === "cassandra" ? "KEYSPACES" : "SCHEMAS"}</div>
               <Select
-                defaultValue='public'
+                value={dbState.selectedSchema}
                 size='small'
                 style={{ width: 200 }}
                 onSelect={(v: any) => {
@@ -411,7 +423,9 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               <Button type='primary' onClick={(e) => enableEditMode()}>
                 Edit Connection
               </Button>
-              <Button type='default'>Delete Connection</Button>
+              <Button type='default' onClick={(e) => deleteWarning(dbState.connectionName)}>
+                Delete Connection
+              </Button>
             </Space>
           </div>
         )}

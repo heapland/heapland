@@ -216,15 +216,15 @@ class ConnectionService extends IErrorHandler {
 
   addQuery = async (dbId: number, name: string, text: string, onSuccess: (queryId: number) => void) => {
     try {
-      const response = this.webAPI.post<number | InternalServerError>(`/web/v1/rdbms/${dbId}/queries`, {
+      const response = this.webAPI.post<{ queryId: number } | InternalServerError>(`/web/v1/rdbms/${dbId}/queries`, {
         name: name,
         text: text,
       });
 
       const r = await response;
       if (r.status === 201 && r.parsedBody) {
-        const result = r.parsedBody as number;
-        onSuccess(result);
+        const result = r.parsedBody as { queryId: number };
+        onSuccess(result.queryId);
       } else if (r.parsedBody) {
         const body = r.parsedBody as InternalServerError;
         this.showError(body.message);

@@ -14,6 +14,7 @@ const connectionRegistry = {
   postgresql: "com.heapland.services.PgConnection",
   mysql: "com.heapland.services.MySQLConnection",
   mariadb: "com.heapland.services.MariaDBConnection",
+  cassandra: "com.heapland.services.CassandraConnection",
 };
 
 const ServiceConnectionBuilder: React.FC<{
