@@ -5,6 +5,7 @@ import PostgresImg from "../../static/img/pg.png";
 import MySQLImg from "../../static/img/mysql.png";
 import MariaDBImg from "../../static/img/maria.png";
 import KafkaImg from "../../static/img/kafka.png";
+import CassandraImg from "../../static/img/cassandra.png";
 
 interface CardProps {
   name: string;
@@ -27,6 +28,9 @@ export const ConnectionIcon: FC<{ name: string }> = ({ name }) => {
 
     case "kafka":
       return <img src={KafkaImg} />;
+
+    case "cassandra":
+      return <img src={CassandraImg} />;
 
     default:
       return <img src={S3Img} />;

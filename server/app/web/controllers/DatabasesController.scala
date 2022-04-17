@@ -4,7 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule
-import com.heapland.services.MariaDBConnection
+import com.heapland.services.{CassandraConnection, MariaDBConnection, MySQLConnection, NewQuery, PgConnection, RequestQueryExecution, ServiceConnection}
 import com.mohiva.play.silhouette.api.Silhouette
 import controllers.AssetsFinder
 import javax.inject.Inject
@@ -20,10 +20,10 @@ import play.cache.NamedCache
 import utils.auth.DefaultEnv
 import web.controllers.handlers.SecuredWebRequestHandler
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import com.heapland.cassandra.CassandraService
 import com.heapland.mariadb.MariaDBService
 import com.heapland.mysql.MySQLDatabaseService
 import com.heapland.postgres.PostgresDBService
-import com.heapland.services.{MariaDBConnection, MySQLConnection, NewQuery, PgConnection, RequestQueryExecution, ServiceConnection}
 import web.models.requests.WorkspaceConnection
 
 import scala.concurrent.Future
@@ -70,6 +70,7 @@ with DBFormats{
             case x: MySQLConnection => new DatabaseServiceManager[MySQLConnection](x, MySQLDatabaseService)
             case x: MariaDBConnection => new DatabaseServiceManager[MariaDBConnection](x, MariaDBService)
             case x: MariaDBConnection => new DatabaseServiceManager[MariaDBConnection](x, MariaDBService)
+            case x: CassandraConnection => new DatabaseServiceManager[CassandraConnection](x, CassandraService)
           }.map(dbm => connHandler(v, dbm))
         .getOrElse(BadRequest(Json.toJson(IllegalParam(path, 0, "Unable to decrypt the connection details due to missing encryption keys."))))
         case _ => BadRequest(Json.toJson(IllegalParam(path, 0, "Unable to get the connection details")))

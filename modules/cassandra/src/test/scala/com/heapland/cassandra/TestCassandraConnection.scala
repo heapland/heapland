@@ -1,9 +1,7 @@
 package com.heapland.cassandra
 
 import com.heapland.services.CassandraConnection
-import com.heapland.services.CassandraConnection
 import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.funsuite.AnyFunSuite
 import org.scalatest.matchers.must.Matchers
 
 class TestCassandraConnection extends AnyFlatSpec with Matchers {
@@ -11,7 +9,7 @@ class TestCassandraConnection extends AnyFlatSpec with Matchers {
   val conn = CassandraConnection(
     name = "test",
     datacenter = "datacenter1",
-    contactPoints = Seq("127.0.0.1:9042"),
+    contactPoints = "127.0.0.1:9042",
     username = "",
     password = ""
   )
