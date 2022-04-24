@@ -88,23 +88,23 @@ const ConsumerGroups: FC<{
   orgSlugId: string;
   workspaceId: number;
   clusterId: number;
-  status?: ClusterStatus;
-}> = ({ orgSlugId, workspaceId, clusterId, status }) => {
+  isRunning: boolean;
+}> = ({ orgSlugId, workspaceId, clusterId, isRunning }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [allConsumerGroups, setAllConsumerGroup] = useState<ConsumerGroupInfo[]>([]);
 
   useEffect(() => {
-    if (status && status === "running") {
+    if (isRunning) {
       Workspace.getKafkaConsumerGroups(clusterId, (r) => {
         setAllConsumerGroup(r);
       });
     }
-  }, [status]);
+  }, [isRunning]);
 
   return (
     <Skeleton loading={loading} active paragraph={{ rows: 4 }}>
       <Table
-        dataSource={status && status === "running" ? allConsumerGroups : [...allConsumerGroups]}
+        dataSource={isRunning ? allConsumerGroups : [...allConsumerGroups]}
         rowKey={(c: ConsumerGroupInfo) => c.id}
         expandable={{
           expandedRowRender: (record) => <ConsumerInfoTable members={record.members} />,
@@ -113,9 +113,7 @@ const ConsumerGroups: FC<{
         pagination={{ size: "small", total: allConsumerGroups.length }}
         locale={{
           emptyText: `${
-            status && status !== "running"
-              ? "Cluster is not running. Start the cluster to view the Consumer Groups"
-              : "Consumer Groups not found!"
+            !isRunning ? "Cluster is not running. Start the cluster to view the Consumer Groups" : "Consumer Groups not found!"
           }`,
         }}
         className='jobs-container tbl-applications consumer-groups-table'

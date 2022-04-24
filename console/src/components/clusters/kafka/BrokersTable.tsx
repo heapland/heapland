@@ -8,29 +8,27 @@ const KafkaBrokersTable: FC<{
   orgSlugId: string;
   workspaceId: number;
   clusterId: number;
-  status?: ClusterStatus;
-}> = ({ orgSlugId, workspaceId, clusterId, status }) => {
+  isRunning: boolean;
+}> = ({ orgSlugId, workspaceId, clusterId, isRunning }) => {
   const [loading, setLoading] = useState<boolean>(false);
   const [allBrokers, setAllBrokers] = useState<KafkaClusterBrokers[]>([]);
 
   useEffect(() => {
-    if (status && status === "running") {
+    if (isRunning) {
       workspace.getKafkaClusterBrokers(clusterId, (r) => {
         setAllBrokers(r);
       });
     }
-  }, [status]);
+  }, [isRunning]);
 
   return (
     <Skeleton loading={loading} active paragraph={{ rows: 4 }}>
       <Table
-        dataSource={status && status === "running" ? allBrokers : []}
+        dataSource={isRunning ? allBrokers : []}
         rowKey={(c: KafkaClusterBrokers) => c.id}
         pagination={false}
         locale={{
-          emptyText: `${
-            status && status !== "running" ? "Cluster is not running. Start the cluster to view the brokers" : "No Brokers found!"
-          }`,
+          emptyText: `${!isRunning ? "Cluster is not running. Start the cluster to view the brokers" : "No Brokers found!"}`,
         }}
         className='jobs-container tbl-applications'
         style={{ minHeight: "50vh", backgroundColor: "#fff" }}>

@@ -1,9 +1,10 @@
 import WebService from "./WebService";
 import { IErrorHandler } from "./IErrorHander";
-import { BadRequest, InternalServerError } from "./SparkService";
+import { BadConnection, BadRequest, InternalServerError } from "./SparkService";
 import { HDFSStrogeFiles } from "./LocalHDFSFileService";
 import { PubKeyResponse } from "./AuthService";
 import { message } from "antd";
+import { KafkaSummary } from "../models/Kafka";
 const _sodium = require("libsodium-wrappers");
 
 export interface IllegalParam {
@@ -671,6 +672,7 @@ class WorkspaceService extends IErrorHandler {
       }
     } catch (e) {}
   };
+
   getKafkaClusterMetric = async (cId: number, onSuccess: (metric: SparkClusterMetric) => void) => {
     try {
       const response = this.webAPI.get<SparkClusterMetric | IllegalParam | UnAuthorized | InternalServerError>(`/web/v1/kafka/${cId}`);
@@ -683,10 +685,30 @@ class WorkspaceService extends IErrorHandler {
         const body = r.parsedBody as IllegalParam;
         this.showError(body.message);
       } else {
-        const err = this.getDefaultError("Fetching the Spark Cluster metric");
+        const err = this.getDefaultError("Fetching the Kafka Cluster metric");
         this.showError(err.message);
       }
     } catch (e) {}
+  };
+
+  describeKafkaCluster = async (cId: number, onSuccess: (summary: KafkaSummary) => void, errHandler: (err: BadConnection) => void) => {
+    try {
+      const response = this.webAPI.get<KafkaSummary | BadConnection | UnAuthorized | InternalServerError>(`/web/v1/kafka/${cId}/describe`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as KafkaSummary;
+        onSuccess(result);
+      } else if (r.status === 400 && r.parsedBody) {
+        const body = r.parsedBody as BadConnection;
+        errHandler(body);
+      } else {
+        const err = this.getDefaultError("Fetching the Kafka Cluster summary");
+        this.showError(err.message);
+      }
+    } catch (e) {
+      console.log(e);
+    }
   };
 
   getHDFSClusterMetric = async (cId: number, onSuccess: (metric: HDFSClusterMetric) => void) => {

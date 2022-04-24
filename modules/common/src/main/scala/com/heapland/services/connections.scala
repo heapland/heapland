@@ -21,3 +21,4 @@ case class CockroachDBConnection(name: String,
     extends ServiceConnection
 case class CassandraConnection(name: String, datacenter: String, contactPoints: String, username: String, password: String)
     extends ServiceConnection
+case class KafkaConnection(name: String, bootstrapServers: String, additionalProperties: String) extends ServiceConnection

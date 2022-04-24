@@ -142,6 +142,16 @@ lazy val mysql = (project in file("modules/mysql"))
     )
   ).dependsOn(models)
 
+lazy val kafka = (project in file("modules/kafka"))
+  .settings(projectSettings)
+  .settings(
+    name := "heapland-kafka",
+    moduleName := "heapland-kafka",
+    libraryDependencies ++= Seq(
+      "org.apache.kafka"           % "kafka-clients"                    % versions.kafka
+    )
+  ).dependsOn(models)
+
 lazy val mariadb = (project in file("modules/mariadb"))
   .settings(projectSettings)
   .settings(
@@ -199,5 +209,5 @@ lazy val `heapland-server`  = (project in file("server"))
     )
   )
   .enablePlugins(PlayScala, DebianPlugin, JavaServerAppPackaging, SystemdPlugin)
-  .aggregate(models, aws,postgres, mysql, mariadb, cassandra)
-  .dependsOn(models,aws,postgres,mysql,mariadb,cassandra)
+  .aggregate(models, aws,postgres, mysql, mariadb, cassandra, kafka)
+  .dependsOn(models,aws,postgres,mysql,mariadb,cassandra, kafka)

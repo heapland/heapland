@@ -41,33 +41,31 @@ export const KafkaTopicsTable: FC<{
   workspaceId: number;
   clusterId: number;
   hasTopicCreated: boolean;
-  status?: ClusterStatus;
+  isRunning: boolean;
   onSelectTopic: (name: string) => void;
-}> = ({ orgSlugId, workspaceId, hasTopicCreated, clusterId, status, onSelectTopic }) => {
+}> = ({ orgSlugId, workspaceId, hasTopicCreated, clusterId, isRunning, onSelectTopic }) => {
   const context = useContext(UserContext);
 
   const [loading, setLoading] = useState<boolean>(false);
   const [allTopics, setAllTopics] = useState<KafkaClusterTopic[]>([]);
 
   useEffect(() => {
-    if (status && status === "running") {
+    if (isRunning) {
       Workspace.getKafkaClusterTopic(clusterId, (r) => {
         setAllTopics(r);
       });
     }
-  }, [status, hasTopicCreated]);
+  }, [isRunning, hasTopicCreated]);
 
   return (
     <Skeleton loading={loading} active paragraph={{ rows: 4 }}>
       <Table
-        dataSource={status && status === "running" ? allTopics : []}
+        dataSource={isRunning ? allTopics : []}
         rowKey={(c: KafkaClusterTopic) => c.id}
         pagination={false}
         id='topic-tbl'
         locale={{
-          emptyText: `${
-            status && status !== "running" ? "Cluster is not running. Start the cluster to view the topics" : "No topics were created!"
-          }`,
+          emptyText: `${!isRunning ? "Cluster is not running. Start the cluster to view the topics" : "No topics were created!"}`,
         }}
         className='jobs-container tbl-applications topic-list-table'
         style={{ minHeight: "50vh", backgroundColor: "#fff" }}>

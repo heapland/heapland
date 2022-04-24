@@ -1,8 +1,7 @@
 import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { FaDatabase, FaTable } from "react-icons/fa";
-import { BiPlay, BiCaretDown } from "react-icons/bi";
-import { AiOutlineTable } from "react-icons/ai";
+
 import { MdCode, MdMoreHoriz, MdPlayArrow, MdTableRows } from "react-icons/md";
 import Editor from "@monaco-editor/react";
 import "./DatabaseBrowser.scss";

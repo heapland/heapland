@@ -5,7 +5,7 @@ case class EntityNotFound(name: String, path: String, memberId: Long = 0, messag
 case class IllegalParam(path: String, memberId: Long, message: String)
 case class InternalServerErrorResponse(path: String, message: String = "Internal server error")
 case class ForbiddenError(message: String, correctPath: String)
-case class BadConnection(error: String, connectionName: String, provider: String)
+case class BadConnection(error: String, connectionName: String, provider: String) extends RuntimeException
 
 trait ErrorResponse {
   implicit val entityResponseFmt = Json.format[EntityNotFound]

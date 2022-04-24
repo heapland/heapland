@@ -1,13 +1,11 @@
-package web.controllers.kafka
+package com.heapland.kafka
 
 import java.time.Duration
 import java.util
 import java.util.Properties
 import java.util.concurrent.CompletableFuture
 
-import com.heapland.commons.models.RunStatus
 import com.heapland.services.streaming.{ConsumerGroupInfo, ConsumerMember, OffsetPostion, PartitionDetails, TopicConfiguration, TopicDetails, TopicMessage}
-import web.models.cluster.{KafkaNode, KafkaProcesses}
 
 import scala.jdk.FutureConverters._
 import org.apache.kafka.clients.admin.{Admin, AdminClientConfig, OffsetSpec, ReplicaInfo}
@@ -15,19 +13,28 @@ import org.apache.kafka.clients.consumer.KafkaConsumer
 import org.apache.kafka.common.config.ConfigResource
 import org.apache.kafka.common.serialization.StringDeserializer
 import org.apache.kafka.common.{KafkaFuture, TopicPartition}
-import play.api.libs.json.Json
-
-import scala.jdk.CollectionConverters._
-import play.api.mvc.{Result, Results}
-import web.models.InternalServerErrorResponse
-import web.services.ClusterService
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
+import scala.jdk.CollectionConverters._
 import scala.concurrent.{ExecutionContext, Future}
-import scala.util.{Failure, Success}
+import scala.util.Try
 
-trait KafkaClientHandler {
+object KafkaService {
+
+  implicit class KafkaFutureToCompletableFuture[T](kafkaFuture: KafkaFuture[T]) {
+    def toCompletableFuture: CompletableFuture[T] = {
+      val wrappingFuture = new CompletableFuture[T]
+      kafkaFuture.whenComplete((value, throwable) => {
+        if (throwable != null) {
+          wrappingFuture.completeExceptionally(throwable)
+        } else {
+          wrappingFuture.complete(value)
+        }
+      })
+      wrappingFuture
+    }
+  }
 
   def withConsumer[T](bootstrapServers: String)(handler: KafkaConsumer[String, String] => T): T = {
     val properties = new Properties()
@@ -39,40 +46,37 @@ trait KafkaClientHandler {
     handler(kafkaConsumer)
   }
 
-  def withKafkaCluster(clusterService: ClusterService, clusterId: Long, workspaceId: Long)(handler: Admin => Future[Result])(
-      implicit ec: ExecutionContext): Future[Result] = {
-    clusterService
-      .getKafkaCluster(clusterId, workspaceId)
-      .flatMap(info =>
-        info match {
-          case None => Future(Results.NotFound)
-          case Some(v) =>
-            v.processes.find(_.name.equals(KafkaProcesses.KAFKA_SERVER)) match {
-
-              case Some(p) if p.status == RunStatus.Running =>
-                withAdmin(p.host, p.port) { admin =>
-                  handler(admin)
-
-                }
-              case _ => Future(Results.NotFound)
-            }
-      })
-  }
-
-  def withAdmin(server: String, port: Int)(handler: Admin => Future[Result]): Future[Result] = {
+  def withAdmin[T](server: String, port: Int)(handler: Admin => Try[Future[T]]): Try[Future[T]] = {
     val properties = new Properties()
     properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, s"${server}:${port}")
     properties.put(AdminClientConfig.RETRIES_CONFIG, 2)
-
     try {
       val admin = Admin.create(properties)
       handler(admin)
     } catch {
       case e: Exception =>
         e.printStackTrace()
-        Future.successful(Results.InternalServerError)
+        Try(Future.failed(e))
     }
+  }
 
+  def getAdmin(bootstrapServers: String, additionalProps: String): Try[Admin] = {
+    val properties = new Properties()
+
+    properties.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers.trim)
+    properties.put(AdminClientConfig.REQUEST_TIMEOUT_MS_CONFIG, 5000)
+    properties.put(AdminClientConfig.DEFAULT_API_TIMEOUT_MS_CONFIG, 5000)
+
+
+    additionalProps.trim.split("\n").foreach { prop =>
+      if(prop.split("=").length > 1){
+        val keyVal = prop.split("=")
+        properties.put(keyVal(0), keyVal(1))
+      }
+    }
+    Try {
+      Admin.create(properties)
+    }
   }
 
   def getBootstrapServers(admin: Admin)(implicit executionContext: ExecutionContext): Future[String] = {
@@ -96,7 +100,7 @@ trait KafkaClientHandler {
   }
 
   def getReplicasStats(admin: Admin, brokers: util.Collection[Integer])(
-      implicit ec: ExecutionContext): Future[Map[Int, Map[TopicPartition, ReplicaInfo]]] = {
+    implicit ec: ExecutionContext): Future[Map[Int, Map[TopicPartition, ReplicaInfo]]] = {
     admin
       .describeLogDirs(brokers)
       .allDescriptions()
@@ -140,7 +144,7 @@ trait KafkaClientHandler {
                   replicas = info.replicas().asScala.toSeq.map(_.id())
                 )
               }
-          })
+            })
       }
   }
 
@@ -202,7 +206,7 @@ trait KafkaClientHandler {
       }
   }
 
-  def getTopicSummary(admin: Admin, host: String, port: Int)(implicit ec: ExecutionContext): Future[Seq[TopicDetails]] = {
+  def getTopicSummary(admin: Admin)(implicit ec: ExecutionContext): Future[Seq[TopicDetails]] = {
     val topicDetails = for {
       brokers         <- getBrokers(admin)
       topicPartitions <- getReplicasStats(admin, brokers)
@@ -220,10 +224,10 @@ trait KafkaClientHandler {
             .map {
               case (topicName, details) =>
                 TopicDetails(topicName,
-                             details.flatMap(_.partitions).toSeq.distinct,
-                             details.flatMap(_.replications).toSeq.distinct,
-                             0,
-                             details.map(_.size).sum)
+                  details.flatMap(_.partitions).toSeq.distinct,
+                  details.flatMap(_.replications).toSeq.distinct,
+                  0,
+                  details.map(_.size).sum)
             }
             .toSeq
 
@@ -328,20 +332,6 @@ trait KafkaClientHandler {
             Future.sequence(result.toSeq)
           }
       }
-  }
-
-  implicit class KafkaFutureToCompletableFuture[T](kafkaFuture: KafkaFuture[T]) {
-    def toCompletableFuture: CompletableFuture[T] = {
-      val wrappingFuture = new CompletableFuture[T]
-      kafkaFuture.whenComplete((value, throwable) => {
-        if (throwable != null) {
-          wrappingFuture.completeExceptionally(throwable)
-        } else {
-          wrappingFuture.complete(value)
-        }
-      })
-      wrappingFuture
-    }
   }
 
 }

@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
-import { Skeleton, Input, Form, Radio, Drawer, Button, Space, message } from "antd";
-import Workspace from "../../../services/Workspace";
+import React, { useEffect } from "react";
+import { Form, Drawer, Button, Space, message } from "antd";
 
 import { useForm } from "antd/lib/form/Form";
 import { AddConnectionProvider } from "./ConnectionProvider";
-import { ConnectionConfig } from "../../../components/connections/ConnectionConfig";
 import Connections from "../../../services/Connections";
 import { history } from "../../../configureStore";
 import { UserContext } from "../../../store/User";
@@ -15,6 +13,7 @@ const connectionRegistry = {
   mysql: "com.heapland.services.MySQLConnection",
   mariadb: "com.heapland.services.MariaDBConnection",
   cassandra: "com.heapland.services.CassandraConnection",
+  kafka: "com.heapland.services.KafkaConnection",
 };
 
 const ServiceConnectionBuilder: React.FC<{
