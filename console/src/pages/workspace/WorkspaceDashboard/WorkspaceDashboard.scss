@@ -3,6 +3,14 @@
   background-color: $lt-main-bg;
   min-height: 100%;
 
+  .error-box {
+    margin: 100px;
+
+    div.ant-alert-error {
+      margin-bottom: 20px;
+    }
+  }
+
   .icon-btn-disabled {
     .ant-btn[disabled] {
       background-color: transparent;

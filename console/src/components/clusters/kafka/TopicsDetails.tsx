@@ -54,11 +54,11 @@ const RowExpandable: FC<{ record: any }> = () => {
   );
 };
 
-const TopicMessages: FC<{ clusterId: number; topic: string; deselectTopic: () => void; status?: ClusterStatus }> = ({
+const TopicMessages: FC<{ clusterId: number; topic: string; deselectTopic: () => void; isRunning: boolean }> = ({
   clusterId,
   topic,
   deselectTopic,
-  status,
+  isRunning,
 }) => {
   const [topicMessages, setTopicMessages] = useState<TopicMessage[]>([]);
   const [refresh, setRefresh] = useState<boolean>(false);
@@ -129,13 +129,11 @@ const TopicMessages: FC<{ clusterId: number; topic: string; deselectTopic: () =>
       </Col>
       <Col span={24} className='topic-message-list'>
         <Table
-          dataSource={status && status === "running" ? topicMessages : []}
+          dataSource={isRunning ? topicMessages : []}
           rowKey={(c: TopicMessage) => `${c.offset}-${c.partition}`}
           pagination={{ size: "small", total: topicMessages.length }}
           locale={{
-            emptyText: `${
-              status && status !== "running" ? "Cluster is not running. Start the cluster to view the messages" : "No messages found."
-            }`,
+            emptyText: `${!isRunning ? "Cluster is not running. Start the cluster to view the messages" : "No messages found."}`,
           }}
           className='jobs-container tbl-applications'>
           <Column title='OFFSET' dataIndex='offset' key='timestamp' className='table-cell-light' />
@@ -155,18 +153,20 @@ const TopicMessages: FC<{ clusterId: number; topic: string; deselectTopic: () =>
     </Row>
   );
 };
-const TopicConfigList: FC<{ clusterId: number; topic: string; deselectTopic: () => void; status?: ClusterStatus }> = ({
+const TopicConfigList: FC<{ clusterId: number; topic: string; deselectTopic: () => void; isRunning: boolean }> = ({
   clusterId,
   topic,
   deselectTopic,
-  status,
+  isRunning,
 }) => {
   const [topicConfigs, setTopicConfigs] = useState<TopicConfigDetail[]>([]);
   useEffect(() => {
-    Workspace.getKafkaTopicConfigs(clusterId, topic, (r) => {
-      setTopicConfigs(r);
-    });
-  }, []);
+    if (isRunning) {
+      Workspace.getKafkaTopicConfigs(clusterId, topic, (r) => {
+        setTopicConfigs(r);
+      });
+    }
+  }, [isRunning]);
 
   return (
     <Row>
@@ -186,15 +186,13 @@ const TopicConfigList: FC<{ clusterId: number; topic: string; deselectTopic: () 
       </Col>
       <Col span={24} className='topic-partitions-list'>
         <Table
-          dataSource={status && status === "running" ? topicConfigs : []}
+          dataSource={isRunning ? topicConfigs : []}
           rowKey={(c: TopicConfigDetail) => c.config}
           pagination={{ size: "small", total: topicConfigs.length }}
           id='topic-tbl'
           locale={{
             emptyText: `${
-              status && status !== "running"
-                ? "Cluster is not running. Start the cluster to view the topic configurations"
-                : "No configurations found."
+              !isRunning ? "Cluster is not running. Start the cluster to view the topic configurations" : "No configurations found."
             }`,
           }}
           className='jobs-container tbl-applications partition-list-table'
@@ -209,11 +207,11 @@ const TopicConfigList: FC<{ clusterId: number; topic: string; deselectTopic: () 
   );
 };
 
-const TopicPartitions: FC<{ clusterId: number; topic: string; deselectTopic: () => void; status?: ClusterStatus }> = ({
+const TopicPartitions: FC<{ clusterId: number; topic: string; deselectTopic: () => void; isRunning: boolean }> = ({
   clusterId,
   topic,
   deselectTopic,
-  status,
+  isRunning,
 }) => {
   const [topicPartitions, setTopicPartitions] = useState<PartitionDetails[]>([]);
   useEffect(() => {
@@ -240,14 +238,12 @@ const TopicPartitions: FC<{ clusterId: number; topic: string; deselectTopic: () 
       </Col>
       <Col span={24} className='topic-partitions-list'>
         <Table
-          dataSource={status && status === "running" ? topicPartitions : []}
+          dataSource={isRunning ? topicPartitions : []}
           rowKey={(c: PartitionDetails) => c.id}
           pagination={{ size: "small", total: topicPartitions.length }}
           id='topic-tbl'
           locale={{
-            emptyText: `${
-              status && status !== "running" ? "Cluster is not running. Start the cluster to view the topics" : "No partitions found."
-            }`,
+            emptyText: `${!isRunning ? "Cluster is not running. Start the cluster to view the topics" : "No partitions found."}`,
           }}
           className='jobs-container tbl-applications partition-list-table'
           style={{ minHeight: "50vh", backgroundColor: "#fff" }}>
@@ -304,23 +300,23 @@ const TopicsDetails: FC<{
   workspaceId: number;
   clusterId: number;
   topic: string;
-  status?: ClusterStatus;
+  isRunning: boolean;
   removeTopicId: () => void;
-}> = ({ clusterId, topic, status, removeTopicId }) => {
+}> = ({ clusterId, topic, isRunning, removeTopicId }) => {
   const [tabView, setTabView] = useState<TabView>("message");
 
   const switchTabView = (tabView: TabView) => {
     switch (tabView) {
       case "message":
-        return <TopicMessages clusterId={clusterId} topic={topic} status={status} deselectTopic={removeTopicId} />;
+        return <TopicMessages clusterId={clusterId} topic={topic} isRunning={isRunning} deselectTopic={removeTopicId} />;
       case "partitions":
-        return <TopicPartitions clusterId={clusterId} topic={topic} status={status} deselectTopic={removeTopicId} />;
+        return <TopicPartitions clusterId={clusterId} topic={topic} isRunning={isRunning} deselectTopic={removeTopicId} />;
       case "configurations":
-        return <TopicConfigList clusterId={clusterId} topic={topic} status={status} deselectTopic={removeTopicId} />;
+        return <TopicConfigList clusterId={clusterId} topic={topic} isRunning={isRunning} deselectTopic={removeTopicId} />;
       case "summary":
         return <TopicSummary removeTopicId={removeTopicId} />;
       default:
-        return <TopicMessages clusterId={clusterId} topic={topic} status={status} deselectTopic={removeTopicId} />;
+        return <TopicMessages clusterId={clusterId} topic={topic} isRunning={isRunning} deselectTopic={removeTopicId} />;
     }
   };
 

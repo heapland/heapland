@@ -57,6 +57,7 @@ export default class WebService {
       fetch(request)
         .then((res) => {
           response = res;
+
           return res.json() as Promise<T>;
         })
         .then((body) => {

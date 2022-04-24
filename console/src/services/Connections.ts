@@ -406,7 +406,7 @@ class ConnectionService extends IErrorHandler {
     const pubKeyResponse = await this.webAPI.get<PubKeyResponse>(`/web/secrets/pub-key`);
     if (pubKeyResponse.parsedBody) {
       const pubKey = pubKeyResponse.parsedBody.key;
-
+      console.log(props_str);
       const pubKeyUint8 = new Uint8Array(Buffer.from(pubKey, "hex"));
       const cipherProps = sodium.crypto_box_seal(props_str, pubKeyUint8, "hex");
 

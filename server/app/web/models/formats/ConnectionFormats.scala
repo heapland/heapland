@@ -1,9 +1,21 @@
 package web.models.formats
 
 import com.heapland.services.fs.FailedFileListing
-import com.heapland.services.CassandraConnection
+import com.heapland.services.{
+  AWSS3Connection,
+  CassandraConnection,
+  CockroachDBConnection,
+  DatabaseServer,
+  KafkaConnection,
+  MariaDBConnection,
+  MySQLConnection,
+  NewQuery,
+  PgConnection,
+  QueryView,
+  RequestQueryExecution,
+  ServiceConnection
+}
 import com.heapland.services.fs.{FailedFileListing, FileListing, FileListingResult, FileSummary}
-import com.heapland.services.{AWSS3Connection, CassandraConnection, CockroachDBConnection, DatabaseServer, MariaDBConnection, MySQLConnection, NewQuery, PgConnection, QueryView, RequestQueryExecution, ServiceConnection}
 import play.api.libs.json.Json
 
 trait ConnectionFormats {
@@ -14,6 +26,7 @@ trait ConnectionFormats {
   implicit val mariadbConnectionFmt   = Json.format[MariaDBConnection]
   implicit val cockroachConnFmt       = Json.format[CockroachDBConnection]
   implicit val cassandraConnectionFmt = Json.format[CassandraConnection]
+  implicit val kafkaConnectionFmt     = Json.format[KafkaConnection]
   implicit val connectionServiceFmt   = Json.format[ServiceConnection]
   implicit val fileListingFmt         = Json.format[FileListing]
   implicit val fileListingResultFmt   = Json.format[FileListingResult]
@@ -23,8 +36,8 @@ trait ConnectionFormats {
 }
 
 trait DBFormats {
-  implicit val dbServer = Json.format[DatabaseServer]
-  implicit val qReq     = Json.format[RequestQueryExecution]
-  implicit val newQueryFmt = Json.format[NewQuery]
+  implicit val dbServer       = Json.format[DatabaseServer]
+  implicit val qReq           = Json.format[RequestQueryExecution]
+  implicit val newQueryFmt    = Json.format[NewQuery]
   implicit val updateQueryFmt = Json.format[QueryView]
 }

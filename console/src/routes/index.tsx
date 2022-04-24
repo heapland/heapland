@@ -130,7 +130,7 @@ const routes = (
         )}
       />
       <Route
-        path='/:slugId/workspace/:workspaceId/clusters/:clusterId/kafka'
+        path='/:slugId/workspace/:workspaceId/kafka/:connectionId'
         exact
         render={(props) => (
           <WorkspaceMain
@@ -140,7 +140,25 @@ const routes = (
               <KafkaClusterDashboard
                 workspaceId={Number(props.match.params.workspaceId)}
                 orgSlugId={props.match.params.slugId}
-                clusterId={Number(props.match.params.clusterId)}
+                connectionId={Number(props.match.params.connectionId)}
+              />
+            }
+            {...props}
+          />
+        )}
+      />
+      <Route
+        path='/:slugId/workspace/:workspaceId/messaging/:connectionId'
+        exact
+        render={(props) => (
+          <WorkspaceMain
+            index='2'
+            slugId={props.match.params.slugId}
+            content={
+              <KafkaClusterDashboard
+                workspaceId={Number(props.match.params.workspaceId)}
+                orgSlugId={props.match.params.slugId}
+                connectionId={Number(props.match.params.connectionId)}
               />
             }
             {...props}

@@ -14,16 +14,17 @@ GET        /web/v1/spark/:clusterId                              web.controllers
 GET        /ws/spark/:clusterId                                  web.controllers.read.ClusterController.streamClusterMetrics(clusterId: Long)
 
 #Kafka Cluster
-PUT        /web/v1/kafka-cluster                                web.controllers.kafka.KafkaClusterController.saveLocalKafkaClusterConfig
-GET        /web/v1/kafka/:clusterId                             web.controllers.kafka.KafkaClusterController.fetchKafkaCluster(clusterId: Long)
-GET        /ws/kafka/:clusterId                                 web.controllers.kafka.KafkaClusterController.streamKafkaClusterState(clusterId: Long)
-GET        /web/v1/kafka/:clusterId/topics                      web.controllers.kafka.KafkaClusterController.listTopics(clusterId: Long)
-GET        /web/v1/kafka/:clusterId/nodes                       web.controllers.kafka.KafkaClusterController.listBrokers(clusterId: Long)
-PUT        /web/v1/kafka/:clusterId/topics                      web.controllers.kafka.KafkaClusterController.createTopic(clusterId: Long)
-GET        /web/v1/kafka/:clusterId/topics/:topic/partitions    web.controllers.kafka.KafkaClusterController.listTopicPartitions(clusterId: Long, topic: String)
-POST        /web/v1/kafka/:clusterId/topics/:topic/messages      web.controllers.kafka.KafkaClusterController.listTopicMessages(clusterId: Long, topic: String)
-GET        /web/v1/kafka/:clusterId/topics/:topic/configs       web.controllers.kafka.KafkaClusterController.listTopicConfigurations(clusterId: Long, topic: String)
-GET        /web/v1/kafka/:clusterId/consumer-groups             web.controllers.kafka.KafkaClusterController.listConsumerGroups(clusterId: Long)
+PUT        /web/v1/kafka-cluster                                    web.controllers.kafka.KafkaClusterController.saveLocalKafkaClusterConfig
+GET        /web/v1/kafka/:clusterId                                 web.controllers.kafka.KafkaClusterController.fetchKafkaCluster(clusterId: Long)
+GET        /web/v1/kafka/:connectionId/describe                     web.controllers.kafka.KafkaClusterController.describeCluster(connectionId: Long)
+GET        /ws/kafka/:clusterId                                     web.controllers.kafka.KafkaClusterController.streamKafkaClusterState(clusterId: Long)
+GET        /web/v1/kafka/:connectionId/topics                       web.controllers.kafka.KafkaClusterController.listTopics(connectionId: Long)
+GET        /web/v1/kafka/:connectionId/nodes                        web.controllers.kafka.KafkaClusterController.listBrokers(connectionId: Long)
+PUT        /web/v1/kafka/:clusterId/topics                          web.controllers.kafka.KafkaClusterController.createTopic(clusterId: Long)
+GET        /web/v1/kafka/:connectionId/topics/:topic/partitions        web.controllers.kafka.KafkaClusterController.listTopicPartitions(connectionId: Long, topic: String)
+POST        /web/v1/kafka/:connectionId/topics/:topic/messages      web.controllers.kafka.KafkaClusterController.listTopicMessages(connectionId: Long, topic: String)
+GET        /web/v1/kafka/:connectionId/topics/:topic/configs           web.controllers.kafka.KafkaClusterController.listTopicConfigurations(connectionId: Long, topic: String)
+GET        /web/v1/kafka/:connectionId/consumer-groups              web.controllers.kafka.KafkaClusterController.listConsumerGroups(connectionId: Long)
 
 #HDFS Cluster
 PUT        /web/v1/hdfs-cluster                                 web.controllers.hdfs.HDFSController.saveLocalHDFSClusterConfig

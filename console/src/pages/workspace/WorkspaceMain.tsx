@@ -208,17 +208,26 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
             )}
             {context.connections.length > 0 && context.connections.filter((ac) => ac.providerCategory === "messaging").length > 0 && (
               <SubMenu
-                key='2'
                 icon={
                   <i className={`side-nav-icon`}>
                     <FaFileInvoice />
                   </i>
                 }
                 title='Messaging Systems'>
-                {state.activeConnections
+                {context.connections
                   .filter((ac) => ac.providerCategory === "messaging")
                   .map((cp) => (
-                    <Menu.Item key={cp.id}>{cp.name}</Menu.Item>
+                    <Menu.Item
+                      onClick={(e) =>
+                        history.push(
+                          `/${context.currentUser.profile?.orgSlugId}/workspace/${
+                            context.currentUser.profile?.workspaceId
+                          }/${cp.provider.toLowerCase()}/${cp.id}`
+                        )
+                      }
+                      key={cp.id}>
+                      {cp.name}
+                    </Menu.Item>
                   ))}
               </SubMenu>
             )}
