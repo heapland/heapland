@@ -54,12 +54,14 @@
   - [x] Postgresql
   - [x] MySQL
   - [x] MariaDB
-  - [ ] AWS RDS/Aurora
   - [ ] Clickhouse
+  - [ ] Apache Hive
 - NoSQL Databases
-  - [ ] Cassandra
+  - [x] Cassandra
   - [ ] MongoDB
-  - [ ] Amazon Keyspaces
+- Messaging Systems
+  - [x] Apache Kafka
+  
  
  ### How to get started with docker
  
