@@ -31,9 +31,9 @@ fi
 
 echo "> Setting the  version : $NEW_VERSION"
 sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/" console/package.json
-sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/" server/sbin/Darwin/gxc
-sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/" server/sbin/Linux/gxc
+sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/" server/sbin/Linux/heapctl
 sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/" version.sbt
+sed -i '' "s/$CURRENT_VERSION/$NEW_VERSION/" server/Dockerfile
 
 echo "> Building the Console"
 cd console && yarn build
@@ -42,6 +42,7 @@ cd ../ && cp -r console/build/ server/sbin/ui
 
 echo "> Building the zip and tar"
 
-sbt ";project gigahex-server; dist ;universal:packageZipTarball"
+sbt ";project heapland-server ;clean ;dist ;universal:packageZipTarball"
+cd server && docker build -t heapland/heapland:$NEW_VERSION .
 
 
