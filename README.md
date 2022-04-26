@@ -68,7 +68,7 @@
  Run the following docker run command to get started
  
  ```bash
-docker run -p 9080:9080 -v gxdb:/var heapland/heapland:0.1.0
+docker run -p 9080:9080 -v gxdb:/var heapland/heapland:0.2.0
 ```
 
 You will get the following output
