@@ -10,7 +10,7 @@
     "ansi-to-react": "^6.0.7",
     "antd": "^4.10.2",
     "antd-img-crop": "^3.14.1",
-    "apexcharts": "^3.22.0",
+    "apexcharts": "^3.24.0",
     "babel-plugin-import": "^1.12.2",
     "codemirror": "^5.58.2",
     "connected-react-router": "^6.5.2",
