@@ -16,6 +16,8 @@ const connectionRegistry = {
   kafka: "com.heapland.services.KafkaConnection",
 };
 
+const dbConnections = ["s3", "postgresql", "mysql", "mariadb", "cassandra", "kafka"];
+
 const ServiceConnectionBuilder: React.FC<{
   orgSlugId: string;
   workspaceId: number;
@@ -28,9 +30,9 @@ const ServiceConnectionBuilder: React.FC<{
   initialValues?: any;
 }> = ({ orgSlugId, workspaceId, service, isOpen, connectionId, editMode, onClose, initialValues }) => {
   const [builderForm] = useForm();
-  console.log(initialValues);
   const context = React.useContext(UserContext);
   const onFinish = (values: any) => {
+    builderForm.getFieldsValue();
     values["_type"] = connectionRegistry[service.toLowerCase()];
     if (editMode) {
       console.log("Updating the connection");
@@ -50,6 +52,15 @@ const ServiceConnectionBuilder: React.FC<{
     }
   };
 
+  const testConnection = () => {
+    builderForm.validateFields().then((v) => {
+      if (dbConnections.includes(service.toLowerCase())) {
+        v["_type"] = connectionRegistry[service.toLowerCase()];
+        Connections.testDBConnection(v["name"], service, JSON.stringify(v), 1);
+      }
+    });
+  };
+
   useEffect(() => {
     builderForm.resetFields();
   }, [isOpen]);
@@ -66,6 +77,10 @@ const ServiceConnectionBuilder: React.FC<{
         <Space>
           <Button type='primary' onClick={(e) => builderForm.submit()}>
             {editMode ? "Update Connection" : "Save Connection"}
+          </Button>
+
+          <Button type='default' onClick={(e) => testConnection()}>
+            Test Connection
           </Button>
         </Space>
       }>

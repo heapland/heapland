@@ -34,6 +34,32 @@ export interface ConnectionView {
 class ConnectionService extends IErrorHandler {
   private webAPI: WebService = new WebService();
 
+  testDBConnection = async (name: string, provider: string, props_str: string, schemaVersion: number) => {
+    await _sodium.ready;
+    const sodium = _sodium;
+
+    const pubKeyResponse = await this.webAPI.get<PubKeyResponse>(`/web/secrets/pub-key`);
+    if (pubKeyResponse.parsedBody) {
+      const pubKey = pubKeyResponse.parsedBody.key;
+
+      const pubKeyUint8 = new Uint8Array(Buffer.from(pubKey, "hex"));
+      const cipherProps = sodium.crypto_box_seal(props_str, pubKeyUint8, "hex");
+
+      const savedResponse = await this.webAPI.post<DBSummary | BadConnection>(`/web/v1/rdbms/test`, {
+        name: name,
+        provider: provider,
+        encProperties: cipherProps,
+        schemaVersion: schemaVersion,
+      });
+
+      if (savedResponse.status === 200 && savedResponse.parsedBody) {
+        message.success("Connection test successful");
+      } else {
+        message.error(`Connection test failed with error: ${(savedResponse.parsedBody as BadConnection).error}`);
+      }
+    }
+  };
+
   saveConnection = async (name: string, provider: string, props_str: string, schemaVersion: number, onSuccess: (id: number) => void) => {
     await _sodium.ready;
     const sodium = _sodium;
@@ -251,6 +277,24 @@ class ConnectionService extends IErrorHandler {
         this.showError(body.message);
       } else {
         const err = this.getDefaultError("Save the query");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  deleteQuery = async (dbId: number, qId: number, onSuccess: (res: OpResult) => void) => {
+    try {
+      const response = this.webAPI.delete<OpResult | InternalServerError>(`/web/v1/rdbms/${dbId}/queries/${qId}`, {});
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as OpResult;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Delete the query");
         this.showError(err.message);
       }
     } catch (e) {}

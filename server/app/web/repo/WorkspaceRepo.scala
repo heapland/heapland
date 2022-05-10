@@ -68,6 +68,8 @@ trait WorkspaceRepo {
 
   def addDBQuery(connectionId: Long, name: String, query: String): Future[Either[Throwable, Long]]
 
+  def deleteDBQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Boolean]]
+
   def updateDBQuery(connectionId: Long, queryId: Long, name: String, query: String): Future[Either[Throwable, Boolean]]
 
   def listQueries(connectionId: Long): Future[Either[Throwable, List[QueryView]]]

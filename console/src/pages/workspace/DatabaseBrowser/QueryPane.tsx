@@ -13,12 +13,13 @@ import { InternalServerError } from "../../../services/SparkService";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
 
-const QueryPane: FC<{ connectionId: number; queryId: number; name: string; onUpdateQueryName: (id: number, newName: string) => void }> = ({
-  connectionId,
-  queryId,
-  name,
-  onUpdateQueryName,
-}) => {
+const QueryPane: FC<{
+  connectionId: number;
+  queryId: number;
+  name: string;
+  onUpdateQueryName: (id: number, newName: string) => void;
+  onDeleteQuery: (id: number) => void;
+}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery }) => {
   const [modalForm] = Form.useForm();
   const [queryView, setQueryView] = useState<{
     queryName: string;
@@ -55,6 +56,17 @@ const QueryPane: FC<{ connectionId: number; queryId: number; name: string; onUpd
         } else {
           message.error("Failed to save the query");
         }
+      }
+    });
+  };
+
+  const deleteQuery = () => {
+    Connections.deleteQuery(connectionId, queryId, (res) => {
+      if (res.success) {
+        message.success("Query has been deleted");
+        onDeleteQuery(queryId);
+      } else {
+        message.error("Failed to delete the query");
       }
     });
   };
@@ -154,6 +166,11 @@ const QueryPane: FC<{ connectionId: number; queryId: number; name: string; onUpd
                   Save
                 </Dropdown.Button>
               </Tooltip>
+              <Tooltip title='Delete Query'>
+                <Button className='trigger-menu' size='small' onClick={(e) => deleteQuery()}>
+                  Delete
+                </Button>
+              </Tooltip>
             </Space>
           </div>
           {!queryView.loading && (
@@ -181,8 +198,8 @@ const QueryPane: FC<{ connectionId: number; queryId: number; name: string; onUpd
                       pagination={false}
                       className='tbl-data'
                       style={{ minHeight: "20vh", backgroundColor: "#fff" }}>
-                      {qr.result.columns.map((c) => (
-                        <Column className='table-cell-light' key={c.name} title={c.name.toUpperCase()} dataIndex={c.name} />
+                      {qr.result.columns.map((c, i) => (
+                        <Column className='table-cell-light' key={i.toString()} title={c.name.toUpperCase()} dataIndex={c.name} />
                       ))}
                     </Table>
                   )}

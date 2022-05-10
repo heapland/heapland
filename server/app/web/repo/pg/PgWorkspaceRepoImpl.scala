@@ -309,6 +309,19 @@ class PgWorkspaceRepoImpl @Inject()(blockingEC: ExecutionContext) extends Worksp
     }
   }
 
+  override def deleteDBQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Boolean]] = Future {
+    blocking {
+      Try {
+        DB localTx { implicit session =>
+          sql"""DELETE FROM QUERIES WHERE db_id = ${connectionId} AND id = ${queryId}
+             """
+            .update()
+            .apply() > 0
+        }
+      }.toEither
+    }
+  }
+
   override def updateDBQuery(connectionId: Long, queryId: Long, name: String, query: String): Future[Either[Throwable, Boolean]] = Future {
     blocking {
       Try {

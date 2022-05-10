@@ -135,6 +135,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
     Connections.addQuery(databaseId, newQueryName, "", (qId) => {
       const newDBQueries = [...dbQueries.queries, { id: qId, name: newQueryName, text: "" }];
+      addToPane(qId, newQueryName, "query");
       setDBQueries({ ...dbQueries, queries: newDBQueries, loading: false });
     });
   };
@@ -234,6 +235,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         selectedTabObj = "table";
       }
       const filteredPanes = dbTabs.panes.filter((p) => !(p.id === paneId && p.objectType === selectedTabObj));
+      console.log(filteredPanes);
       if (filteredPanes.length > 0) {
         if (dbTabs.activeKey === targetKey) {
           const removeIndex = dbTabs.panes.findIndex((p) => p.id === paneId);
@@ -269,6 +271,11 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     const qIndx = filteredQueries.findIndex((p) => p.id === id);
     filteredQueries[qIndx] = { id: id, name: queryName, text: "" };
     setDBQueries({ ...dbQueries, queries: filteredQueries });
+  };
+
+  const onDeleteQuery = (id: number) => {
+    onTabEdit(`q-${id}`, "remove");
+    setDBQueries({ ...dbQueries, queries: dbQueries.queries.filter((p) => p.id !== id) });
   };
 
   const addToPane = (id: number, name: string, objType: ObjType) => {
@@ -435,6 +442,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 <>
                   {pane.objectType === "table" && (
                     <TabPane
+                      tabKey={`t-${pane.id}`}
                       tab={
                         <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
                           <FaTable />
@@ -447,6 +455,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   )}
                   {pane.objectType === "query" && (
                     <TabPane
+                      tabKey={`q-${pane.id}`}
                       tab={
                         <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
                           <MdCode />
@@ -454,7 +463,13 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                         </div>
                       }
                       key={`q-${pane.id}`}>
-                      <QueryPane connectionId={databaseId} queryId={pane.id} name={pane.name} onUpdateQueryName={updateQuery} />
+                      <QueryPane
+                        connectionId={databaseId}
+                        queryId={pane.id}
+                        name={pane.name}
+                        onUpdateQueryName={updateQuery}
+                        onDeleteQuery={onDeleteQuery}
+                      />
                     </TabPane>
                   )}
                 </>

@@ -74,13 +74,6 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
     loading: true,
   });
 
-  // React.useEffect(() => {
-  //   Connections.listConnections((r) => {
-  //     setState({ ...state, activeConnections: r, loading: false });
-  //   });
-  // }, []);
-  console.log(context.connections);
-
   const handleLogout = () => {
     AuthService.logOut().then((r) => {
       if (r.success) {
