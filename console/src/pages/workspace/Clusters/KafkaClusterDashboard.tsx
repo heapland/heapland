@@ -5,7 +5,7 @@ import "../Workspace.scss";
 import "./Clusters.scss";
 import { history } from "../../../configureStore";
 import KafkaImg from "../../../static/img/kafka.png";
-import { bytesToSize, calculatePer, getLocalStorage } from "../../../services/Utils";
+import { getLocalStorage } from "../../../services/Utils";
 import Connections from "../../../services/Connections";
 import Workspace from "../../../services/Workspace";
 import KafkaBrokersTable from "../../../components/clusters/kafka/BrokersTable";

@@ -82,6 +82,8 @@ GET         /web/v1/rdbms/:connectionId/queries                                 
 GET         /web/v1/rdbms/:connectionId/queries/:queryId                        web.controllers.DatabasesController.getQuery(connectionId: Long, queryId: Long)
 PUT         /web/v1/rdbms/:connectionId/queries/:queryId                        web.controllers.DatabasesController.updateQuery(connectionId: Long, queryId: Long)
 POST        /web/v1/rdbms/:connectionId/queries                                 web.controllers.DatabasesController.addQuery(connectionId: Long)
+DELETE      /web/v1/rdbms/:connectionId/queries/:queryId                        web.controllers.DatabasesController.deleteQuery(connectionId: Long, queryId: Long)
+POST        /web/v1/rdbms/test                                                  web.controllers.DatabasesController.testDBConnection
 
 #Secrets
 GET         /web/secrets/pub-key                                          web.controllers.read.WorkspaceController.getPublicKey

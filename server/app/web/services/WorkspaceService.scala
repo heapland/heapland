@@ -34,6 +34,8 @@ trait WorkspaceService extends IdentityService[WorkspaceId] {
 
   def addDBQuery(connectionId: Long, name: String, query: String): Future[Either[Throwable, Long]]
 
+  def deleteDBQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Boolean]]
+
   def getQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Option[QueryView]]]
 
   def updateDBQuery(connectionId: Long, queryId: Long, name: String, query: String): Future[Either[Throwable, Boolean]]
@@ -75,6 +77,9 @@ class WorkspaceServiceImpl @Inject()(memberRepository: MemberRepository,
 
   override def addDBQuery(connectionId: Long, name: String, query: String): Future[Either[Throwable, Long]] =
     workspaceRepo.addDBQuery(connectionId, name, query)
+
+  override def deleteDBQuery(connectionId: Long, queryId: Long): Future[Either[Throwable, Boolean]] =
+    workspaceRepo.deleteDBQuery(connectionId, queryId)
 
   override def updateDBQuery(connectionId: Long, queryId: Long, name: String, query: String): Future[Either[Throwable, Boolean]] =
     workspaceRepo.updateDBQuery(connectionId, queryId, name, query)
