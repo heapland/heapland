@@ -95,9 +95,18 @@
       }
     }
   }
+  .db-objects {
+    span.ant-tree-node-content-wrapper {
+      line-height: 20px;
+      font-size: var(--text-size);
+    }
+  }
   .db-browser-header {
     border-bottom: 1px solid $lt-card-border;
     display: flex;
+    justify-content: space-between;
+    flex-direction: row;
+    background-color: var(--nav-bg);
 
     button.ant-btn-icon-only {
       border: none;

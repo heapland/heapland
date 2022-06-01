@@ -2,8 +2,7 @@ package com.heapland.mariadb
 
 import java.sql.{Connection, ResultSet}
 
-import com.heapland.services.MariaDBConnection
-import com.heapland.services.{ColumnMeta, DatabaseServer, DatabaseServiceProvider, MariaDBConnection, QueryExecutionResult}
+import com.heapland.services.{ColumnMeta, DatabaseServer, DatabaseServiceProvider, MariaDBConnection, QueryExecutionResult, SchemaObjects, TableKey, TableMeta}
 import scalikejdbc.{ConnectionPool, using}
 
 import scala.collection.mutable
@@ -31,7 +30,8 @@ object MariaDBService extends DatabaseServiceProvider[MariaDBConnection] {
       val dbMetadata = conn.getMetaData
       DatabaseServer(majorVersion = dbMetadata.getDatabaseMajorVersion,
         minorVersion = dbMetadata.getDatabaseMinorVersion,
-        productName = dbMetadata.getDatabaseProductName)
+        productName = dbMetadata.getDatabaseProductName,
+        dbName = config.database)
     }
   }
 
@@ -71,6 +71,10 @@ object MariaDBService extends DatabaseServiceProvider[MariaDBConnection] {
   override def tableDataView(schema: String, table: String, config: MariaDBConnection): Try[QueryExecutionResult] =
     executeQuery(s"SELECT * FROM ${config.database}.${table} limit 100", config)
 
+  override def listSchemaObjects(schema: String, config: MariaDBConnection): Try[SchemaObjects] = ???
+
+  override def describeTable(schema: String, table: String, config: MariaDBConnection): Try[TableMeta] = ???
+
   private def buildMap(queryResult: ResultSet, colNames: Seq[String]): Option[Map[String, Object]] =
     if (queryResult.next())
       Some(colNames.map(n => n -> queryResult.getObject(n)).toMap)
@@ -95,5 +99,7 @@ object MariaDBService extends DatabaseServiceProvider[MariaDBConnection] {
       conn.prepareStatement(q).executeUpdate()
     }
   }
+
+  override def getTableKeys(catalog: String, schema: String, table: String, config: MariaDBConnection): Try[Seq[TableKey]] = ???
 
 }

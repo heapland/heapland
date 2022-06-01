@@ -1,14 +1,20 @@
 :root {
   --background-color: #fff;
   --title-color: #3b4a73;
+  --text-size: 12px;
 }
 
 html[data-theme="light"] {
   --background-color: #f0f2f5;
   --hover-bg: #eee;
+  --nav-bg: #fff;
   --border-color: #eee;
   --nav-title: #a5a1a1;
   --table-header: #e8ecf1;
+}
+
+html[data-size="small"] {
+  --text-size: 12px;
 }
 
 html[data-theme="dark"] {

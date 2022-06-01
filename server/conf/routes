@@ -66,7 +66,6 @@ GET         /web/v1/fs/:connectionId/path/*path        web.controllers.FSControl
 PUT         /web/v1/fs/:connectionId/path/*path         web.controllers.FSController.newDirectory(connectionId: Long, path: String)
 + nocsrf
 DELETE      /web/v1/fs/:connectionId/path/*path         web.controllers.FSController.deleteFile(connectionId: Long, path: String)
-+ nocsrf
 POST        /web/v1/fs/:connectionId/upload/*path      web.controllers.FSController.upload(connectionId: Long, path: String)
 GET         /web/v1/fs/:connectionId/summary/*path      web.controllers.FSController.getFileSummary(connectionId: Long, path: String)
 
@@ -75,15 +74,17 @@ GET         /web/v1/rdbms/:connectionId/summary                                 
 GET         /web/v1/rdbms/:connectionId/catalogs                                web.controllers.DatabasesController.catalogs(connectionId: Long)
 GET         /web/v1/rdbms/:connectionId/schemas                                 web.controllers.DatabasesController.schemas(connectionId: Long)
 GET         /web/v1/rdbms/:connectionId/schemas/:schema/tables                  web.controllers.DatabasesController.listTables(connectionId: Long, schema: String)
+GET         /web/v1/rdbms/:connectionId/schemas/:schema/objects                 web.controllers.DatabasesController.listSchemaObjects(connectionId: Long, schema: String)
 + nocsrf
-PUT         /web/v1/rdbms/:connectionId/execute                                 web.controllers.DatabasesController.executeQuery(connectionId: Long)
-GET         /web/v1/rdbms/:connectionId/schemas/:schema/tables/:table/data      web.controllers.DatabasesController.getTableData(connectionId: Long, schema: String, table: String)
-GET         /web/v1/rdbms/:connectionId/queries                                 web.controllers.DatabasesController.listQueries(connectionId: Long)
-GET         /web/v1/rdbms/:connectionId/queries/:queryId                        web.controllers.DatabasesController.getQuery(connectionId: Long, queryId: Long)
-PUT         /web/v1/rdbms/:connectionId/queries/:queryId                        web.controllers.DatabasesController.updateQuery(connectionId: Long, queryId: Long)
-POST        /web/v1/rdbms/:connectionId/queries                                 web.controllers.DatabasesController.addQuery(connectionId: Long)
-DELETE      /web/v1/rdbms/:connectionId/queries/:queryId                        web.controllers.DatabasesController.deleteQuery(connectionId: Long, queryId: Long)
-POST        /web/v1/rdbms/test                                                  web.controllers.DatabasesController.testDBConnection
+PUT         /web/v1/rdbms/:connectionId/execute                                     web.controllers.DatabasesController.executeQuery(connectionId: Long)
+GET         /web/v1/rdbms/:connectionId/schemas/:schema/tables/:table/data          web.controllers.DatabasesController.getTableData(connectionId: Long, schema: String, table: String)
+GET         /web/v1/rdbms/:connectionId/schemas/:schema/tables/:table/describe      web.controllers.DatabasesController.describeTable(connectionId: Long, schema: String, table: String)
+GET         /web/v1/rdbms/:connectionId/queries                                     web.controllers.DatabasesController.listQueries(connectionId: Long)
+GET         /web/v1/rdbms/:connectionId/queries/:queryId                            web.controllers.DatabasesController.getQuery(connectionId: Long, queryId: Long)
+PUT         /web/v1/rdbms/:connectionId/queries/:queryId                            web.controllers.DatabasesController.updateQuery(connectionId: Long, queryId: Long)
+POST        /web/v1/rdbms/:connectionId/queries                                     web.controllers.DatabasesController.addQuery(connectionId: Long)
+DELETE      /web/v1/rdbms/:connectionId/queries/:queryId                            web.controllers.DatabasesController.deleteQuery(connectionId: Long, queryId: Long)
+POST        /web/v1/rdbms/test                                                      web.controllers.DatabasesController.testDBConnection
 
 #Secrets
 GET         /web/secrets/pub-key                                          web.controllers.read.WorkspaceController.getPublicKey
