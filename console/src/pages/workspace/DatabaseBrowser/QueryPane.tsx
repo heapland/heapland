@@ -206,6 +206,7 @@ const QueryPane: FC<{
                 onMount={onEditorMount}
                 language='sql'
                 defaultValue={queryView.savedQuery}
+                value={queryView.savedQuery}
                 onChange={(v, ev) => {
                   setQueryView({ ...queryView, currentState: v });
                 }}
