@@ -1,11 +1,20 @@
 import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { FaDatabase, FaTable } from "react-icons/fa";
-
-import { MdCode, MdMoreHoriz, MdPlayArrow, MdTableRows } from "react-icons/md";
+import { Resizable } from "re-resizable";
+import {
+  MdCode,
+  MdFolder,
+  MdMoreHoriz,
+  MdOutlineFunctions,
+  MdOutlineViewSidebar,
+  MdPlayArrow,
+  MdTableRows,
+  MdViewColumn,
+} from "react-icons/md";
 import Editor from "@monaco-editor/react";
 import "./DatabaseBrowser.scss";
-import { MailOutlined } from "@ant-design/icons";
+import { DownOutlined, MailOutlined } from "@ant-design/icons";
 import CustomScroll from "react-custom-scroll";
 import Connections from "../../../services/Connections";
 import { ConnectionIcon } from "../../../components/Cards/DatasourceCard";
@@ -74,6 +83,14 @@ const DBBrowserHeader: FC<{
   );
 };
 
+interface DBObject {
+  title: string;
+  key: string;
+  icon?: JSX.Element;
+  children?: DBObject[];
+  isLeaf?: boolean;
+}
+
 const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: number }> = ({ orgSlugId, workspaceId, databaseId }) => {
   const context = React.useContext(UserContext);
   const [dbState, setDBState] = useState<{
@@ -81,8 +98,10 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     connectionName: string;
     productName: string;
     version: string;
+    dbName: string;
     schemas: string[];
     catalogs: string[];
+    dbObjects: DBObject[];
     editMode: boolean;
     hasError: boolean;
     errorMsg?: string;
@@ -92,6 +111,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     connectionName: "",
     productName: "",
     version: "",
+    dbName: "",
+    dbObjects: [],
     editMode: false,
     hasError: false,
     schemas: [],
@@ -151,14 +172,22 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
       databaseId,
       (s) => {
         Connections.listSchemas(databaseId, (schemas) => {
+          const dbObjects = schemas.map((s) => {
+            return {
+              title: s,
+              key: s,
+            };
+          });
           if (s.productName.toLowerCase() === "postgresql") {
             setDBState({
               ...dbState,
               loading: false,
               connectionName: s.connectionName,
               productName: s.productName,
+              dbName: s.dbName,
               version: `${s.majorVersion}.${s.minorVersion}`,
               schemas: schemas,
+              dbObjects: dbObjects,
               hasError: false,
               editMode: false,
               selectedSchema: "public",
@@ -171,6 +200,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               productName: s.productName,
               version: `${s.majorVersion}.${s.minorVersion}`,
               schemas: schemas,
+              dbObjects: dbObjects,
               hasError: false,
               editMode: false,
               selectedSchema: schemas[0],
@@ -180,6 +210,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               ...dbState,
               loading: false,
               productName: s.productName,
+              dbName: s.dbName,
               connectionName: s.connectionName,
               hasError: false,
               editMode: false,
@@ -305,6 +336,96 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
+  const loadTables = ({ key, children }: any) =>
+    new Promise<void>((resolve) => {
+      if (children) {
+        resolve();
+        return;
+      }
+
+      Connections.listSchemaObjects(databaseId, key, (objs) => {
+        let schemaLevel1Objs: DBObject[] = [];
+        if (objs.routines.length > 0) {
+          schemaLevel1Objs.push({
+            title: "routines",
+            key: `${key}--routine`,
+            icon: (
+              <i className={`side-nav-icon`}>
+                <MdFolder />,
+              </i>
+            ),
+            children: objs.routines.map((r) => {
+              return {
+                title: r,
+                key: `${key}--routine--${r}`,
+                icon: (
+                  <i className={`side-nav-icon`}>
+                    <MdOutlineFunctions />,
+                  </i>
+                ),
+                isLeaf: true,
+              };
+            }),
+          });
+        }
+        if (objs.tables.length > 0) {
+          schemaLevel1Objs.push({
+            title: "tables",
+            key: `${key}--table`,
+            icon: (
+              <i className={`side-nav-icon`}>
+                <MdFolder />,
+              </i>
+            ),
+            children: objs.tables.map((r) => {
+              return {
+                title: r,
+                key: `${key}--table--${r}`,
+                icon: (
+                  <i className={`side-nav-icon`}>
+                    <FaTable />,
+                  </i>
+                ),
+              };
+            }),
+          });
+        }
+        if (objs.views.length > 0) {
+          schemaLevel1Objs.push({
+            title: "views",
+            key: `${key}--view`,
+            icon: (
+              <i className={`side-nav-icon`}>
+                <MdFolder />,
+              </i>
+            ),
+            children: objs.views.map((r) => {
+              return {
+                title: r,
+                key: `${key}--view--${r}`,
+                icon: (
+                  <i className={`side-nav-icon`}>
+                    <MdOutlineViewSidebar />,
+                  </i>
+                ),
+                isLeaf: true,
+              };
+            }),
+          });
+        }
+
+        const newDBObjects = dbState.dbObjects.map((k) => {
+          if (k.key === key) {
+            return { ...k, children: schemaLevel1Objs };
+          } else {
+            return k;
+          }
+        });
+        setDBState({ ...dbState, dbObjects: newDBObjects });
+        resolve();
+      });
+    });
+
   const deleteWarning = (name: string) => {
     Modal.warning({
       title: (
@@ -322,106 +443,12 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
 
   return (
     <Layout className='database-browser-wrapper ant-layout-has-sider'>
-      {!dbState.hasError && (
-        <Sider
-          theme='light'
-          style={{
-            overflow: "auto",
-            height: "100vh",
-            position: "fixed",
-            left: 200,
-            top: 0,
-            bottom: 0,
-          }}
-          width={250}
-          className='workspace-side-nav'>
-          <Skeleton title={true} active avatar paragraph={false} loading={dbState.loading}>
-            <DBBrowserHeader
-              connectionId={databaseId}
-              name={dbState.connectionName}
-              productName={dbState.productName}
-              schemas={dbState.schemas}
-              version={dbState.version}
-              onEdit={enableEditMode}
-              onNewQuery={onNewQuery}
-              deleteWarning={deleteWarning}
-            />
-          </Skeleton>
-
-          {dbState.schemas.length > 0 && (
-            <div className='db-side-nav-segment'>
-              <div className='nav-item-title'>{dbState.productName.toLowerCase() === "cassandra" ? "KEYSPACES" : "SCHEMAS"}</div>
-              <Select
-                value={dbState.selectedSchema}
-                size='small'
-                style={{ width: 200 }}
-                onSelect={(v: any) => {
-                  setDBState({ ...dbState, selectedSchema: v.toString() });
-                }}>
-                {dbState.schemas.map((v, i) => (
-                  <Option className='schema-option' value={v} key={i}>
-                    {v}
-                  </Option>
-                ))}
-              </Select>
-            </div>
-          )}
-
-          <CustomScroll heightRelativeToParent='calc(50vh - 55px)'>
-            <Menu theme='light' mode='inline' defaultSelectedKeys={[]} defaultOpenKeys={["tables"]}>
-              <SubMenu
-                key='tables'
-                icon={
-                  <i className={`side-nav-icon`}>
-                    <FaTable />
-                  </i>
-                }
-                title='Tables'>
-                <Skeleton
-                  paragraph={{ rows: 4, width: [200, 200, 200, 200] }}
-                  title={false}
-                  active={true}
-                  loading={dbTables.loading}></Skeleton>
-                {dbTables.tables.map((table, i) => (
-                  <Menu.Item
-                    key={i}
-                    onClick={(e) => {
-                      addToPane(i, table, "table");
-                    }}>
-                    {table}
-                  </Menu.Item>
-                ))}
-              </SubMenu>
-            </Menu>
-          </CustomScroll>
-          <CustomScroll heightRelativeToParent='calc(50vh - 55px)'>
-            <Menu theme='light' mode='inline' defaultSelectedKeys={[]} defaultOpenKeys={["queries"]}>
-              {dbQueries.queries.length > 0 && (
-                <SubMenu
-                  key='queries'
-                  icon={
-                    <i className={`side-nav-icon`}>
-                      <MdCode />
-                    </i>
-                  }
-                  title='Queries'>
-                  {dbQueries.queries.map((query, i) => (
-                    <Menu.Item
-                      key={i}
-                      onClick={(e) => {
-                        addToPane(query.id, query.name, "query");
-                      }}>
-                      {query.name}
-                    </Menu.Item>
-                  ))}
-                </SubMenu>
-              )}
-            </Menu>
-          </CustomScroll>
-        </Sider>
-      )}
-
-      <Content style={{ marginLeft: 250 }}>
+      <Content
+        style={{
+          width: "100%",
+          display: "flex",
+          overflow: "hidden",
+        }}>
         {dbState.hasError && (
           <div className='error-box'>
             <Alert type='error' message={dbState.errorMsg} />
@@ -435,48 +462,92 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
             </Space>
           </div>
         )}
-        <div className='height-100 db-info-container'>
-          {!dbState.hasError && (
-            <Tabs hideAdd onChange={onTabChange} activeKey={dbTabs.activeKey} type='editable-card' className='db-tabs' onEdit={onTabEdit}>
-              {dbTabs.panes.map((pane) => (
-                <>
-                  {pane.objectType === "table" && (
-                    <TabPane
-                      tabKey={`t-${pane.id}`}
-                      tab={
-                        <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
-                          <FaTable />
-                          <div>{pane.name}</div>
-                        </div>
-                      }
-                      key={`t-${pane.id}`}>
-                      <TablePane connectionId={databaseId} schema={dbState.selectedSchema} name={pane.name} />
-                    </TabPane>
-                  )}
-                  {pane.objectType === "query" && (
-                    <TabPane
-                      tabKey={`q-${pane.id}`}
-                      tab={
-                        <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
-                          <MdCode />
-                          <div>{pane.name}</div>
-                        </div>
-                      }
-                      key={`q-${pane.id}`}>
-                      <QueryPane
-                        connectionId={databaseId}
-                        queryId={pane.id}
-                        name={pane.name}
-                        onUpdateQueryName={updateQuery}
-                        onDeleteQuery={onDeleteQuery}
-                      />
-                    </TabPane>
-                  )}
-                </>
-              ))}
-            </Tabs>
-          )}
-        </div>
+
+        {!dbState.hasError && (
+          <>
+            <Resizable
+              defaultSize={{
+                width: "200px",
+                height: "100vh",
+              }}
+              style={{ borderRight: "1px solid  #c9c8c8" }}
+              className='workspace-side-nav hex-sider-light'
+              maxWidth='40%'
+              minWidth='20%'>
+              <Skeleton title={true} active avatar paragraph={false} loading={dbState.loading}>
+                <DBBrowserHeader
+                  connectionId={databaseId}
+                  name={dbState.connectionName}
+                  productName={dbState.productName}
+                  schemas={dbState.schemas}
+                  version={dbState.version}
+                  onEdit={enableEditMode}
+                  onNewQuery={onNewQuery}
+                  deleteWarning={deleteWarning}
+                />
+              </Skeleton>
+
+              <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
+                <Space size={4}>
+                  <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
+                    <FaDatabase />
+                  </i>
+                  <span>{dbState.dbName}</span>
+                </Space>
+                <Tree className='db-objects' showIcon defaultSelectedKeys={["public"]} loadData={loadTables} treeData={dbState.dbObjects} />
+              </CustomScroll>
+            </Resizable>
+            <div height-100 db-info-container style={{ width: "100%", minWidth: "1px" }}>
+              {!dbState.hasError && (
+                <Tabs
+                  hideAdd
+                  onChange={onTabChange}
+                  activeKey={dbTabs.activeKey}
+                  type='editable-card'
+                  className='db-tabs'
+                  onEdit={onTabEdit}>
+                  {dbTabs.panes.map((pane) => (
+                    <>
+                      {pane.objectType === "table" && (
+                        <TabPane
+                          tabKey={`t-${pane.id}`}
+                          tab={
+                            <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
+                              <FaTable />
+                              <div>{pane.name}</div>
+                            </div>
+                          }
+                          key={`t-${pane.id}`}>
+                          <TablePane connectionId={databaseId} schema={dbState.selectedSchema} name={pane.name} />
+                        </TabPane>
+                      )}
+                      {pane.objectType === "query" && (
+                        <TabPane
+                          tabKey={`q-${pane.id}`}
+                          tab={
+                            <div className='db-tab-header' aria-details={pane.name} onAuxClick={(e) => {}}>
+                              <MdCode />
+                              <div>{pane.name}</div>
+                            </div>
+                          }
+                          key={`q-${pane.id}`}>
+                          <QueryPane
+                            connectionId={databaseId}
+                            queryId={pane.id}
+                            name={pane.name}
+                            onUpdateQueryName={updateQuery}
+                            onDeleteQuery={onDeleteQuery}
+                          />
+                        </TabPane>
+                      )}
+                    </>
+                  ))}
+                </Tabs>
+              )}
+            </div>
+          </>
+        )}
+        <div className='height-100 db-info-container'></div>
       </Content>
       <ServiceConnectionBuilder
         orgSlugId={orgSlugId}

@@ -14,7 +14,7 @@ class TestCockroachDBConnection extends AnyFlatSpec with Matchers {
     clusterId = sys.env("CDB_CLUSTER_ID"),
     database = sys.env("CDB_DATABASE"),
     username = sys.env("CDB_USERNAME"),
-    hostname = sys.env("CDB_HOST"),
+    hostname = sys.env("CDB_HOSTNAME"),
     password = sys.env("CDB_PASSWORD"),
     port = 26257
   )

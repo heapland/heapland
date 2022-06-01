@@ -1,20 +1,6 @@
 package web.models.formats
 
-import com.heapland.services.fs.FailedFileListing
-import com.heapland.services.{
-  AWSS3Connection,
-  CassandraConnection,
-  CockroachDBConnection,
-  DatabaseServer,
-  KafkaConnection,
-  MariaDBConnection,
-  MySQLConnection,
-  NewQuery,
-  PgConnection,
-  QueryView,
-  RequestQueryExecution,
-  ServiceConnection
-}
+import com.heapland.services.{AWSS3Connection, CassandraConnection, CockroachDBConnection, ColumnDetail, DatabaseServer, ForeignKey, KafkaConnection, MariaDBConnection, MySQLConnection, NewQuery, PgConnection, PrimaryKey, QueryView, RequestQueryExecution, SchemaObjects, ServiceConnection, TableIndex, TableKey, TableMeta}
 import com.heapland.services.fs.{FailedFileListing, FileListing, FileListingResult, FileSummary}
 import play.api.libs.json.Json
 
@@ -40,4 +26,13 @@ trait DBFormats {
   implicit val qReq           = Json.format[RequestQueryExecution]
   implicit val newQueryFmt    = Json.format[NewQuery]
   implicit val updateQueryFmt = Json.format[QueryView]
+  implicit val tableKeyFmt    = Json.format[TableKey]
+  implicit val schemaObjsFmt  = Json.format[SchemaObjects]
+  implicit val colDetailFmt   = Json.format[ColumnDetail]
+  implicit val primaryKeyFmt  = Json.format[PrimaryKey]
+  implicit val foreignKeyFmt  = Json.format[ForeignKey]
+  implicit val tableIndexFmt = Json.format[TableIndex]
+  implicit val tableMetaFmt   = Json.format[TableMeta]
 }
+
+

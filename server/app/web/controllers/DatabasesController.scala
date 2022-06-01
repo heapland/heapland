@@ -227,6 +227,28 @@ class DatabasesController @Inject()(
     }
   }
 
+  def describeTable(connectionId: Long, schema: String, table: String) = silhouette.UserAwareAction.async { implicit request =>
+    handleMemberRequest(request, memberService) { (roles, profile) =>
+      if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { (_, dbm) =>
+          dbm
+            .describeTable(schema, table)
+            .fold(
+              err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
+              res => {
+
+                val str = mapper.writeValueAsString(res)
+                Ok(Json.parse(str))
+
+              }
+            )
+        }
+      } else {
+        Future.successful(Forbidden)
+      }
+    }
+  }
+
   def listQueries(connectionId: Long) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
@@ -285,6 +307,28 @@ class DatabasesController @Inject()(
             case Left(err)  => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage)))
             case Right(hasDeleted) => Ok(Json.toJson(Map("success" -> hasDeleted)))
           }
+      } else {
+        Future.successful(Forbidden)
+      }
+    }
+  }
+
+  def listSchemaObjects(connectionId: Long, schema: String) =   silhouette.UserAwareAction.async { implicit request =>
+    handleMemberRequest(request, memberService) { (roles, profile) =>
+      if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { (_, dbm) =>
+          dbm
+            .listSchemaObjects(schema)
+            .fold(
+              err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
+              res => {
+
+                val str = mapper.writeValueAsString(res)
+                Ok(Json.parse(str))
+
+              }
+            )
+        }
       } else {
         Future.successful(Forbidden)
       }

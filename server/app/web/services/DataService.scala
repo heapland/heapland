@@ -4,9 +4,8 @@ import java.io.File
 
 import com.heapland.aws.S3DataService
 import com.heapland.services.fs.FileSummary
-import com.heapland.services.MariaDBConnection
+import com.heapland.services.{DataServiceProvider, DatabaseServer, DatabaseServiceProvider, MariaDBConnection, QueryExecutionResult, SchemaObjects, ServiceConnection, TableMeta}
 import com.heapland.services.fs.{FileListingResult, FileSummary}
-import com.heapland.services.{DataServiceProvider, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult, ServiceConnection}
 
 import scala.util.{Failure, Try}
 
@@ -40,7 +39,10 @@ class DatabaseServiceManager[T <: ServiceConnection](connection: T, dbService: D
 
   def listTables(schema: String): Try[List[String]] = dbService.listTables(schema, connection)
 
+  def listSchemaObjects(schema: String): Try[SchemaObjects] = dbService.listSchemaObjects(schema,connection)
+
   def getTableData(schema: String, table: String): Try[QueryExecutionResult] = dbService.tableDataView(schema, table, connection)
+  def describeTable(schema: String, table: String): Try[TableMeta] = dbService.describeTable(schema, table, connection)
 
   def executeQuery(q: String): Try[QueryExecutionResult] = {
     val query = q.toLowerCase().trim.split(" ").headOption

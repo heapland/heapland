@@ -2,11 +2,9 @@ package com.heapland.mysql
 
 import java.sql.Connection
 
-import com.heapland.services.MySQLConnection
+import com.heapland.services.{ColumnMeta, DatabaseServer, DatabaseServiceProvider, MySQLConnection, QueryExecutionResult, SchemaObjects, TableKey, TableMeta}
 import scalikejdbc._
 import java.sql.ResultSet
-
-import com.heapland.services.{ColumnMeta, DatabaseServer, DatabaseServiceProvider, MySQLConnection, QueryExecutionResult}
 
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
@@ -40,9 +38,11 @@ object MySQLDatabaseService extends DatabaseServiceProvider[MySQLConnection] {
   override def getDBInfo(config: MySQLConnection): Try[DatabaseServer] = {
     usingConfig(config){ conn =>
       val dbMetadata = conn.getMetaData
+
       DatabaseServer(majorVersion = dbMetadata.getDatabaseMajorVersion,
         minorVersion = dbMetadata.getDatabaseMinorVersion,
-        productName = dbMetadata.getDatabaseProductName)
+        productName = dbMetadata.getDatabaseProductName,
+        dbName = config.database)
     }
   }
 
@@ -82,6 +82,34 @@ object MySQLDatabaseService extends DatabaseServiceProvider[MySQLConnection] {
   override def tableDataView(schema: String, table: String, config: MySQLConnection): Try[QueryExecutionResult] =
     executeQuery(s"SELECT * FROM ${config.database}.${table} limit 100", config)
 
+  override def listSchemaObjects(schema: String, config: MySQLConnection): Try[SchemaObjects] = usingConfig(config) { conn =>
+    val rsTables = conn.getMetaData.getTables(config.database, null, null, Array("TABLE"))
+    val rsViews = conn.getMetaData.getTables(config.database, null, null, Array("VIEW"))
+    val listTables = new ListBuffer[String]
+    val listViews = new ListBuffer[String]
+    val listFunctions = new ListBuffer[String]
+    while(rsTables.next()){
+      listTables.addOne(rsTables.getString("TABLE_NAME"))
+    }
+
+    while(rsViews.next()){
+      listViews.addOne(rsViews.getString("TABLE_NAME"))
+    }
+
+    val q =
+      s"""SELECT format('%I(%s)', p.proname, oidvectortypes(p.proargtypes)) as func_name
+         FROM pg_proc p INNER JOIN pg_namespace ns ON p.pronamespace = ns.oid WHERE ns.nspname = ?"""
+    val prepStatement = conn.prepareStatement(q)
+    prepStatement.setString(1, schema)
+    val rs       = prepStatement.executeQuery()
+    while(rs.next()){
+      listFunctions.addOne(rs.getString("func_name"))
+    }
+    SchemaObjects(views = listViews.toSeq, tables = listTables.toSeq, routines = listFunctions.toSeq)
+  }
+
+  override def describeTable(schema: String, table: String, config: MySQLConnection): Try[TableMeta] = ???
+
   private def buildMap(queryResult: ResultSet, colNames: Seq[String]): Option[Map[String, Object]] =
     if (queryResult.next())
       Some(colNames.map(n => n -> queryResult.getObject(n)).toMap)
@@ -95,6 +123,8 @@ object MySQLDatabaseService extends DatabaseServiceProvider[MySQLConnection] {
 
       val colNames = (1 to md.getColumnCount) map md.getColumnName
       val columns = (1 to md.getColumnCount).map { id =>
+        println(s"column = ${md.getColumnName(id)}, datatype = ${md.getColumnTypeName(id)}, size = ${md.getColumnDisplaySize(id)}")
+
         ColumnMeta(name = md.getColumnName(id), dataType = md.getColumnTypeName(id))
       }
       val result = Iterator.continually(buildMap(rs, colNames)).takeWhile(_.isDefined).map(_.get).toVector
@@ -107,5 +137,7 @@ object MySQLDatabaseService extends DatabaseServiceProvider[MySQLConnection] {
       conn.prepareStatement(q).executeUpdate()
     }
   }
+
+  override def getTableKeys(catalog: String, schema: String, table: String,config: MySQLConnection): Try[Seq[TableKey]] = ???
 
 }

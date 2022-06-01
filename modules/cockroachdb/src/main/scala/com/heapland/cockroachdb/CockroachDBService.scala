@@ -2,8 +2,8 @@ package com.heapland.cockroachdb
 
 import java.sql.{Connection, ResultSet}
 
-import com.heapland.services.CockroachDBConnection
-import com.heapland.services.{CockroachDBConnection, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult}
+import com.heapland.postgres.PostgresDBService.usingConfig
+import com.heapland.services.{CockroachDBConnection, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult, SchemaObjects, TableKey, TableMeta}
 import scalikejdbc.{ConnectionPool, using}
 
 import scala.collection.mutable
@@ -37,7 +37,8 @@ object CockroachDBService extends DatabaseServiceProvider[CockroachDBConnection]
     val dbMetadata = conn.getMetaData
     DatabaseServer(majorVersion = dbMetadata.getDatabaseMajorVersion,
                    minorVersion = dbMetadata.getDatabaseMinorVersion,
-                   productName = dbMetadata.getDatabaseProductName)
+                   productName = dbMetadata.getDatabaseProductName,
+      dbName = config.database)
   }
 
   override def getSchemas(config: CockroachDBConnection): Try[List[String]] = usingConfig(config) { conn =>
@@ -69,6 +70,34 @@ object CockroachDBService extends DatabaseServiceProvider[CockroachDBConnection]
 
   override def tableDataView(schema: String, table: String, config: CockroachDBConnection): Try[QueryExecutionResult] = ???
 
+  override def listSchemaObjects(schema: String, config: CockroachDBConnection): Try[SchemaObjects] = usingConfig(config) { conn =>
+    val rsTables = conn.getMetaData.getTables(config.database, schema, null, Array("TABLE"))
+    val rsViews = conn.getMetaData.getTables(config.database, schema, null, Array("VIEW"))
+    val listTables = new ListBuffer[String]
+    val listViews = new ListBuffer[String]
+    val listFunctions = new ListBuffer[String]
+    while(rsTables.next()){
+      listTables.addOne(rsTables.getString("TABLE_NAME"))
+    }
+
+    while(rsViews.next()){
+      listViews.addOne(rsViews.getString("TABLE_NAME"))
+    }
+
+    val q =
+      s"""SELECT format('%I(%s)', p.proname, oidvectortypes(p.proargtypes)) as func_name
+         FROM pg_proc p INNER JOIN pg_namespace ns ON p.pronamespace = ns.oid WHERE ns.nspname = ?"""
+    val prepStatement = conn.prepareStatement(q)
+    prepStatement.setString(1, schema)
+    val rs       = prepStatement.executeQuery()
+    while(rs.next()){
+      listFunctions.addOne(rs.getString("func_name"))
+    }
+    SchemaObjects(views = listViews.toSeq, tables = listTables.toSeq, routines = listFunctions.toSeq)
+  }
+
+  override def describeTable(schema: String, table: String, config: CockroachDBConnection): Try[TableMeta] = ???
+
   private def buildMap(queryResult: ResultSet, colNames: Seq[String]): Option[Map[String, Object]] =
     if (queryResult.next())
       Some(colNames.map(n => n -> queryResult.getObject(n)).toMap)
@@ -87,4 +116,6 @@ object CockroachDBService extends DatabaseServiceProvider[CockroachDBConnection]
   override def executeUpdate(q: String, config: CockroachDBConnection): Try[Int] = usingConfig(config) { conn =>
     conn.prepareStatement(q).executeUpdate()
   }
+
+  override def getTableKeys(catalog: String, schema: String, table: String, config: CockroachDBConnection): Try[Seq[TableKey]] = ???
 }

@@ -1,5 +1,6 @@
 export interface DBSummary {
   connectionName: string;
+  dbName: string;
   productName: string;
   majorVersion: string;
   minorVersion: string;

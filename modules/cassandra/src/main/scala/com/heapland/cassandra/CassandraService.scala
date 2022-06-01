@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap
 
 import com.datastax.oss.driver.api.core.{CqlIdentifier, CqlSession}
 import com.datastax.oss.driver.api.core.cql.{ResultSet, Row}
-import com.heapland.services.{CassandraConnection, ColumnMeta, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult}
+import com.heapland.services.{CassandraConnection, ColumnMeta, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult, SchemaObjects, TableKey, TableMeta}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -48,7 +48,7 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
       val rs        = session.execute(ps.bind())
       val dbVersion = rs.one().getString("release_version")
       val result    = dbVersion.split("\\.")
-      DatabaseServer(result(0).toInt, result(1).toInt, "Cassandra", result(2).toInt)
+      DatabaseServer(result(0).toInt, result(1).toInt, "Cassandra", config.datacenter, result(2).toInt)
     }
   }
 
@@ -76,7 +76,6 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
 
   override def listTables(schema: String, config: CassandraConnection): Try[List[String]] = usingSession(config) { session =>
     session.getMetadata.getKeyspace(schema).get().getTables().keySet().asScala.map(_.toString).toList
-
   }
 
   private def buildMap(row: Row, columns: mutable.HashSet[CqlIdentifier]): Map[String, Object] = {
@@ -85,6 +84,10 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
     }.toMap
 
   }
+
+  override def listSchemaObjects(schema: String, config: CassandraConnection): Try[SchemaObjects] = ???
+
+  override def describeTable(schema: String, table: String, config: CassandraConnection): Try[TableMeta] = ???
 
   override def tableDataView(schema: String, table: String, config: CassandraConnection): Try[QueryExecutionResult] =
     executeQuery(s"SELECT * FROM ${schema}.${table} LIMIT 10", config)
@@ -104,5 +107,7 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
   }
 
   override def executeUpdate(q: String, config: CassandraConnection): Try[Int] = executeQuery(q, config).map(_.result.size)
+
+  override def getTableKeys(catalog: String, schema: String, table: String, config: CassandraConnection): Try[Seq[TableKey]] = ???
 
 }

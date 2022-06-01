@@ -1,15 +1,16 @@
 import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 import { useHotkeys } from "react-hotkeys-hook";
-import { Alert, Button, Dropdown, Form, Input, Menu, message, Modal, Select, Skeleton, Space, Table, Tabs, Tooltip } from "antd";
+import { Alert, Button, Dropdown, Form, Input, Menu, message, Modal, Select, Spin, Space, Table, Tabs, Tooltip } from "antd";
 import Column from "antd/lib/table/Column";
+import { LoadingOutlined } from "@ant-design/icons";
 import { string } from "prop-types";
 import { TabPane } from "rc-tabs";
 import React, { FC, ReactNode, useEffect, useState } from "react";
-import { FaTable } from "react-icons/fa";
 import { MdCreateNewFolder, MdPlayCircle, MdSave, MdSync } from "react-icons/md";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import Connections from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
+import { Resizable } from "re-resizable";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
 
@@ -27,12 +28,15 @@ const QueryPane: FC<{
     currentState: string;
     loading: boolean;
     saveAsModal: boolean;
+    isQueryExecuting: boolean;
     queryResults: QueryResult[];
+    editor?: any;
   }>({
     queryName: name,
     savedQuery: "",
     currentState: "",
     loading: true,
+    isQueryExecuting: false,
     saveAsModal: false,
     queryResults: [],
   });
@@ -91,6 +95,7 @@ const QueryPane: FC<{
       .split(";")
       .map((q) => q.trim())
       .filter((q) => q !== "");
+    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true });
     const results = queries.map((q) => Connections.executeQuery(connectionId, q));
     Promise.all(results).then((values) => {
       const allResults: QueryResult[] = values.map((v) => {
@@ -102,7 +107,7 @@ const QueryPane: FC<{
           }
         }
       });
-      setQueryView({ ...queryView, queryResults: allResults });
+      setQueryView({ ...queryView, queryResults: allResults, isQueryExecuting: false });
     });
   };
 
@@ -115,6 +120,7 @@ const QueryPane: FC<{
   );
 
   const onEditorMount = (editor: any, monaco: Monaco) => {
+    setQueryView({ ...queryView, editor: editor });
     editor.addAction({
       id: "execute-run",
       label: "Run Query",
@@ -123,7 +129,12 @@ const QueryPane: FC<{
 
       run: (editor: any) => {
         console.log(editor.getValue());
-        runQuery(editor.getValue());
+        const selectedText = editor.getModel().getValueInRange(editor.getSelection());
+        if (selectedText != "") {
+          runQuery(selectedText);
+        } else {
+          runQuery(editor.getValue());
+        }
       },
     });
 
@@ -151,8 +162,10 @@ const QueryPane: FC<{
                   type='primary'
                   onClick={(e) => runQuery(queryView.currentState)}
                   className='control-btn'
+                  loading={queryView.isQueryExecuting}
+                  disabled={queryView.isQueryExecuting}
                   icon={<MdPlayCircle />}>
-                  <span>Run</span>
+                  <span>{queryView.isQueryExecuting ? "Running" : "Run"}</span>
                 </Button>
               </Tooltip>
 
@@ -173,40 +186,60 @@ const QueryPane: FC<{
               </Tooltip>
             </Space>
           </div>
-          {!queryView.loading && (
-            <Editor
-              height='40vh'
-              defaultLanguage='sql'
-              onMount={onEditorMount}
-              language='sql'
-              defaultValue={queryView.savedQuery}
-              onChange={(v, ev) => {
-                setQueryView({ ...queryView, currentState: v });
+          <div
+            style={{
+              width: "100%",
+              height: "calc(100vh - 100)",
+              display: "flex",
+              flexDirection: "column",
+              overflow: "hidden",
+            }}>
+            <Resizable
+              defaultSize={{
+                width: "100%",
+                height: "40vh",
               }}
-            />
-          )}
-          {queryView.queryResults.length > 0 && (
-            <Tabs defaultActiveKey='0' className='query-tab'>
-              {queryView.queryResults.map((qr, i) => (
-                <TabPane key={i.toString()} tab={`Result ${i + 1}`}>
-                  {qr.err && <Alert type='error' message={qr.err} />}
-                  {qr.result && qr.result.resultSize == -1 && (
-                    <Table
-                      dataSource={qr.result.result}
-                      rowKey={(c: any) => c.id}
-                      scroll={{ x: "calc(100vw - 490px)" }}
-                      pagination={false}
-                      className='tbl-data'
-                      style={{ minHeight: "20vh", backgroundColor: "#fff" }}>
-                      {qr.result.columns.map((c, i) => (
-                        <Column className='table-cell-light' key={i.toString()} title={c.name.toUpperCase()} dataIndex={c.name} />
-                      ))}
-                    </Table>
-                  )}
-                </TabPane>
-              ))}
-            </Tabs>
-          )}
+              maxHeight='75vh'
+              minHeight='25vh'>
+              <Editor
+                defaultLanguage='sql'
+                onMount={onEditorMount}
+                language='sql'
+                defaultValue={queryView.savedQuery}
+                onChange={(v, ev) => {
+                  setQueryView({ ...queryView, currentState: v });
+                }}
+              />
+            </Resizable>
+            <div style={{ width: "100%", height: "100%", minHeight: "1px" }}>
+              {queryView.isQueryExecuting && (
+                <Spin style={{ width: "100%", marginTop: 100 }} indicator={<LoadingOutlined style={{ fontSize: 24 }} spin />} />
+              )}
+
+              {queryView.queryResults.length > 0 && (
+                <Tabs defaultActiveKey='0' className='query-tab'>
+                  {queryView.queryResults.map((qr, i) => (
+                    <TabPane key={i.toString()} tab={`Result ${i + 1}`}>
+                      {qr.err && <Alert type='error' message={qr.err} />}
+                      {qr.result && qr.result.resultSize == -1 && (
+                        <Table
+                          dataSource={qr.result.result}
+                          rowKey={(c: any) => c.id}
+                          scroll={{ x: "calc(100vw - 400px)" }}
+                          pagination={false}
+                          className='tbl-data'
+                          style={{ minHeight: "20vh", backgroundColor: "#fff" }}>
+                          {qr.result.columns.map((c, i) => (
+                            <Column className='table-cell-light' key={i.toString()} title={c.name.toUpperCase()} dataIndex={c.name} />
+                          ))}
+                        </Table>
+                      )}
+                    </TabPane>
+                  ))}
+                </Tabs>
+              )}
+            </div>
+          </div>
         </div>
         <Modal
           title={`Save ${queryView.queryName} query as`}

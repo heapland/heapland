@@ -22,11 +22,15 @@ class TestPgConnection extends AnyFlatSpec with Matchers {
     val schemas = PostgresDBService.getSchemas(conn)
     val catalogs = PostgresDBService.getCatalogs(conn)
     val tables = PostgresDBService.listTables("public", conn)
-    val qs = PostgresDBService.executeQuery("select * from agents", conn)
+    val qs = PostgresDBService.executeQuery("select * from clusters", conn)
+    val tableKeys = PostgresDBService.getTableKeys("localgiga", "public", "connections", conn)
+    val objects = PostgresDBService.listSchemaObjects("public", conn)
+    val tableDetail = PostgresDBService.describeTable( "public", "connections", conn)
 
     assert(meta.isSuccess)
     assert(schemas.isSuccess)
     assert(catalogs.isSuccess)
+
   }
 
   it should "connect to cockroachDB" in {

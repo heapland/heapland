@@ -12,6 +12,12 @@ interface OpResult {
   success: boolean;
 }
 
+interface SchemaObjects {
+  views: string[];
+  tables: string[];
+  routines: string[];
+}
+
 interface QueryUpdateResult {
   success: number;
 }
@@ -300,13 +306,31 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  listTables = async (dbId: number, schema: string, onSuccess: (summary: string[]) => void) => {
+  listTables = async (dbId: number, schema: string, onSuccess: (tables: string[]) => void) => {
     try {
       const response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables`);
 
       const r = await response;
       if (r.status === 200 && r.parsedBody) {
         const result = r.parsedBody as string[];
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the schemas");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listSchemaObjects = async (dbId: number, schema: string, onSuccess: (schemaObjects: SchemaObjects) => void) => {
+    try {
+      const response = this.webAPI.get<SchemaObjects | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/objects`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as SchemaObjects;
         onSuccess(result);
       } else if (r.parsedBody) {
         const body = r.parsedBody as InternalServerError;
