@@ -6,6 +6,30 @@
   }
 }
 
+.db-query-tabs {
+  .ant-tabs-nav {
+    margin-bottom: 5px;
+    padding: 0 10px;
+  }
+  .ant-list-item {
+    cursor: pointer;
+    padding: 6.4px 16px;
+    font-size: 12px;
+    &:hover {
+      background-color: var(--hover-bg);
+    }
+  }
+  .selected-query {
+    position: relative;
+    border-right: 2px solid #52b788;
+    background: #52b7882f;
+    color: #52b788;
+    &:hover {
+      background: #52b7882f !important;
+    }
+  }
+}
+
 .db-tabs {
   width: 100%;
   & > .ant-tabs-nav {
