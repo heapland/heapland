@@ -11,22 +11,14 @@
     margin-bottom: 5px;
     padding: 0 10px;
   }
-  .ant-list-item {
-    cursor: pointer;
-    padding: 6.4px 16px;
+  .querie-item {
     font-size: 12px;
-    &:hover {
-      background-color: var(--hover-bg);
-    }
-  }
-  .selected-query {
-    position: relative;
-    border-right: 2px solid #52b788;
-    background: #52b7882f;
-    color: #52b788;
-    &:hover {
-      background: #52b7882f !important;
-    }
+    height: 32.5px;
+    line-height: 32.5px;
+    padding-left: 15px !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    border-bottom: 1px solid #f0f0f0;
   }
 }
 

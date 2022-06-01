@@ -1,4 +1,4 @@
-import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List } from "antd";
+import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List, Empty } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { FaDatabase, FaTable } from "react-icons/fa";
 import { Resizable } from "re-resizable";
@@ -441,7 +441,6 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
-  console.log(dbTabs.activeKey);
   const onSelectQuery = (selectedQuery: DBQuery) => {
     addToPane(selectedQuery.id, selectedQuery.name, "query");
   };
@@ -495,35 +494,35 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               <Tabs className='db-query-tabs' defaultActiveKey='database-object' onChange={() => {}}>
                 <TabPane tab='Database Objects' key='database-object'>
                   <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
-                    <Space size={4}>
-                      <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
-                        <FaDatabase />
-                      </i>
-                      <span>{dbState.dbName}</span>
-                    </Space>
-                    <Tree
-                      className='db-objects'
-                      showIcon
-                      defaultSelectedKeys={["public"]}
-                      loadData={loadTables}
-                      treeData={dbState.dbObjects}
-                    />
+                    <div style={{ padding: "0 10px" }}>
+                      <Space size={4}>
+                        <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
+                          <FaDatabase />
+                        </i>
+                        <span>{dbState.dbName}</span>
+                      </Space>
+                      <Tree
+                        className='db-objects'
+                        showIcon
+                        defaultSelectedKeys={["public"]}
+                        loadData={loadTables}
+                        treeData={dbState.dbObjects}
+                      />
+                    </div>
                   </CustomScroll>
                 </TabPane>
                 <TabPane tab='Queries' key='queries'>
-                  <List
-                    size='small'
-                    loading={dbQueries.loading}
-                    bordered={false}
-                    dataSource={dbQueries.queries}
-                    renderItem={(item) => (
-                      <List.Item
-                        className={`${Number(item.id) === Number(dbTabs?.activeKey?.split("-")[1]) ? "selected-query" : ""}`}
-                        onClick={() => onSelectQuery(item)}>
-                        {item.name}
-                      </List.Item>
-                    )}
-                  />
+                  {dbQueries.queries.length > 0 ? (
+                    <Menu theme='light' mode='inline' selectedKeys={[dbTabs?.activeKey]}>
+                      {dbQueries.queries.map((qr, i) => (
+                        <Menu.Item key={`q-${qr.id}`} className='querie-item' onClick={() => onSelectQuery(qr)}>
+                          {qr.name}
+                        </Menu.Item>
+                      ))}
+                    </Menu>
+                  ) : (
+                    <Empty description='No Queries' />
+                  )}
                 </TabPane>
               </Tabs>
             </Resizable>
