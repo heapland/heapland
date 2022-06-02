@@ -11,14 +11,15 @@
     margin-bottom: 5px;
     padding: 0 10px;
   }
-  .querie-item {
+  .ant-menu-inline .ant-menu-item {
+    margin-bottom: 0;
+    margin-top: 0;
+    padding-left: 15px;
+  }
+  .query-item {
     font-size: 12px;
     height: 32.5px;
     line-height: 32.5px;
-    padding-left: 15px !important;
-    margin-bottom: 0 !important;
-    margin-top: 0 !important;
-    border-bottom: 1px solid #f0f0f0;
   }
 }
 

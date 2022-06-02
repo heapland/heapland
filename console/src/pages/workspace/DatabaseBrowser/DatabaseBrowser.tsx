@@ -515,13 +515,13 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   {dbQueries.queries.length > 0 ? (
                     <Menu theme='light' mode='inline' selectedKeys={[dbTabs?.activeKey]}>
                       {dbQueries.queries.map((qr, i) => (
-                        <Menu.Item key={`q-${qr.id}`} className='querie-item' onClick={() => onSelectQuery(qr)}>
+                        <Menu.Item key={`q-${qr.id}`} className='query-item' onClick={() => onSelectQuery(qr)}>
                           {qr.name}
                         </Menu.Item>
                       ))}
                     </Menu>
                   ) : (
-                    <Empty description='No Queries' />
+                    <Empty description='No Saved Queries' />
                   )}
                 </TabPane>
               </Tabs>
