@@ -266,7 +266,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         selectedTabObj = "table";
       }
       const filteredPanes = dbTabs.panes.filter((p) => !(p.id === paneId && p.objectType === selectedTabObj));
-      console.log(filteredPanes);
+      // console.log(filteredPanes);
       if (filteredPanes.length > 0) {
         if (dbTabs.activeKey === targetKey) {
           const removeIndex = dbTabs.panes.findIndex((p) => p.id === paneId);
@@ -336,94 +336,163 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
+  const fetchTableObjects = (key: string, resolve: () => void) => {
+    const splitKey = key.split("--");
+    Connections.listTablesObjects(databaseId, splitKey[0], splitKey[2], (objs) => {
+      let schemaLevel1Objs: DBObject[] = [];
+      if (Object.entries(objs).length > 0) {
+        Object.entries(objs).map(([keyName, value]) => {
+          if (value.length > 0) {
+            schemaLevel1Objs.push({
+              title: keyName,
+              key: `${key}--${keyName}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <MdFolder />,
+                </i>
+              ),
+              children: value.map((r: any) => {
+                return {
+                  title: r?.name,
+                  isLeaf: true,
+                  key: `${key}-${keyName}-${r?.name}`,
+                  icon: (
+                    <i className={`side-nav-icon`}>
+                      <FaTable />,
+                    </i>
+                  ),
+                };
+              }),
+            });
+          }
+        });
+      }
+      const newDBObjects = dbState.dbObjects.map((k) => {
+        if (k.key === splitKey[0]) {
+          return {
+            ...k,
+            children: k.children.map((t) => {
+              if (t.key === "public--table") {
+                return {
+                  ...t,
+                  children: t.children.map((o) => {
+                    if (o.key === key) {
+                      return { ...o, children: schemaLevel1Objs };
+                    } else {
+                      return o;
+                    }
+                  }),
+                };
+              } else {
+                return t;
+              }
+            }),
+          };
+        } else {
+          return k;
+        }
+      });
+
+      setDBState({ ...dbState, dbObjects: newDBObjects });
+      resolve();
+    });
+  };
+
+  const fetchSchemaObjects = (key: string, resolve: () => void) => {
+    Connections.listSchemaObjects(databaseId, key, (objs) => {
+      let schemaLevel1Objs: DBObject[] = [];
+      if (objs.routines.length > 0) {
+        schemaLevel1Objs.push({
+          title: "routines",
+          key: `${key}--routine`,
+          icon: (
+            <i className={`side-nav-icon`}>
+              <MdFolder />,
+            </i>
+          ),
+          children: objs.routines.map((r) => {
+            return {
+              title: r,
+              key: `${key}--routine--${r}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <MdOutlineFunctions />,
+                </i>
+              ),
+              isLeaf: true,
+            };
+          }),
+        });
+      }
+      if (objs.tables.length > 0) {
+        schemaLevel1Objs.push({
+          title: "tables",
+          key: `${key}--table`,
+          icon: (
+            <i className={`side-nav-icon`}>
+              <MdFolder />,
+            </i>
+          ),
+          children: objs.tables.map((r) => {
+            return {
+              title: r,
+              key: `${key}--table--${r}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <FaTable />,
+                </i>
+              ),
+            };
+          }),
+        });
+      }
+      if (objs.views.length > 0) {
+        schemaLevel1Objs.push({
+          title: "views",
+          key: `${key}--view`,
+          icon: (
+            <i className={`side-nav-icon`}>
+              <MdFolder />,
+            </i>
+          ),
+          children: objs.views.map((r) => {
+            return {
+              title: r,
+              key: `${key}--view--${r}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <MdOutlineViewSidebar />,
+                </i>
+              ),
+              isLeaf: true,
+            };
+          }),
+        });
+      }
+
+      const newDBObjects = dbState.dbObjects.map((k) => {
+        if (k.key === key) {
+          return { ...k, children: schemaLevel1Objs };
+        } else {
+          return k;
+        }
+      });
+      setDBState({ ...dbState, dbObjects: newDBObjects });
+      resolve();
+    });
+  };
+
   const loadTables = ({ key, children }: any) =>
     new Promise<void>((resolve) => {
       if (children) {
         resolve();
         return;
       }
-
-      Connections.listSchemaObjects(databaseId, key, (objs) => {
-        let schemaLevel1Objs: DBObject[] = [];
-        if (objs.routines.length > 0) {
-          schemaLevel1Objs.push({
-            title: "routines",
-            key: `${key}--routine`,
-            icon: (
-              <i className={`side-nav-icon`}>
-                <MdFolder />,
-              </i>
-            ),
-            children: objs.routines.map((r) => {
-              return {
-                title: r,
-                key: `${key}--routine--${r}`,
-                icon: (
-                  <i className={`side-nav-icon`}>
-                    <MdOutlineFunctions />,
-                  </i>
-                ),
-                isLeaf: true,
-              };
-            }),
-          });
-        }
-        if (objs.tables.length > 0) {
-          schemaLevel1Objs.push({
-            title: "tables",
-            key: `${key}--table`,
-            icon: (
-              <i className={`side-nav-icon`}>
-                <MdFolder />,
-              </i>
-            ),
-            children: objs.tables.map((r) => {
-              return {
-                title: r,
-                key: `${key}--table--${r}`,
-                icon: (
-                  <i className={`side-nav-icon`}>
-                    <FaTable />,
-                  </i>
-                ),
-              };
-            }),
-          });
-        }
-        if (objs.views.length > 0) {
-          schemaLevel1Objs.push({
-            title: "views",
-            key: `${key}--view`,
-            icon: (
-              <i className={`side-nav-icon`}>
-                <MdFolder />,
-              </i>
-            ),
-            children: objs.views.map((r) => {
-              return {
-                title: r,
-                key: `${key}--view--${r}`,
-                icon: (
-                  <i className={`side-nav-icon`}>
-                    <MdOutlineViewSidebar />,
-                  </i>
-                ),
-                isLeaf: true,
-              };
-            }),
-          });
-        }
-
-        const newDBObjects = dbState.dbObjects.map((k) => {
-          if (k.key === key) {
-            return { ...k, children: schemaLevel1Objs };
-          } else {
-            return k;
-          }
-        });
-        setDBState({ ...dbState, dbObjects: newDBObjects });
-        resolve();
-      });
+      if (key.includes("public--table")) {
+        fetchTableObjects(key, resolve);
+      } else {
+        fetchSchemaObjects(key, resolve);
+      }
     });
 
   const deleteWarning = (name: string) => {
