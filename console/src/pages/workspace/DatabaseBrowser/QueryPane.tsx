@@ -17,10 +17,10 @@ type QueryResult = { err?: string; result?: QueryExecutionResult };
 
 const QueryPane: FC<{
   connectionId: number;
-  queryId: number;
+  queryId: number | string;
   name: string;
-  onUpdateQueryName: (id: number, newName: string) => void;
-  onDeleteQuery: (id: number) => void;
+  onUpdateQueryName: (id: number | string, newName: string) => void;
+  onDeleteQuery: (id: number | string) => void;
 }> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery }) => {
   const [modalForm] = Form.useForm();
   const [queryView, setQueryView] = useState<{

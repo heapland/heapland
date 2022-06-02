@@ -26,6 +26,7 @@ import { DBQuery } from "../../../models/DatabaseBrowser";
 import QueryPane from "./QueryPane";
 import { UserContext } from "../../../store/User";
 import { history } from "../../../configureStore";
+import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -35,7 +36,7 @@ const { TabPane } = Tabs;
 type ObjType = "query" | "table";
 interface DBPane {
   name: string;
-  id: number;
+  id: number | string;
   objectType: ObjType;
 }
 const DBBrowserHeader: FC<{
@@ -244,7 +245,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     fetchDBState();
   }, [databaseId]);
 
-  const [dbTabs, setDBTabs] = useState<{ selectedPane?: DBPane; activeKey?: string; panes: DBPane[] }>({
+  const [dbTabs, setDBTabs] = useState<{ selectedPane?: DBPane; activeKey?: string; panes: DBPane[]; selectedTreeNode?: number | string }>({
     panes: [],
   });
 
@@ -255,18 +256,19 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
     const objId = Number(key.substring(2));
     let activePane = dbTabs.panes.find((p) => p.id === objId && p.objectType === selectedTabObj);
-    setDBTabs({ ...dbTabs, activeKey: key, selectedPane: activePane });
+    setDBTabs({ ...dbTabs, activeKey: key, selectedPane: activePane, selectedTreeNode: key.slice(2) });
   };
 
   const onTabEdit = (targetKey: any, action: "add" | "remove") => {
     if (action === "remove") {
-      const paneId = Number(targetKey.substring(2));
+      let paneId: number | string;
+      paneId = Number(targetKey.substring(2));
       let selectedTabObj = "query";
       if (targetKey.startsWith("t")) {
         selectedTabObj = "table";
+        paneId = targetKey.slice(2);
       }
       const filteredPanes = dbTabs.panes.filter((p) => !(p.id === paneId && p.objectType === selectedTabObj));
-      // console.log(filteredPanes);
       if (filteredPanes.length > 0) {
         if (dbTabs.activeKey === targetKey) {
           const removeIndex = dbTabs.panes.findIndex((p) => p.id === paneId);
@@ -274,25 +276,28 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           if (removeIndex === dbTabs.panes.length - 1) {
             newActiveIndex = removeIndex - 1;
           }
+
           setDBTabs({
             ...dbTabs,
             activeKey: `${filteredPanes[newActiveIndex].objectType.valueOf().substring(0, 1)}-${filteredPanes[newActiveIndex].id}`,
             panes: filteredPanes,
             selectedPane: filteredPanes[newActiveIndex],
+            selectedTreeNode: filteredPanes[newActiveIndex].id,
           });
         } else {
           setDBTabs({
             ...dbTabs,
             panes: filteredPanes,
+            selectedTreeNode: "",
           });
         }
       } else {
-        setDBTabs({ ...dbTabs, activeKey: undefined, selectedPane: undefined, panes: [] });
+        setDBTabs({ ...dbTabs, activeKey: undefined, selectedPane: undefined, panes: [], selectedTreeNode: "" });
       }
     }
   };
 
-  const updateQuery = (id: number, queryName: string) => {
+  const updateQuery = (id: number | string, queryName: string) => {
     const filteredPanes = [...dbTabs.panes];
     const indx = filteredPanes.findIndex((p) => p.id === id && p.objectType === "query");
     const newQueryPane: DBPane = { id: id, name: queryName, objectType: "query" };
@@ -304,18 +309,24 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     setDBQueries({ ...dbQueries, queries: filteredQueries });
   };
 
-  const onDeleteQuery = (id: number) => {
+  const onDeleteQuery = (id: number | string) => {
     onTabEdit(`q-${id}`, "remove");
     setDBQueries({ ...dbQueries, queries: dbQueries.queries.filter((p) => p.id !== id) });
   };
 
-  const addToPane = (id: number, name: string, objType: ObjType) => {
+  const addToPane = (id: number | string, name: string, objType: ObjType) => {
     const newKey = `${objType.valueOf().substring(0, 1)}-${id}`;
     let newPanes = [...dbTabs.panes];
     if (newPanes.filter((p) => p.id === id && p.objectType === objType).length === 0) {
       newPanes = [...dbTabs.panes, { id: id, name: name, objectType: objType }];
     }
-    setDBTabs({ ...dbTabs, selectedPane: { name: name, id: id, objectType: objType }, panes: newPanes, activeKey: newKey });
+    setDBTabs({
+      ...dbTabs,
+      selectedPane: { name: name, id: id, objectType: objType },
+      panes: newPanes,
+      activeKey: newKey,
+      selectedTreeNode: id,
+    });
   };
 
   useEffect(() => {
@@ -336,8 +347,22 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
+  const onSelectTreeNode = (selectedKeys: any, info: any) => {
+    const splitKey = selectedKeys[0]?.split("--");
+    const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
+    if (isOpenTab.length === 0 && splitKey.length === 3) {
+      addToPane(info.node.key, info?.node?.title, "table");
+    } else {
+      setDBTabs({
+        ...dbTabs,
+        activeKey: `t-${info.node.key}`,
+        selectedTreeNode: info.node.key,
+      });
+    }
+  };
+
   const fetchTableObjects = (key: string, resolve: () => void) => {
-    const splitKey = key.split("--");
+    const splitKey = key?.split("--");
     Connections.listTablesObjects(databaseId, splitKey[0], splitKey[2], (objs) => {
       let schemaLevel1Objs: DBObject[] = [];
       if (Object.entries(objs).length > 0) {
@@ -510,7 +535,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
-  const onSelectQuery = (selectedQuery: DBQuery) => {
+  const onSelectSavedQuery = (selectedQuery: DBQuery) => {
     addToPane(selectedQuery.id, selectedQuery.name, "query");
   };
 
@@ -576,6 +601,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                         defaultSelectedKeys={["public"]}
                         loadData={loadTables}
                         treeData={dbState.dbObjects}
+                        onSelect={onSelectTreeNode}
+                        selectedKeys={[dbTabs.selectedTreeNode]}
                       />
                     </div>
                   </CustomScroll>
@@ -584,7 +611,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   {dbQueries.queries.length > 0 ? (
                     <Menu theme='light' mode='inline' selectedKeys={[dbTabs?.activeKey]}>
                       {dbQueries.queries.map((qr, i) => (
-                        <Menu.Item key={`q-${qr.id}`} className='query-item' onClick={() => onSelectQuery(qr)}>
+                        <Menu.Item key={`q-${qr.id}`} className='query-item' onClick={() => onSelectSavedQuery(qr)}>
                           {qr.name}
                         </Menu.Item>
                       ))}
