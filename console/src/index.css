@@ -11,6 +11,7 @@ html[data-theme="light"] {
   --border-color: #eee;
   --nav-title: #a5a1a1;
   --table-header: #e8ecf1;
+  --action-header-bg: #e2e5ea;
 }
 
 html[data-size="small"] {

@@ -350,9 +350,9 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   const onSelectTreeNode = (selectedKeys: any, info: any) => {
     const splitKey = selectedKeys[0]?.split("--");
     const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
-    if (isOpenTab.length === 0 && splitKey.length === 3) {
+    if (isOpenTab?.length === 0 && splitKey?.length === 3 && splitKey.includes("table")) {
       addToPane(info.node.key, info?.node?.title, "table");
-    } else {
+    } else if (splitKey.length === 3 && splitKey.includes("table")) {
       setDBTabs({
         ...dbTabs,
         activeKey: `t-${info.node.key}`,
@@ -378,9 +378,13 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               ),
               children: value.map((r: any) => {
                 return {
-                  title: r?.name,
+                  title: (
+                    <Space size={4}>
+                      <span>{r?.name}</span> <span className='label'>{r?.dataType}</span>
+                    </Space>
+                  ),
                   isLeaf: true,
-                  key: `${key}-${keyName}-${r?.name}`,
+                  key: `${key}--${keyName}--${r?.name}`,
                   icon: (
                     <i className={`side-nav-icon`}>
                       <FaTable />,
@@ -587,38 +591,39 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
 
               <Tabs className='db-query-tabs' defaultActiveKey='database-object' onChange={() => {}}>
                 <TabPane tab='Database Objects' key='database-object'>
-                  <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
-                    <div style={{ padding: "0 10px" }}>
-                      <Space size={4}>
-                        <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
-                          <FaDatabase />
-                        </i>
-                        <span>{dbState.dbName}</span>
-                      </Space>
-                      <Tree
-                        className='db-objects'
-                        showIcon
-                        defaultSelectedKeys={["public"]}
-                        loadData={loadTables}
-                        treeData={dbState.dbObjects}
-                        onSelect={onSelectTreeNode}
-                        selectedKeys={[dbTabs.selectedTreeNode]}
-                      />
-                    </div>
-                  </CustomScroll>
+                  <div style={{ padding: "0 10px" }}>
+                    <Space size={4}>
+                      <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
+                        <FaDatabase />
+                      </i>
+                      <span>{dbState.dbName}</span>
+                    </Space>
+                    <Tree
+                      className='db-objects'
+                      showIcon
+                      defaultSelectedKeys={["public"]}
+                      loadData={loadTables}
+                      treeData={dbState.dbObjects}
+                      onSelect={onSelectTreeNode}
+                      height={600}
+                      selectedKeys={[dbTabs.selectedTreeNode]}
+                    />
+                  </div>
                 </TabPane>
                 <TabPane tab='Queries' key='queries'>
-                  {dbQueries.queries.length > 0 ? (
-                    <Menu theme='light' mode='inline' selectedKeys={[dbTabs?.activeKey]}>
-                      {dbQueries.queries.map((qr, i) => (
-                        <Menu.Item key={`q-${qr.id}`} className='query-item' onClick={() => onSelectSavedQuery(qr)}>
-                          {qr.name}
-                        </Menu.Item>
-                      ))}
-                    </Menu>
-                  ) : (
-                    <Empty description='No Saved Queries' />
-                  )}
+                  <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
+                    {dbQueries.queries.length > 0 ? (
+                      <Menu theme='light' mode='inline' selectedKeys={[dbTabs?.activeKey]}>
+                        {dbQueries.queries.map((qr, i) => (
+                          <Menu.Item key={`q-${qr.id}`} className='query-item' onClick={() => onSelectSavedQuery(qr)}>
+                            {qr.name}
+                          </Menu.Item>
+                        ))}
+                      </Menu>
+                    ) : (
+                      <Empty description='No Saved Queries' />
+                    )}
+                  </CustomScroll>
                 </TabPane>
               </Tabs>
             </Resizable>
@@ -643,7 +648,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`t-${pane.id}`}>
-                          <TablePane connectionId={databaseId} schema={dbState.selectedSchema} name={pane.name} />
+                          <TablePane connectionId={databaseId} schema={dbState.selectedSchema} dbName={dbState.dbName} name={pane.name} />
                         </TabPane>
                       )}
                       {pane.objectType === "query" && (
