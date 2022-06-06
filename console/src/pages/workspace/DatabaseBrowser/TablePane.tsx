@@ -61,6 +61,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         connectionId={connectionId}
         isDownloadModal={isDownloadModal}
         closeDownloadModal={closeDownloadModal}
+        tableData={tableData.result}
       />
     </>
   );
