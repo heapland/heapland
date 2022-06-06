@@ -56,7 +56,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       </Skeleton>
       <DownloadModal
         schema={schema}
-        name={name}
+        tableName={name}
         dbName={dbName}
         connectionId={connectionId}
         isDownloadModal={isDownloadModal}

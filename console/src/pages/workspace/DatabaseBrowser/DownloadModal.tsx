@@ -1,9 +1,9 @@
 import React, { FC, useState, useEffect } from "react";
 import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
-import { Button, Input, Modal, Select, Space, Checkbox } from "antd";
+import { Button, Input, Modal, Select, Space, Checkbox, message } from "antd";
 import { SwitcherTwoTone } from "@ant-design/icons";
-import { readSQLInsert, readCSVData, readTSVData, readSQLUpdate, donwloadFile } from "../../../components/utils/utils";
+import { readSQLInsert, readCSVData, readTSVData, readSQLUpdate, donwloadFile, copyTextToClipboard } from "../../../components/utils/utils";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 const { Option } = Select;
 
@@ -15,23 +15,25 @@ interface DownloadInfo {
   downContent: any;
   isColumnHeader: boolean;
   isRowHeader: boolean;
+  isTableDefinition: boolean;
 }
 
 const DownloadModal: FC<{
   isDownloadModal: boolean;
   closeDownloadModal: () => void;
   schema: string;
-  name: string;
+  tableName: string;
   connectionId: number;
   dbName: string;
   tableData: QueryExecutionResult;
-}> = ({ isDownloadModal, closeDownloadModal, schema, name, dbName, tableData }) => {
+}> = ({ isDownloadModal, closeDownloadModal, schema, tableName, dbName, tableData }) => {
   const [downloadInfo, setDownloadInfo] = useState<DownloadInfo>({
     extractor: "sql_insert",
     editorLang: "sql",
     downContent: "sql_insert",
     isColumnHeader: false,
     isRowHeader: false,
+    isTableDefinition: false,
   });
 
   const onChangeExtractor = (value: Extractor) => {
@@ -40,14 +42,15 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: readSQLInsert(tableData?.result, schema, name),
+        downContent: readSQLInsert(tableData, schema, tableName, false),
+        isTableDefinition: false,
       });
     } else if (value === "sql_update") {
       setDownloadInfo({
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: readSQLUpdate(tableData?.result, schema, name),
+        downContent: readSQLUpdate(tableData?.result, schema, tableName),
       });
     } else if (value === "json") {
       setDownloadInfo({
@@ -77,7 +80,7 @@ const DownloadModal: FC<{
     }
   };
   const onDownloadData = async () => {
-    donwloadFile(downloadInfo.downContent, name, downloadInfo.extractor);
+    donwloadFile(downloadInfo.downContent, tableName, downloadInfo.extractor);
   };
   useEffect(() => {
     // if (tableData.result && name && schema) {
@@ -95,13 +98,25 @@ const DownloadModal: FC<{
       setDownloadInfo({
         ...downloadInfo,
         isColumnHeader: checked,
-        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader),
+        downContent:
+          downloadInfo.extractor === "csv"
+            ? readCSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader)
+            : readTSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader),
       });
     } else if (name === "row") {
       setDownloadInfo({
         ...downloadInfo,
         isRowHeader: checked,
-        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked),
+        downContent:
+          downloadInfo.extractor === "csv"
+            ? readCSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked)
+            : readTSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked),
+      });
+    } else if (name === "table_definition") {
+      setDownloadInfo({
+        ...downloadInfo,
+        isTableDefinition: checked,
+        downContent: readSQLInsert(tableData, schema, tableName, checked),
       });
     }
   };
@@ -116,7 +131,7 @@ const DownloadModal: FC<{
       footer={
         <Space>
           <Button>Cancel</Button>
-          <Button>Copy to Clipboard</Button>
+          <Button onClick={() => copyTextToClipboard(downloadInfo.downContent, message)}>Copy to Clipboard</Button>
           <Button type='primary' onClick={onDownloadData}>
             Export to file
           </Button>
@@ -127,7 +142,7 @@ const DownloadModal: FC<{
         <Space size='middle' direction='vertical' className='form-container'>
           <div className='form-group'>
             <div className='input-label'>Source:</div>
-            <Input placeholder={dbName + "." + schema + "." + name} disabled />
+            <Input placeholder={dbName + "." + schema + "." + tableName} disabled />
           </div>
           <div className='form-group'>
             <div className='input-label'>Extractor:</div>

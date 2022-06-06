@@ -1,3 +1,4 @@
+import { MessageApi } from "antd/lib/message";
 import { QueryExecutionResult } from "../../models/DatabaseBrowser";
 import { Extractor } from "../../pages/workspace/DatabaseBrowser/DownloadModal";
 
@@ -38,7 +39,7 @@ export const donwloadFile = async (data: string, name: string, extractor: Extrac
   document.body.removeChild(link);
 };
 
-export const readCSVData = (data: string, showLabel: boolean, serialId: boolean) => {
+export const readCSVData = (data: string, showLabel: boolean, isRowHeader: boolean) => {
   let arrData = typeof data !== "object" ? JSON.parse(data) : data;
 
   let CSV = "";
@@ -56,7 +57,7 @@ export const readCSVData = (data: string, showLabel: boolean, serialId: boolean)
     row = row.slice(0, -1);
 
     //append Label row with line break
-    CSV += serialId ? "#," + row + "\r\n" : row + "\r\n";
+    CSV += isRowHeader ? "#," + row + "\r\n" : row + "\r\n";
   }
 
   //1st loop is to extract each row
@@ -71,7 +72,7 @@ export const readCSVData = (data: string, showLabel: boolean, serialId: boolean)
     row.slice(0, row.length - 1);
 
     //add a line break after each row
-    CSV += serialId ? i + 1 + "," + row + "\r\n" : row + "\r\n";
+    CSV += isRowHeader ? i + 1 + "," + row + "\r\n" : row + "\r\n";
   }
 
   if (CSV === "") {
@@ -82,10 +83,10 @@ export const readCSVData = (data: string, showLabel: boolean, serialId: boolean)
   return CSV;
 };
 
-export const readTSVData = (data: string, showLabel: boolean, serialId: boolean) => {
+export const readTSVData = (data: string, showLabel: boolean, isRowHeader: boolean) => {
   let arrData = typeof data !== "object" ? JSON.parse(data) : data;
 
-  let CSV = "";
+  let TSV = "";
 
   //This condition will generate the Label/Header
   if (showLabel) {
@@ -100,7 +101,7 @@ export const readTSVData = (data: string, showLabel: boolean, serialId: boolean)
     row = row.slice(0, -1);
 
     //append Label row with line break
-    CSV += serialId ? "# " + row + "\r\n" : row + "\r\n";
+    TSV += isRowHeader ? "#" + "\t" + row + "\r\n" : row + "\r\n";
   }
 
   //1st loop is to extract each row
@@ -115,20 +116,32 @@ export const readTSVData = (data: string, showLabel: boolean, serialId: boolean)
     row.slice(0, row.length - 1);
 
     //add a line break after each row
-    CSV += serialId ? i + 1 + " " + row + "\r\n" : row + "\r\n";
+    TSV += isRowHeader ? i + 1 + "\t" + row + "\r\n" : row + "\r\n";
   }
 
-  if (CSV === "") {
+  if (TSV === "") {
     alert("Invalid data");
     return;
   }
 
-  return CSV;
+  return TSV;
 };
 
-export const readSQLInsert = (data: any[], schema: string, tableName: string) => {
-  let arrData = typeof data !== "object" ? JSON.parse(data) : data;
+export const readSQLInsert = (tableData: QueryExecutionResult, schema: string, tableName: string, tableDefinition: boolean) => {
+  let arrData = tableData.result;
+  let colsData = tableData.columns;
   let sql = "";
+  let create_table = `CREATE TABLE ${tableName}(\r\n`;
+
+  if (tableDefinition) {
+    let row = "";
+    for (let i = 0; i < colsData.length; i++) {
+      row += `${colsData[i].name}  \t  ${colsData[i].dataType},\r\n`;
+    }
+
+    create_table += row + ");";
+    sql += `${create_table}\r\n\r\nALTER TABLE ${tableName} owner to giga-admin;\r\n\r\n`;
+  }
 
   //1st loop is to extract each row
   for (let i = 0; i < arrData.length; i++) {
@@ -152,7 +165,7 @@ export const readSQLInsert = (data: any[], schema: string, tableName: string) =>
 
     value.slice(0, value.length - 1);
     //add a line break after each row
-    sql_insert += value + ")\r\n";
+    sql_insert += value + ");\r\n";
     sql += sql_insert;
   }
 
@@ -168,11 +181,9 @@ export const readSQLUpdate = (data: any[], schema: string, tableName: string) =>
     let sql_update = "UPDATE  " + schema + "." + tableName;
     let names = " SET ";
 
-    //This loop will extract the label from 1st index of on array
-    for (let id in arrData[0]) {
-      //Now convert each value to string and comma-seprated
-      names += id + " = ";
-      names += '"' + arrData[i][id] + '", ';
+    for (let label in arrData[0]) {
+      names += label + " = ";
+      names += '"' + arrData[i][label] + '", ';
     }
     names = names.slice(0, -1);
 
@@ -181,4 +192,45 @@ export const readSQLUpdate = (data: any[], schema: string, tableName: string) =>
   }
 
   return sql;
+};
+
+const fallbackCopyTextToClipboard = (text: string, message: MessageApi) => {
+  var textArea = document.createElement("textarea");
+  textArea.value = text;
+  // Avoid scrolling to bottom
+  textArea.style.top = "0";
+  textArea.style.left = "0";
+  textArea.style.position = "fixed";
+
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+
+  try {
+    var successful = document.execCommand("copy");
+    var msg = successful ? "successful" : "unsuccessful";
+    console.log("Fallback: Copying text command was " + msg);
+    message.success("Copying text command was " + msg);
+  } catch (err) {
+    console.error("Fallback: Oops, unable to copy", err);
+  }
+
+  document.body.removeChild(textArea);
+};
+
+export const copyTextToClipboard = (text: string, message: MessageApi) => {
+  if (!navigator.clipboard) {
+    fallbackCopyTextToClipboard(text, message);
+    return;
+  }
+  navigator.clipboard.writeText(text).then(
+    function () {
+      console.log("Async: Copying to clipboard was successful!");
+      message.success("Copying to clipboard was successful!");
+    },
+    function (err) {
+      console.error("Async: Could not copy text: ", err);
+      message.error("Could not copy text");
+    }
+  );
 };
