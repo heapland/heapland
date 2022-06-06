@@ -3,7 +3,8 @@ import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import { Button, Input, Modal, Select, Space, Checkbox } from "antd";
 import { SwitcherTwoTone } from "@ant-design/icons";
-import { readSQLInsert, readCSVData, readSQLUpdate, donwloadFile } from "../../../components/utils/utils";
+import { readSQLInsert, readCSVData, readTSVData, readSQLUpdate, donwloadFile } from "../../../components/utils/utils";
+import type { CheckboxChangeEvent } from "antd/es/checkbox";
 const { Option } = Select;
 
 export type Extractor = "sql_insert" | "csv" | "tsv" | "json" | "sql_update";
@@ -12,6 +13,8 @@ interface DownloadInfo {
   extractor: Extractor;
   editorLang: string;
   downContent: any;
+  isColumnHeader: boolean;
+  isRowHeader: boolean;
 }
 
 const DownloadModal: FC<{
@@ -27,6 +30,8 @@ const DownloadModal: FC<{
     extractor: "sql_insert",
     editorLang: "sql",
     downContent: "sql_insert",
+    isColumnHeader: false,
+    isRowHeader: false,
   });
 
   const onChangeExtractor = (value: Extractor) => {
@@ -56,10 +61,19 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "csv",
-        downContent: readCSVData(tableData?.result, true),
+        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), false, false),
+        isColumnHeader: false,
+        isRowHeader: false,
       });
     } else if (value === "tsv") {
-      setDownloadInfo({ ...downloadInfo, extractor: value, editorLang: value, downContent: "tsv" });
+      setDownloadInfo({
+        ...downloadInfo,
+        extractor: value,
+        editorLang: value,
+        downContent: readTSVData(JSON.stringify(tableData?.result, null, 2), false, false),
+        isColumnHeader: false,
+        isRowHeader: false,
+      });
     }
   };
   const onDownloadData = async () => {
@@ -73,6 +87,24 @@ const DownloadModal: FC<{
     //   });
     // }
   }, []);
+
+  const onShowColumnRow = (e: CheckboxChangeEvent) => {
+    const checked = e.target.checked;
+    const name = e.target.name;
+    if (name === "column") {
+      setDownloadInfo({
+        ...downloadInfo,
+        isColumnHeader: checked,
+        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader),
+      });
+    } else if (name === "row") {
+      setDownloadInfo({
+        ...downloadInfo,
+        isRowHeader: checked,
+        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked),
+      });
+    }
+  };
   return (
     <Modal
       width={1000}
@@ -117,13 +149,27 @@ const DownloadModal: FC<{
               <Option value='json'>JSON</Option>
             </Select>
           </div>
-          <div className='form-group'>
-            <Checkbox onChange={() => {}}>Add table definitioni (DDL)</Checkbox>
-          </div>
-          <div className='form-group'>
-            <div className='input-label'>Output file:</div>
-            <Input type='file' placeholder='' />
-          </div>
+          {downloadInfo.extractor === "sql_insert" && (
+            <div className='form-group'>
+              <Checkbox name='table_definition' onChange={onShowColumnRow}>
+                Add table definition (DDL)
+              </Checkbox>
+            </div>
+          )}
+          {(downloadInfo.extractor === "csv" || downloadInfo.extractor === "tsv") && (
+            <>
+              <div className='form-group'>
+                <Checkbox name='column' onChange={onShowColumnRow}>
+                  Add column header
+                </Checkbox>
+              </div>
+              <div className='form-group'>
+                <Checkbox name='row' onChange={onShowColumnRow}>
+                  Add row header
+                </Checkbox>
+              </div>
+            </>
+          )}
         </Space>
         <div className='preview-container'>
           <div className='preview-title'>Export Preview:</div>
