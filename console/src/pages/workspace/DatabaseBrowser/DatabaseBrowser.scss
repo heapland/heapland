@@ -43,6 +43,11 @@
     }
   }
   .tbl-data {
+    .ant-table-thead {
+      .ant-table-selection-column {
+        background-color: var(--table-header);
+      }
+    }
     th.table-cell-light {
       background-color: var(--table-header);
       color: $lt-font-dull-color;
