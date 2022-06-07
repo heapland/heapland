@@ -1,4 +1,4 @@
-import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal } from "antd";
+import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List, Empty } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { FaDatabase, FaTable } from "react-icons/fa";
 import { Resizable } from "re-resizable";
@@ -26,6 +26,7 @@ import { DBQuery } from "../../../models/DatabaseBrowser";
 import QueryPane from "./QueryPane";
 import { UserContext } from "../../../store/User";
 import { history } from "../../../configureStore";
+import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -35,7 +36,7 @@ const { TabPane } = Tabs;
 type ObjType = "query" | "table";
 interface DBPane {
   name: string;
-  id: number;
+  id: number | string;
   objectType: ObjType;
 }
 const DBBrowserHeader: FC<{
@@ -244,7 +245,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     fetchDBState();
   }, [databaseId]);
 
-  const [dbTabs, setDBTabs] = useState<{ selectedPane?: DBPane; activeKey?: string; panes: DBPane[] }>({
+  const [dbTabs, setDBTabs] = useState<{ selectedPane?: DBPane; activeKey?: string; panes: DBPane[]; selectedTreeNode?: number | string }>({
     panes: [],
   });
 
@@ -255,18 +256,19 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
     const objId = Number(key.substring(2));
     let activePane = dbTabs.panes.find((p) => p.id === objId && p.objectType === selectedTabObj);
-    setDBTabs({ ...dbTabs, activeKey: key, selectedPane: activePane });
+    setDBTabs({ ...dbTabs, activeKey: key, selectedPane: activePane, selectedTreeNode: key.slice(2) });
   };
 
   const onTabEdit = (targetKey: any, action: "add" | "remove") => {
     if (action === "remove") {
-      const paneId = Number(targetKey.substring(2));
+      let paneId: number | string;
+      paneId = Number(targetKey.substring(2));
       let selectedTabObj = "query";
       if (targetKey.startsWith("t")) {
         selectedTabObj = "table";
+        paneId = targetKey.slice(2);
       }
       const filteredPanes = dbTabs.panes.filter((p) => !(p.id === paneId && p.objectType === selectedTabObj));
-      console.log(filteredPanes);
       if (filteredPanes.length > 0) {
         if (dbTabs.activeKey === targetKey) {
           const removeIndex = dbTabs.panes.findIndex((p) => p.id === paneId);
@@ -274,25 +276,28 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           if (removeIndex === dbTabs.panes.length - 1) {
             newActiveIndex = removeIndex - 1;
           }
+
           setDBTabs({
             ...dbTabs,
             activeKey: `${filteredPanes[newActiveIndex].objectType.valueOf().substring(0, 1)}-${filteredPanes[newActiveIndex].id}`,
             panes: filteredPanes,
             selectedPane: filteredPanes[newActiveIndex],
+            selectedTreeNode: filteredPanes[newActiveIndex].id,
           });
         } else {
           setDBTabs({
             ...dbTabs,
             panes: filteredPanes,
+            selectedTreeNode: "",
           });
         }
       } else {
-        setDBTabs({ ...dbTabs, activeKey: undefined, selectedPane: undefined, panes: [] });
+        setDBTabs({ ...dbTabs, activeKey: undefined, selectedPane: undefined, panes: [], selectedTreeNode: "" });
       }
     }
   };
 
-  const updateQuery = (id: number, queryName: string) => {
+  const updateQuery = (id: number | string, queryName: string) => {
     const filteredPanes = [...dbTabs.panes];
     const indx = filteredPanes.findIndex((p) => p.id === id && p.objectType === "query");
     const newQueryPane: DBPane = { id: id, name: queryName, objectType: "query" };
@@ -304,18 +309,24 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     setDBQueries({ ...dbQueries, queries: filteredQueries });
   };
 
-  const onDeleteQuery = (id: number) => {
+  const onDeleteQuery = (id: number | string) => {
     onTabEdit(`q-${id}`, "remove");
     setDBQueries({ ...dbQueries, queries: dbQueries.queries.filter((p) => p.id !== id) });
   };
 
-  const addToPane = (id: number, name: string, objType: ObjType) => {
+  const addToPane = (id: number | string, name: string, objType: ObjType) => {
     const newKey = `${objType.valueOf().substring(0, 1)}-${id}`;
     let newPanes = [...dbTabs.panes];
     if (newPanes.filter((p) => p.id === id && p.objectType === objType).length === 0) {
       newPanes = [...dbTabs.panes, { id: id, name: name, objectType: objType }];
     }
-    setDBTabs({ ...dbTabs, selectedPane: { name: name, id: id, objectType: objType }, panes: newPanes, activeKey: newKey });
+    setDBTabs({
+      ...dbTabs,
+      selectedPane: { name: name, id: id, objectType: objType },
+      panes: newPanes,
+      activeKey: newKey,
+      selectedTreeNode: id,
+    });
   };
 
   useEffect(() => {
@@ -336,94 +347,181 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
+  const onSelectTreeNode = (selectedKeys: any, info: any) => {
+    const splitKey = selectedKeys[0]?.split("--");
+    const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
+    if (isOpenTab?.length === 0 && splitKey?.length === 3 && splitKey.includes("table")) {
+      addToPane(info.node.key, info?.node?.title, "table");
+    } else if (splitKey.length === 3 && splitKey.includes("table")) {
+      setDBTabs({
+        ...dbTabs,
+        activeKey: `t-${info.node.key}`,
+        selectedTreeNode: info.node.key,
+      });
+    }
+  };
+
+  const fetchTableObjects = (key: string, resolve: () => void) => {
+    const splitKey = key?.split("--");
+    Connections.listTablesObjects(databaseId, splitKey[0], splitKey[2], (objs) => {
+      let schemaLevel1Objs: DBObject[] = [];
+      if (Object.entries(objs).length > 0) {
+        Object.entries(objs).map(([keyName, value]) => {
+          if (value.length > 0) {
+            schemaLevel1Objs.push({
+              title: keyName,
+              key: `${key}--${keyName}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <MdFolder />,
+                </i>
+              ),
+              children: value.map((r: any) => {
+                return {
+                  title: (
+                    <Space size={4}>
+                      <span>{r?.name}</span> <span className='label'>{r?.dataType}</span>
+                    </Space>
+                  ),
+                  isLeaf: true,
+                  key: `${key}--${keyName}--${r?.name}`,
+                  icon: (
+                    <i className={`side-nav-icon`}>
+                      <FaTable />,
+                    </i>
+                  ),
+                };
+              }),
+            });
+          }
+        });
+      }
+      const newDBObjects = dbState.dbObjects.map((k) => {
+        if (k.key === splitKey[0]) {
+          return {
+            ...k,
+            children: k.children.map((t) => {
+              if (t.key === "public--table") {
+                return {
+                  ...t,
+                  children: t.children.map((o) => {
+                    if (o.key === key) {
+                      return { ...o, children: schemaLevel1Objs };
+                    } else {
+                      return o;
+                    }
+                  }),
+                };
+              } else {
+                return t;
+              }
+            }),
+          };
+        } else {
+          return k;
+        }
+      });
+
+      setDBState({ ...dbState, dbObjects: newDBObjects });
+      resolve();
+    });
+  };
+
+  const fetchSchemaObjects = (key: string, resolve: () => void) => {
+    Connections.listSchemaObjects(databaseId, key, (objs) => {
+      let schemaLevel1Objs: DBObject[] = [];
+      if (objs.routines.length > 0) {
+        schemaLevel1Objs.push({
+          title: "routines",
+          key: `${key}--routine`,
+          icon: (
+            <i className={`side-nav-icon`}>
+              <MdFolder />,
+            </i>
+          ),
+          children: objs.routines.map((r) => {
+            return {
+              title: r,
+              key: `${key}--routine--${r}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <MdOutlineFunctions />,
+                </i>
+              ),
+              isLeaf: true,
+            };
+          }),
+        });
+      }
+      if (objs.tables.length > 0) {
+        schemaLevel1Objs.push({
+          title: "tables",
+          key: `${key}--table`,
+          icon: (
+            <i className={`side-nav-icon`}>
+              <MdFolder />,
+            </i>
+          ),
+          children: objs.tables.map((r) => {
+            return {
+              title: r,
+              key: `${key}--table--${r}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <FaTable />,
+                </i>
+              ),
+            };
+          }),
+        });
+      }
+      if (objs.views.length > 0) {
+        schemaLevel1Objs.push({
+          title: "views",
+          key: `${key}--view`,
+          icon: (
+            <i className={`side-nav-icon`}>
+              <MdFolder />,
+            </i>
+          ),
+          children: objs.views.map((r) => {
+            return {
+              title: r,
+              key: `${key}--view--${r}`,
+              icon: (
+                <i className={`side-nav-icon`}>
+                  <MdOutlineViewSidebar />,
+                </i>
+              ),
+              isLeaf: true,
+            };
+          }),
+        });
+      }
+
+      const newDBObjects = dbState.dbObjects.map((k) => {
+        if (k.key === key) {
+          return { ...k, children: schemaLevel1Objs };
+        } else {
+          return k;
+        }
+      });
+      setDBState({ ...dbState, dbObjects: newDBObjects });
+      resolve();
+    });
+  };
+
   const loadTables = ({ key, children }: any) =>
     new Promise<void>((resolve) => {
       if (children) {
         resolve();
         return;
       }
-
-      Connections.listSchemaObjects(databaseId, key, (objs) => {
-        let schemaLevel1Objs: DBObject[] = [];
-        if (objs.routines.length > 0) {
-          schemaLevel1Objs.push({
-            title: "routines",
-            key: `${key}--routine`,
-            icon: (
-              <i className={`side-nav-icon`}>
-                <MdFolder />,
-              </i>
-            ),
-            children: objs.routines.map((r) => {
-              return {
-                title: r,
-                key: `${key}--routine--${r}`,
-                icon: (
-                  <i className={`side-nav-icon`}>
-                    <MdOutlineFunctions />,
-                  </i>
-                ),
-                isLeaf: true,
-              };
-            }),
-          });
-        }
-        if (objs.tables.length > 0) {
-          schemaLevel1Objs.push({
-            title: "tables",
-            key: `${key}--table`,
-            icon: (
-              <i className={`side-nav-icon`}>
-                <MdFolder />,
-              </i>
-            ),
-            children: objs.tables.map((r) => {
-              return {
-                title: r,
-                key: `${key}--table--${r}`,
-                icon: (
-                  <i className={`side-nav-icon`}>
-                    <FaTable />,
-                  </i>
-                ),
-              };
-            }),
-          });
-        }
-        if (objs.views.length > 0) {
-          schemaLevel1Objs.push({
-            title: "views",
-            key: `${key}--view`,
-            icon: (
-              <i className={`side-nav-icon`}>
-                <MdFolder />,
-              </i>
-            ),
-            children: objs.views.map((r) => {
-              return {
-                title: r,
-                key: `${key}--view--${r}`,
-                icon: (
-                  <i className={`side-nav-icon`}>
-                    <MdOutlineViewSidebar />,
-                  </i>
-                ),
-                isLeaf: true,
-              };
-            }),
-          });
-        }
-
-        const newDBObjects = dbState.dbObjects.map((k) => {
-          if (k.key === key) {
-            return { ...k, children: schemaLevel1Objs };
-          } else {
-            return k;
-          }
-        });
-        setDBState({ ...dbState, dbObjects: newDBObjects });
-        resolve();
-      });
+      if (key.includes("public--table")) {
+        fetchTableObjects(key, resolve);
+      } else {
+        fetchSchemaObjects(key, resolve);
+      }
     });
 
   const deleteWarning = (name: string) => {
@@ -439,6 +537,10 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
       okText: "Yes",
       cancelText: "No",
     });
+  };
+
+  const onSelectSavedQuery = (selectedQuery: DBQuery) => {
+    addToPane(selectedQuery.id, selectedQuery.name, "query");
   };
 
   return (
@@ -487,15 +589,43 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 />
               </Skeleton>
 
-              <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
-                <Space size={4}>
-                  <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
-                    <FaDatabase />
-                  </i>
-                  <span>{dbState.dbName}</span>
-                </Space>
-                <Tree className='db-objects' showIcon defaultSelectedKeys={["public"]} loadData={loadTables} treeData={dbState.dbObjects} />
-              </CustomScroll>
+              <Tabs className='db-query-tabs' defaultActiveKey='database-object' onChange={() => {}}>
+                <TabPane tab='Database Objects' key='database-object'>
+                  <div style={{ padding: "0 10px" }}>
+                    <Space size={4}>
+                      <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
+                        <FaDatabase />
+                      </i>
+                      <span>{dbState.dbName}</span>
+                    </Space>
+                    <Tree
+                      className='db-objects'
+                      showIcon
+                      defaultSelectedKeys={["public"]}
+                      loadData={loadTables}
+                      treeData={dbState.dbObjects}
+                      onSelect={onSelectTreeNode}
+                      height={600}
+                      selectedKeys={[dbTabs.selectedTreeNode]}
+                    />
+                  </div>
+                </TabPane>
+                <TabPane tab='Queries' key='queries'>
+                  <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
+                    {dbQueries.queries.length > 0 ? (
+                      <Menu theme='light' mode='inline' selectedKeys={[dbTabs?.activeKey]}>
+                        {dbQueries.queries.map((qr, i) => (
+                          <Menu.Item key={`q-${qr.id}`} className='query-item' onClick={() => onSelectSavedQuery(qr)}>
+                            {qr.name}
+                          </Menu.Item>
+                        ))}
+                      </Menu>
+                    ) : (
+                      <Empty description='No Saved Queries' />
+                    )}
+                  </CustomScroll>
+                </TabPane>
+              </Tabs>
             </Resizable>
             <div height-100 db-info-container style={{ width: "100%", minWidth: "1px" }}>
               {!dbState.hasError && (
@@ -518,7 +648,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`t-${pane.id}`}>
-                          <TablePane connectionId={databaseId} schema={dbState.selectedSchema} name={pane.name} />
+                          <TablePane connectionId={databaseId} schema={dbState.selectedSchema} dbName={dbState.dbName} name={pane.name} />
                         </TabPane>
                       )}
                       {pane.objectType === "query" && (

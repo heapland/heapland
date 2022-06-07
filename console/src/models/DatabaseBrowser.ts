@@ -8,7 +8,7 @@ export interface DBSummary {
 }
 
 export interface DBQuery {
-  id: number;
+  id: number | string;
   name: string;
   text: string;
 }

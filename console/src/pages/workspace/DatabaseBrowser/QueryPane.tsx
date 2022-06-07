@@ -11,15 +11,16 @@ import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import Connections from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
+import { truncateString } from "../../../components/utils/utils";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
 
 const QueryPane: FC<{
   connectionId: number;
-  queryId: number;
+  queryId: number | string;
   name: string;
-  onUpdateQueryName: (id: number, newName: string) => void;
-  onDeleteQuery: (id: number) => void;
+  onUpdateQueryName: (id: number | string, newName: string) => void;
+  onDeleteQuery: (id: number | string) => void;
 }> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery }) => {
   const [modalForm] = Form.useForm();
   const [queryView, setQueryView] = useState<{
@@ -45,7 +46,7 @@ const QueryPane: FC<{
     Connections.getQuery(connectionId, queryId, (q) => {
       setQueryView({ ...queryView, loading: false, savedQuery: q.text, currentState: q.text });
     });
-  }, [queryId]);
+  }, [queryId, queryView.savedQuery]);
 
   const closeSaveAsModal = () => {
     modalForm.resetFields();
@@ -206,6 +207,7 @@ const QueryPane: FC<{
                 onMount={onEditorMount}
                 language='sql'
                 defaultValue={queryView.savedQuery}
+                value={queryView.savedQuery}
                 onChange={(v, ev) => {
                   setQueryView({ ...queryView, currentState: v });
                 }}
@@ -229,9 +231,26 @@ const QueryPane: FC<{
                           pagination={false}
                           className='tbl-data'
                           style={{ minHeight: "20vh", backgroundColor: "#fff" }}>
-                          {qr.result.columns.map((c, i) => (
-                            <Column className='table-cell-light' key={i.toString()} title={c.name.toUpperCase()} dataIndex={c.name} />
-                          ))}
+                          {qr.result.columns.map((c, i) => {
+                            if (c.name.toUpperCase() === "PROPERTIES") {
+                              return (
+                                <Column
+                                  className='table-cell-light'
+                                  key={i.toString()}
+                                  title={c.name.toUpperCase()}
+                                  render={(v) => (
+                                    <Tooltip overlayInnerStyle={{ width: "600px" }} title={v.properties}>
+                                      {truncateString(v.properties, 50)}
+                                    </Tooltip>
+                                  )}
+                                />
+                              );
+                            } else {
+                              return (
+                                <Column className='table-cell-light' key={i.toString()} title={c.name.toUpperCase()} dataIndex={c.name} />
+                              );
+                            }
+                          })}
                         </Table>
                       )}
                     </TabPane>
