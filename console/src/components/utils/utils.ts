@@ -140,7 +140,7 @@ export const readSQLInsert = (tableData: QueryExecutionResult, schema: string, t
     }
 
     create_table += row + ");";
-    sql += `${create_table}\r\n\r\nALTER TABLE ${tableName} owner to giga-admin;\r\n\r\n`;
+    sql += `${create_table} \r\n\r\n`;
   }
 
   //1st loop is to extract each row
