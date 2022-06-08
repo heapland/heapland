@@ -127,9 +127,10 @@ export const readTSVData = (data: string, showLabel: boolean, isRowHeader: boole
   return TSV;
 };
 
-export const readSQLInsert = (tableData: QueryExecutionResult, schema: string, tableName: string, tableDefinition: boolean) => {
+export const createSQLInsert = (tableData: QueryExecutionResult, schema: string, tableName: string, tableDefinition: boolean) => {
   let arrData = tableData.result;
   let colsData = tableData.columns;
+  let keys = tableData.columns.map((k) => k.name).join(",");
   let sql = "";
   let create_table = `CREATE TABLE ${tableName}(\r\n`;
 
@@ -144,53 +145,48 @@ export const readSQLInsert = (tableData: QueryExecutionResult, schema: string, t
   }
 
   //1st loop is to extract each row
-  for (let i = 0; i < arrData.length; i++) {
+
+  arrData.map((d) => {
     let sql_insert = "INSERT INTO " + schema + "." + tableName;
-    let value = "";
+    let keyName = ` (${keys}) `;
+    sql_insert += keyName;
+    let value: any[] = [];
 
-    var names = "(";
-    //This loop will extract the label from 1st index of on array
-    for (let index in arrData[0]) {
-      //Now convert each value to string and comma-seprated
-      names += index + ",";
-    }
-    names = names.slice(0, -1);
+    colsData.map((c) => {
+      if (c.dataType === "int8" || c.dataType === "int16") {
+        value.push(d[c.name]);
+      } else {
+        value.push(`'${d[c.name]}'`);
+      }
+    });
+    let joinValue = value.join(",");
 
-    //append Label row with line break
-    sql_insert += names + ",";
-    //2nd loop will extract each column and convert it in string comma-seprated
-    for (let index in arrData[i]) {
-      value += '"' + arrData[i][index] + '",';
-    }
-
-    value.slice(0, value.length - 1);
-    //add a line break after each row
-    sql_insert += value + ");\r\n";
+    sql_insert += `VALUES(${joinValue});\r\n`;
     sql += sql_insert;
-  }
+  });
 
   return sql;
 };
 
-export const readSQLUpdate = (data: any[], schema: string, tableName: string) => {
-  let arrData = typeof data !== "object" ? JSON.parse(data) : data;
+export const createSQLUpdate = (tableData: QueryExecutionResult, schema: string, tableName: string, oldKey: string = undefined) => {
+  let arrData = tableData.result;
+  let colsData = tableData.columns;
   let sql = "";
 
-  //1st loop is to extract each row
-  for (let i = 0; i < arrData.length; i++) {
-    let sql_update = "UPDATE  " + schema + "." + tableName;
-    let names = " SET ";
+  arrData.map((d) => {
+    let sql_insert = "UPDATE " + schema + "." + tableName + "\r\n" + "SET ";
 
-    for (let label in arrData[0]) {
-      names += label + " = ";
-      names += '"' + arrData[i][label] + '", ';
-    }
-    names = names.slice(0, -1);
-
-    sql_update += names + "\r\n";
-    sql += sql_update;
-  }
-
+    colsData.map((c) => {
+      if (c.dataType === "int8" || c.dataType === "int16") {
+        sql_insert += `${c.name} = ${d[c.name]},`;
+      } else {
+        sql_insert += ` ${c.name} = '${d[c.name]}',`;
+      }
+    });
+    sql_insert = sql_insert.slice(0, -1);
+    sql_insert += `\r\nWHERE id = '${oldKey || d["id"]}';\r\n\r\n`;
+    sql += sql_insert;
+  });
   return sql;
 };
 
