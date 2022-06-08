@@ -61,6 +61,9 @@
       height: 50px;
       padding: 5px 16px;
     }
+    .ant-table-tbody .ant-table-row-selected td {
+      background-color: #e2f4e8;
+    }
     td.run-history-col {
       display: flex;
       justify-content: flex-start;
