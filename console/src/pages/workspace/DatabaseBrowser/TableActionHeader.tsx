@@ -1,7 +1,6 @@
 import { Radio, Space, Button, Tooltip } from "antd";
 import React, { FC } from "react";
-import { RiRefreshLine } from "react-icons/ri";
-import { MdSync } from "react-icons/md";
+import { MdEdit, MdSync } from "react-icons/md";
 import { HiPlus, HiMinus, HiOutlineDotsHorizontal, HiDownload, HiUpload } from "react-icons/hi";
 
 const TableActionHeader: FC<{
@@ -9,8 +8,13 @@ const TableActionHeader: FC<{
   onAddRow: () => void;
   onDeleteRow: () => void;
   onUploadData: () => void;
+  onEditRow: () => void;
+  onSaveRow: () => void;
+  onCancel: () => void;
+  editingKey: string;
   onDownloadDataModal: () => void;
-}> = ({ onRefres, onAddRow, onDeleteRow, onDownloadDataModal, onUploadData }) => {
+  selectedRow: any[];
+}> = ({ onRefres, onAddRow, onDeleteRow, onDownloadDataModal, onUploadData, onEditRow, onSaveRow, onCancel, selectedRow, editingKey }) => {
   return (
     <div className='table-action-header file-browser-controls'>
       <Space align='center'>
@@ -21,9 +25,16 @@ const TableActionHeader: FC<{
           <Tooltip title='Add Row'>
             <Button size='small' icon={<HiPlus />} onClick={onAddRow} />
           </Tooltip>
-          <Tooltip title='Remove Row'>
-            <Button size='small' icon={<HiMinus />} onClick={onDeleteRow} />
-          </Tooltip>
+          {selectedRow.length > 0 && (
+            <Tooltip title='Remove Row'>
+              <Button size='small' icon={<HiMinus />} onClick={onDeleteRow} />
+            </Tooltip>
+          )}
+          {selectedRow.length === 1 && (
+            <Tooltip title='Edit Row'>
+              <Button size='small' icon={<MdEdit />} onClick={onEditRow} />
+            </Tooltip>
+          )}
           <Tooltip title='More Action'>
             <Button size='small' icon={<HiOutlineDotsHorizontal />} />
           </Tooltip>
@@ -42,6 +53,16 @@ const TableActionHeader: FC<{
           </Tooltip>
         </div>
       </Space>
+      {editingKey && (
+        <Space>
+          <Button onClick={onCancel} size='small'>
+            Cancel
+          </Button>
+          <Button onClick={onSaveRow} size='small' type='primary'>
+            Save
+          </Button>
+        </Space>
+      )}
     </div>
   );
 };

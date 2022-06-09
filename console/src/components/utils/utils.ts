@@ -39,41 +39,25 @@ export const donwloadFile = async (data: string, name: string, extractor: Extrac
   document.body.removeChild(link);
 };
 
-export const readCSVData = (data: string, showLabel: boolean, isRowHeader: boolean) => {
-  let arrData = typeof data !== "object" ? JSON.parse(data) : data;
-
+export const readCSVData = (tableData: QueryExecutionResult, showLabel: boolean, isRowHeader: boolean) => {
+  let arrData = tableData.result;
+  let colsData = tableData.columns;
+  let keys = colsData.map((k) => k.name).join(",");
   let CSV = "";
 
-  //This condition will generate the Label/Header
   if (showLabel) {
-    var row = "";
-
-    //This loop will extract the label from 1st index of on array
-    for (var index in arrData[0]) {
-      //Now convert each value to string and comma-seprated
-      row += index + ",";
-    }
-
-    row = row.slice(0, -1);
-
-    //append Label row with line break
-    CSV += isRowHeader ? "#," + row + "\r\n" : row + "\r\n";
+    let rowKey = keys;
+    CSV += isRowHeader ? "#," + rowKey + "\r\n" : rowKey + "\r\n";
   }
 
-  //1st loop is to extract each row
-  for (var i = 0; i < arrData.length; i++) {
-    var row = "";
-
-    //2nd loop will extract each column and convert it in string comma-seprated
-    for (var index in arrData[i]) {
-      row += '"' + arrData[i][index] + '",';
-    }
-
-    row.slice(0, row.length - 1);
-
-    //add a line break after each row
-    CSV += isRowHeader ? i + 1 + "," + row + "\r\n" : row + "\r\n";
-  }
+  arrData.map((d, i) => {
+    let rowValue: any[] = [];
+    colsData.map((c) => {
+      rowValue.push(d[c.name]);
+    });
+    let joinValue = rowValue.join(",");
+    CSV += isRowHeader ? i + 1 + "," + joinValue + "\r\n" : joinValue + "\r\n";
+  });
 
   if (CSV === "") {
     alert("Invalid data");
@@ -83,41 +67,27 @@ export const readCSVData = (data: string, showLabel: boolean, isRowHeader: boole
   return CSV;
 };
 
-export const readTSVData = (data: string, showLabel: boolean, isRowHeader: boolean) => {
-  let arrData = typeof data !== "object" ? JSON.parse(data) : data;
+export const readTSVData = (tableData: QueryExecutionResult, showLabel: boolean, isRowHeader: boolean) => {
+  let arrData = tableData.result;
+  let colsData = tableData.columns;
+  let keys = colsData.map((k) => k.name).join("\t");
 
   let TSV = "";
 
   //This condition will generate the Label/Header
   if (showLabel) {
-    var row = "";
-
-    //This loop will extract the label from 1st index of on array
-    for (var index in arrData[0]) {
-      //Now convert each value to string and comma-seprated
-      row += index + "\t";
-    }
-
-    row = row.slice(0, -1);
-
-    //append Label row with line break
-    TSV += isRowHeader ? "#" + "\t" + row + "\r\n" : row + "\r\n";
+    let rowKey = keys;
+    TSV += isRowHeader ? "#" + "\t" + rowKey + "\r\n" : rowKey + "\r\n";
   }
 
-  //1st loop is to extract each row
-  for (var i = 0; i < arrData.length; i++) {
-    var row = "";
-
-    //2nd loop will extract each column and convert it in string comma-seprated
-    for (var index in arrData[i]) {
-      row += arrData[i][index] + " \t";
-    }
-
-    row.slice(0, row.length - 1);
-
-    //add a line break after each row
-    TSV += isRowHeader ? i + 1 + "\t" + row + "\r\n" : row + "\r\n";
-  }
+  arrData.map((d, i) => {
+    let rowValue: any[] = [];
+    colsData.map((c) => {
+      rowValue.push(d[c.name]);
+    });
+    let joinValue = rowValue.join("\t");
+    TSV += isRowHeader ? i + 1 + "\t" + joinValue + "\r\n" : joinValue + "\r\n";
+  });
 
   if (TSV === "") {
     alert("Invalid data");
@@ -127,9 +97,10 @@ export const readTSVData = (data: string, showLabel: boolean, isRowHeader: boole
   return TSV;
 };
 
-export const readSQLInsert = (tableData: QueryExecutionResult, schema: string, tableName: string, tableDefinition: boolean) => {
+export const createSQLInsert = (tableData: QueryExecutionResult, schema: string, tableName: string, tableDefinition: boolean) => {
   let arrData = tableData.result;
   let colsData = tableData.columns;
+  let keys = colsData.map((k) => k.name).join(",");
   let sql = "";
   let create_table = `CREATE TABLE ${tableName}(\r\n`;
 
@@ -140,57 +111,52 @@ export const readSQLInsert = (tableData: QueryExecutionResult, schema: string, t
     }
 
     create_table += row + ");";
-    sql += `${create_table}\r\n\r\nALTER TABLE ${tableName} owner to giga-admin;\r\n\r\n`;
+    sql += `${create_table} \r\n\r\n`;
   }
 
   //1st loop is to extract each row
-  for (let i = 0; i < arrData.length; i++) {
+
+  arrData.map((d) => {
     let sql_insert = "INSERT INTO " + schema + "." + tableName;
-    let value = "";
+    let keyName = ` (${keys}) `;
+    sql_insert += keyName;
+    let value: any[] = [];
 
-    var names = "(";
-    //This loop will extract the label from 1st index of on array
-    for (let index in arrData[0]) {
-      //Now convert each value to string and comma-seprated
-      names += index + ",";
-    }
-    names = names.slice(0, -1);
+    colsData.map((c) => {
+      if (c.dataType === "int8" || c.dataType === "int16") {
+        value.push(d[c.name]);
+      } else {
+        value.push(`'${d[c.name]}'`);
+      }
+    });
+    let joinValue = value.join(",");
 
-    //append Label row with line break
-    sql_insert += names + ",";
-    //2nd loop will extract each column and convert it in string comma-seprated
-    for (let index in arrData[i]) {
-      value += '"' + arrData[i][index] + '",';
-    }
-
-    value.slice(0, value.length - 1);
-    //add a line break after each row
-    sql_insert += value + ");\r\n";
+    sql_insert += `VALUES(${joinValue});\r\n`;
     sql += sql_insert;
-  }
+  });
 
   return sql;
 };
 
-export const readSQLUpdate = (data: any[], schema: string, tableName: string) => {
-  let arrData = typeof data !== "object" ? JSON.parse(data) : data;
+export const createSQLUpdate = (tableData: QueryExecutionResult, schema: string, tableName: string, oldKey: string = undefined) => {
+  let arrData = tableData.result;
+  let colsData = tableData.columns;
   let sql = "";
 
-  //1st loop is to extract each row
-  for (let i = 0; i < arrData.length; i++) {
-    let sql_update = "UPDATE  " + schema + "." + tableName;
-    let names = " SET ";
+  arrData.map((d) => {
+    let sql_insert = "UPDATE " + schema + "." + tableName + "\r\n" + "SET ";
 
-    for (let label in arrData[0]) {
-      names += label + " = ";
-      names += '"' + arrData[i][label] + '", ';
-    }
-    names = names.slice(0, -1);
-
-    sql_update += names + "\r\n";
-    sql += sql_update;
-  }
-
+    colsData.map((c) => {
+      if (c.dataType === "int8" || c.dataType === "int16") {
+        sql_insert += `${c.name} = ${d[c.name]},`;
+      } else {
+        sql_insert += ` ${c.name} = '${d[c.name]}',`;
+      }
+    });
+    sql_insert = sql_insert.slice(0, -1);
+    sql_insert += `\r\nWHERE id = '${oldKey || d["id"]}';\r\n\r\n`;
+    sql += sql_insert;
+  });
   return sql;
 };
 

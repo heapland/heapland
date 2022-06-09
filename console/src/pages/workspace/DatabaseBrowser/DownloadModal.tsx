@@ -3,7 +3,14 @@ import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import { Button, Input, Modal, Select, Space, Checkbox, message } from "antd";
 import { SwitcherTwoTone } from "@ant-design/icons";
-import { readSQLInsert, readCSVData, readTSVData, readSQLUpdate, donwloadFile, copyTextToClipboard } from "../../../components/utils/utils";
+import {
+  createSQLInsert,
+  readCSVData,
+  readTSVData,
+  createSQLUpdate,
+  donwloadFile,
+  copyTextToClipboard,
+} from "../../../components/utils/utils";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 const { Option } = Select;
 
@@ -42,7 +49,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: readSQLInsert(tableData, schema, tableName, false),
+        downContent: createSQLInsert(tableData, schema, tableName, false),
         isTableDefinition: false,
       });
     } else if (value === "sql_update") {
@@ -50,7 +57,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: readSQLUpdate(tableData?.result, schema, tableName),
+        downContent: createSQLUpdate(tableData, schema, tableName),
       });
     } else if (value === "json") {
       setDownloadInfo({
@@ -64,7 +71,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "csv",
-        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), false, false),
+        downContent: readCSVData(tableData, false, false),
         isColumnHeader: false,
         isRowHeader: false,
       });
@@ -73,7 +80,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: value,
-        downContent: readTSVData(JSON.stringify(tableData?.result, null, 2), false, false),
+        downContent: readTSVData(tableData, false, false),
         isColumnHeader: false,
         isRowHeader: false,
       });
@@ -86,7 +93,7 @@ const DownloadModal: FC<{
     // if (tableData.result && name && schema) {
     //   setDownloadInfo({
     //     ...downloadInfo,
-    //     downContent: readSQLInsert(tableData.result, schema, name),
+    //     downContent: createSQLInsert(tableData.result, schema, name),
     //   });
     // }
   }, []);
@@ -100,8 +107,8 @@ const DownloadModal: FC<{
         isColumnHeader: checked,
         downContent:
           downloadInfo.extractor === "csv"
-            ? readCSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader)
-            : readTSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader),
+            ? readCSVData(tableData, checked, downloadInfo.isRowHeader)
+            : readTSVData(tableData, checked, downloadInfo.isRowHeader),
       });
     } else if (name === "row") {
       setDownloadInfo({
@@ -109,14 +116,14 @@ const DownloadModal: FC<{
         isRowHeader: checked,
         downContent:
           downloadInfo.extractor === "csv"
-            ? readCSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked)
-            : readTSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked),
+            ? readCSVData(tableData, downloadInfo.isColumnHeader, checked)
+            : readTSVData(tableData, downloadInfo.isColumnHeader, checked),
       });
     } else if (name === "table_definition") {
       setDownloadInfo({
         ...downloadInfo,
         isTableDefinition: checked,
-        downContent: readSQLInsert(tableData, schema, tableName, checked),
+        downContent: createSQLInsert(tableData, schema, tableName, checked),
       });
     }
   };
