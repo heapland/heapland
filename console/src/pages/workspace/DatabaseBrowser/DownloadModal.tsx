@@ -71,7 +71,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "csv",
-        downContent: readCSVData(JSON.stringify(tableData?.result, null, 2), false, false),
+        downContent: readCSVData(tableData, false, false),
         isColumnHeader: false,
         isRowHeader: false,
       });
@@ -80,7 +80,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: value,
-        downContent: readTSVData(JSON.stringify(tableData?.result, null, 2), false, false),
+        downContent: readTSVData(tableData, false, false),
         isColumnHeader: false,
         isRowHeader: false,
       });
@@ -107,8 +107,8 @@ const DownloadModal: FC<{
         isColumnHeader: checked,
         downContent:
           downloadInfo.extractor === "csv"
-            ? readCSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader)
-            : readTSVData(JSON.stringify(tableData?.result, null, 2), checked, downloadInfo.isRowHeader),
+            ? readCSVData(tableData, checked, downloadInfo.isRowHeader)
+            : readTSVData(tableData, checked, downloadInfo.isRowHeader),
       });
     } else if (name === "row") {
       setDownloadInfo({
@@ -116,8 +116,8 @@ const DownloadModal: FC<{
         isRowHeader: checked,
         downContent:
           downloadInfo.extractor === "csv"
-            ? readCSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked)
-            : readTSVData(JSON.stringify(tableData?.result, null, 2), downloadInfo.isColumnHeader, checked),
+            ? readCSVData(tableData, downloadInfo.isColumnHeader, checked)
+            : readTSVData(tableData, downloadInfo.isColumnHeader, checked),
       });
     } else if (name === "table_definition") {
       setDownloadInfo({
