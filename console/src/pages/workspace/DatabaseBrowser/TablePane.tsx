@@ -20,7 +20,7 @@ interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
 }
 
 const EditableCell: React.FC<EditableCellProps> = ({ editing, dataIndex, title, inputType, record, index, children, ...restProps }) => {
-  const inputNode = inputType === "number" ? <InputNumber /> : <Input />;
+  const inputNode = inputType === "number" ? <InputNumber /> : <Input style={{ minWidth: "50px" }} />;
 
   return (
     <td {...restProps}>
@@ -50,6 +50,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   dbName,
 }) => {
   const [tableData, setTableData] = useState<{ loading: boolean; result?: QueryExecutionResult }>({ loading: true });
+  const [isNewData, setNewData] = useState<QueryExecutionResult>();
   const [refres, setRefres] = useState<boolean>(false);
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
   const [form] = Form.useForm();
@@ -61,6 +62,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     setTableData({ loading: true });
     Connections.getTableData(connectionId, name, schema, (data) => {
       setTableData({ ...tableData, loading: false, result: data });
+      setNewData(data);
     });
   }, [name, refres]);
 
@@ -112,8 +114,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     try {
       const row = (await form.validateFields()) as any;
       const newData = [...tableData.result.result];
-      const index = newData.findIndex((item) => id === item.id);
-
+      const index = isNewData.result.findIndex((item) => id === item.id);
       if (index > -1) {
         const item = newData[index];
         newData.splice(index, 1, {
@@ -205,7 +206,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     <>
       <TableActionHeader
         onEditRow={() => edit(selectedRows[0])}
-        onSaveRow={() => save(selectedRows[0].id)}
+        onSaveRow={() => save(editingKey)}
         onCancel={cancel}
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}

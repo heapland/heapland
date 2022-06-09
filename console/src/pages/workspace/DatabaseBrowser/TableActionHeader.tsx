@@ -32,7 +32,7 @@ const TableActionHeader: FC<{
           )}
           {selectedRow.length === 1 && (
             <Tooltip title='Edit Row'>
-              <Button size='small' disabled={selectedRow.length != 1} icon={<MdEdit />} onClick={onEditRow} />
+              <Button size='small' icon={<MdEdit />} onClick={onEditRow} />
             </Tooltip>
           )}
           <Tooltip title='More Action'>
