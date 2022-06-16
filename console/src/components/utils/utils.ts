@@ -144,18 +144,18 @@ export const createSQLUpdate = (tableData: QueryExecutionResult, schema: string,
   let sql = "";
 
   arrData.map((d) => {
-    let sql_insert = "UPDATE " + schema + "." + tableName + "\r\n" + "SET ";
+    let sql_update = "UPDATE " + schema + "." + tableName + "\r\n" + "SET ";
 
     colsData.map((c) => {
       if (c.dataType === "int8" || c.dataType === "int16") {
-        sql_insert += `${c.name} = ${d[c.name]},`;
+        sql_update += `${c.name} = ${d[c.name]},`;
       } else {
-        sql_insert += ` ${c.name} = '${d[c.name]}',`;
+        sql_update += ` ${c.name} = '${d[c.name]}',`;
       }
     });
-    sql_insert = sql_insert.slice(0, -1);
-    sql_insert += `\r\nWHERE id = '${oldKey || d["id"]}';\r\n\r\n`;
-    sql += sql_insert;
+    sql_update = sql_update.slice(0, -1);
+    sql_update += `\r\nWHERE id = '${oldKey || d["id"]}';\r\n\r\n`;
+    sql += sql_update;
   });
   return sql;
 };
