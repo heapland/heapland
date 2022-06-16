@@ -12,6 +12,9 @@ import Connections from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
 import { truncateString } from "../../../components/utils/utils";
+import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
+import { getLangColorDefination, keywords } from "./PgSQL";
+import { EditorLang } from "./DatabaseBrowser";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
 
@@ -19,10 +22,12 @@ const QueryPane: FC<{
   connectionId: number;
   queryId: number | string;
   name: string;
+  editorLang: EditorLang;
   onUpdateQueryName: (id: number | string, newName: string) => void;
   onDeleteQuery: (id: number | string) => void;
-}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery }) => {
+}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang }) => {
   const [modalForm] = Form.useForm();
+  const monaco = useMonaco();
   const [queryView, setQueryView] = useState<{
     queryName: string;
     savedQuery: string;
@@ -151,6 +156,30 @@ const QueryPane: FC<{
     });
   };
 
+  React.useEffect(() => {
+    let autoComp: any;
+    if (monaco) {
+      monaco.languages.register({ id: editorLang });
+      monaco.languages.setMonarchTokensProvider(editorLang, getLangColorDefination());
+      monaco.editor.defineTheme(editorLang, {
+        base: "vs",
+        rules: [
+          { token: "keyword", foreground: "#d30909" },
+          { token: "functions", foreground: "#1E90FF" },
+          { token: "comment", foreground: "#999999" },
+          { token: "string", foreground: "#009966" },
+        ],
+        colors: {},
+      });
+      monaco.editor.setTheme(editorLang);
+      autoComp = getPgsqlCompletionProvider(monaco, editorLang, connectionId);
+      return () => {
+        autoComp.dispose();
+        monaco.editor.getModels().forEach((model: any) => model.dispose());
+      };
+    }
+  }, [monaco]);
+
   return (
     <>
       <div className='query-container'>
@@ -203,9 +232,9 @@ const QueryPane: FC<{
               maxHeight='75vh'
               minHeight='25vh'>
               <Editor
-                defaultLanguage='sql'
+                defaultLanguage='pgsql'
                 onMount={onEditorMount}
-                language='sql'
+                language='pgsql'
                 defaultValue={queryView.savedQuery}
                 value={queryView.savedQuery}
                 onChange={(v, ev) => {
