@@ -232,9 +232,9 @@ const QueryPane: FC<{
               maxHeight='75vh'
               minHeight='25vh'>
               <Editor
-                defaultLanguage='pgsql'
+                defaultLanguage={editorLang}
                 onMount={onEditorMount}
-                language='pgsql'
+                language={editorLang}
                 defaultValue={queryView.savedQuery}
                 value={queryView.savedQuery}
                 onChange={(v, ev) => {
