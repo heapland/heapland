@@ -160,6 +160,15 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
                 insertText: o,
               };
             }),
+            ...pgsqlFunction.map((f) => {
+              return {
+                label: f.key,
+                kind: monaco.languages.CompletionItemKind.Operator,
+                detail: f.detail,
+                range: range,
+                insertText: f.insertText,
+              };
+            }),
           ];
         }
         // console.log(items);
