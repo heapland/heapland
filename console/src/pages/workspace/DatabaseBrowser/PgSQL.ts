@@ -470,11 +470,15 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
   },
   {
     key: "FROM",
-    detail: "Selects only distinct (different) values",
+    detail: "Selects the table",
   },
   {
     key: "WHERE",
-    detail: "Selects only distinct (different) values",
+    detail: "",
+  },
+  {
+    key: "INSERT",
+    detail: "",
   },
 ];
 
@@ -501,7 +505,7 @@ export const pgsqlFunction: PGSQLFunction[] = [
   },
 ];
 
-export const getLangDefination = () => {
+export const getLangDefinition = () => {
   return {
     ignoreCase: true,
     keywords: [
@@ -1438,9 +1442,12 @@ export const getLangDefination = () => {
       "cdouble",
       "creal",
       "void",
+      ...builtinFunctions,
     ],
 
     operators: [
+      ...operators,
+
       "=",
       ">",
       "<",
@@ -1488,6 +1495,7 @@ export const getLangDefination = () => {
     tokenizer: {
       root: [
         // identifiers and keywords
+        { include: "custom" },
         [
           /[a-z_$][\w$]*/,
           {
@@ -1534,6 +1542,11 @@ export const getLangDefination = () => {
         [/'[^\\']'/, "string"],
         [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
         [/'/, "string.invalid"],
+      ],
+
+      custom: [
+        ["someSampleWord", "customClass"],
+        ["Array", "redClass"],
       ],
 
       whitespace: [
