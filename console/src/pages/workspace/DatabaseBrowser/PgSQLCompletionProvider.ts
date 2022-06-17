@@ -113,47 +113,31 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
             }),
           ];
         } else if (splitQuery.includes("set") || (lastQueryWord === "where" && !!checkIfTablePres(tblNames, splitQuery))) {
+          let newCols = colsNames.filter(
+            (c) => c.tblName === lastScndQryWord || c.tblName === checkIfTablePres(tblNames, splitQuery).tblName
+          );
           items = [
-            ...colsNames.map((c) => {
-              if (c.tblName === lastScndQryWord || c.tblName === checkIfTablePres(tblNames, splitQuery).tblName) {
-                return {
-                  label: c.colName,
-                  kind: monaco.languages.CompletionItemKind.Value,
-                  detail: c.detail,
-                  range: range,
-                  insertText: c.colName,
-                };
-              } else {
-                return {
-                  label: "",
-                  kind: monaco.languages.CompletionItemKind.Value,
-                  detail: "",
-                  range: range,
-                  insertText: "",
-                };
-              }
+            ...newCols.map((c) => {
+              return {
+                label: c.colName,
+                kind: monaco.languages.CompletionItemKind.Value,
+                detail: c.detail,
+                range: range,
+                insertText: c.colName,
+              };
             }),
           ];
         } else if (splitQuery.includes("insert") && splitQuery.includes("into") && !!checkIfTablePres(tblNames, splitQuery)) {
+          let newCols = colsNames.filter((c) => c.tblName === lastQueryWord);
           items = [
-            ...colsNames.map((c) => {
-              if (c.tblName === lastQueryWord) {
-                return {
-                  label: c.colName,
-                  kind: monaco.languages.CompletionItemKind.Value,
-                  detail: c.detail,
-                  range: range,
-                  insertText: c.colName,
-                };
-              } else {
-                return {
-                  label: "",
-                  kind: monaco.languages.CompletionItemKind.Value,
-                  detail: "",
-                  range: range,
-                  insertText: "",
-                };
-              }
+            ...newCols.map((c) => {
+              return {
+                label: c.colName,
+                kind: monaco.languages.CompletionItemKind.Value,
+                detail: c.detail,
+                range: range,
+                insertText: c.colName,
+              };
             }),
           ];
         } else {
