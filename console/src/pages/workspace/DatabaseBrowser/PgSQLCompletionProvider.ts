@@ -34,6 +34,10 @@ const getPrvRange = (word: any, position: any) => {
   };
 };
 
+const checkIfTablePres = (tblNames: Tables[], splitQuery: string[]) => {
+  return tblNames.find((t) => splitQuery.includes(t.tblName)) as Tables;
+};
+
 export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, connectionId: number) => {
   let tblNames: Tables[] = [];
   let colsNames: Columns[] = [];
@@ -44,7 +48,6 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
         Connections.listTables(connectionId, schema, (tables) => {
           tables.map((table) => {
             tblNames.push({ tblName: table, detail: `Table in Schema: ${schema}` });
-
             Connections.listTablesObjects(connectionId, schema, table, (objs) => {
               objs?.columns?.map((col) => {
                 colsNames.push({ colName: col.name, detail: `Column in table ${table}: ${col.name} | ${col.dataType}`, tblName: table });
@@ -56,23 +59,23 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
     }
   });
   return monaco.languages.registerCompletionItemProvider(editorLang, {
-    triggerCharacters: [".", '"', " "],
+    triggerCharacters: [".", '"', "(", ","],
     provideCompletionItems: (model: any, position: any, context: any) => {
       const word = model.getWordUntilPosition(position);
 
       const range = getRange(word, position);
       const prvRange = getPrvRange(word, position);
       const query = model.getValueInRange(prvRange);
-      const splitQuery = query.split(" ");
+      const splitQuery = query.split(" ").map((q: string) => q?.toLowerCase());
       const lastQueryWord = splitQuery[splitQuery.length - 2]?.toLowerCase();
       const lastScndQryWord = splitQuery[splitQuery.length - 3]?.toLowerCase();
-      // console.log(query);
+      // console.log(query, word, splitQuery);
       // console.log("last 2nd ", lastScndQryWord);
       // console.log("last ", lastQueryWord);
 
       try {
         let items: any[];
-        if (lastQueryWord === "select" || lastQueryWord === "where" || lastQueryWord?.slice(-1) === ",") {
+        if (lastQueryWord === "select" || lastQueryWord?.slice(-1) === ",") {
           items = [
             {
               label: "*",
@@ -93,7 +96,7 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
           ];
         } else if (
           lastQueryWord === "from" ||
-          lastQueryWord === "detailribe" ||
+          lastQueryWord === "describe" ||
           lastQueryWord === "table" ||
           lastQueryWord === "into" ||
           lastQueryWord === "update"
@@ -109,10 +112,32 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
               };
             }),
           ];
-        } else if (lastQueryWord === "set" || (lastQueryWord === "where" && tblNames.find((t) => t.tblName === lastScndQryWord))) {
+        } else if (splitQuery.includes("set") || (lastQueryWord === "where" && !!checkIfTablePres(tblNames, splitQuery))) {
           items = [
             ...colsNames.map((c) => {
-              if (c.tblName === lastScndQryWord) {
+              if (c.tblName === lastScndQryWord || c.tblName === checkIfTablePres(tblNames, splitQuery).tblName) {
+                return {
+                  label: c.colName,
+                  kind: monaco.languages.CompletionItemKind.Value,
+                  detail: c.detail,
+                  range: range,
+                  insertText: c.colName,
+                };
+              } else {
+                return {
+                  label: "",
+                  kind: monaco.languages.CompletionItemKind.Value,
+                  detail: "",
+                  range: range,
+                  insertText: "",
+                };
+              }
+            }),
+          ];
+        } else if (splitQuery.includes("insert") && splitQuery.includes("into") && !!checkIfTablePres(tblNames, splitQuery)) {
+          items = [
+            ...colsNames.map((c) => {
+              if (c.tblName === lastQueryWord) {
                 return {
                   label: c.colName,
                   kind: monaco.languages.CompletionItemKind.Value,
@@ -153,7 +178,7 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
             }),
           ];
         }
-        //   console.log(items);
+        // console.log(items);
         return { suggestions: items };
       } catch (_) {
         // any error, returns empty suggestion
