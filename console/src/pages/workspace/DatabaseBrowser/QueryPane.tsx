@@ -13,7 +13,7 @@ import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
 import { truncateString } from "../../../components/utils/utils";
 import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
-import { getLangColorDefination, keywords } from "./PgSQL";
+import { getLangDefination } from "./PgSQL";
 import { EditorLang } from "./DatabaseBrowser";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
@@ -160,7 +160,7 @@ const QueryPane: FC<{
     let autoComp: any;
     if (monaco) {
       monaco.languages.register({ id: editorLang });
-      monaco.languages.setMonarchTokensProvider(editorLang, getLangColorDefination());
+      monaco.languages.setMonarchTokensProvider(editorLang, getLangDefination());
       monaco.editor.defineTheme(editorLang, {
         base: "vs",
         rules: [
