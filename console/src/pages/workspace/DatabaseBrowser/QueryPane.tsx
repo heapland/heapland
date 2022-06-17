@@ -13,7 +13,7 @@ import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
 import { truncateString } from "../../../components/utils/utils";
 import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
-import { getLangDefination } from "./PgSQL";
+import { getLangDefinition } from "./PgSQL";
 import { EditorLang } from "./DatabaseBrowser";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
@@ -155,23 +155,14 @@ const QueryPane: FC<{
       },
     });
   };
+  const handleEditorBeforeMount = (monaco: any) => {
+    monaco.languages.register({ id: editorLang });
+    monaco.languages.setMonarchTokensProvider(editorLang, getLangDefinition());
+  };
 
   React.useEffect(() => {
     let autoComp: any;
     if (monaco) {
-      monaco.languages.register({ id: editorLang });
-      monaco.languages.setMonarchTokensProvider(editorLang, getLangDefination());
-      monaco.editor.defineTheme(editorLang, {
-        base: "vs",
-        rules: [
-          { token: "keyword", foreground: "#d30909" },
-          { token: "functions", foreground: "#1E90FF" },
-          { token: "comment", foreground: "#999999" },
-          { token: "string", foreground: "#009966" },
-        ],
-        colors: {},
-      });
-      monaco.editor.setTheme(editorLang);
       autoComp = getPgsqlCompletionProvider(monaco, editorLang, connectionId);
       return () => {
         autoComp.dispose();
@@ -234,6 +225,7 @@ const QueryPane: FC<{
               <Editor
                 defaultLanguage={editorLang}
                 onMount={onEditorMount}
+                beforeMount={handleEditorBeforeMount}
                 language={editorLang}
                 defaultValue={queryView.savedQuery}
                 value={queryView.savedQuery}
