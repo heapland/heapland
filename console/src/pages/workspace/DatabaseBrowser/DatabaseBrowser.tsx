@@ -34,6 +34,7 @@ const { DirectoryTree } = Tree;
 const { TabPane } = Tabs;
 
 type ObjType = "query" | "table";
+export type EditorLang = "pgsql" | "sql";
 interface DBPane {
   name: string;
   id: number | string;
@@ -667,6 +668,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             name={pane.name}
                             onUpdateQueryName={updateQuery}
                             onDeleteQuery={onDeleteQuery}
+                            editorLang='pgsql'
                           />
                         </TabPane>
                       )}
