@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import GitHubButton from "react-github-btn";
-import { Layout, Menu, Dropdown, Button, Space, Tooltip, Tag } from "antd";
+import { Layout, Menu, Dropdown, Button, Space, Tooltip, Tag, Switch } from "antd";
 import { connect } from "react-redux";
 import { appLoaded } from "../../actions/app";
 import { User, UserContext } from "../../store/User";
@@ -22,6 +22,7 @@ import WebService from "../../services/WebService";
 import { ConsoleLogo } from "../../components/Icons/ConsoleLogo";
 import "../../style/customScroll.css";
 import Connections, { ConnectionView } from "../../services/Connections";
+import Workspace from "../../services/Workspace";
 
 const { Content, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -68,10 +69,11 @@ const OrgThumbnailImg: React.FC<{ name: string; thumbnail?: string }> = ({ name,
 const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateLogin, isAppLoaded, appLoaded, user }) => {
   const context = React.useContext(UserContext);
 
-  const [state, setState] = React.useState<{ collapsed: boolean; activeConnections: ConnectionView[]; loading: boolean }>({
+  const [state, setState] = React.useState<{ collapsed: boolean; activeConnections: ConnectionView[]; loading: boolean; isDark: boolean }>({
     collapsed: getLocalStorage("collaps") || false,
     activeConnections: [],
     loading: true,
+    isDark: false,
   });
 
   const handleLogout = () => {
@@ -110,6 +112,35 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
       </Menu.Item>
     </Menu>
   );
+
+  const onChangeTheme = (checked: boolean) => {
+    Workspace.updateTheme(
+      {
+        webTheme: checked ? "dark" : "light",
+        desktopTheme: context.currentUser.profile.desktopTheme,
+      },
+      (res) => {
+        if (res.themeUpdated) {
+          setState({ ...state, isDark: checked });
+          if (checked) {
+            document.documentElement.setAttribute("data-theme", "dark");
+          } else {
+            document.documentElement.setAttribute("data-theme", "light");
+          }
+        }
+      }
+    );
+  };
+
+  React.useEffect(() => {
+    if (context.currentUser.profile.webTheme === "light") {
+      document.documentElement.setAttribute("data-theme", "light");
+      setState({ ...state, isDark: false });
+    } else {
+      document.documentElement.setAttribute("data-theme", "dark");
+      setState({ ...state, isDark: true });
+    }
+  }, []);
 
   return (
     <Layout className='main-app-wrapper'>
@@ -231,6 +262,8 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
           <div className='brand-logo-container'>
             <img src={BrandLogo} />
           </div>
+
+          <Switch size='small' checked={state.isDark} defaultChecked={state.isDark} onChange={onChangeTheme} />
 
           <GitHubButton href='https://github.com/heapland/heapland' data-show-count='true' aria-label='Star heapland/heapland on GitHub'>
             Star
