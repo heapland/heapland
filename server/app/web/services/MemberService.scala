@@ -3,7 +3,7 @@ package web.services
 import com.mohiva.play.silhouette.api.{AuthInfo, LoginInfo}
 import web.models.{CredentialInfo, Member, MemberValue, OrgDetail, OrgWithKeys, WorkspaceAPIKey, WorkspaceViewResponse}
 import com.mohiva.play.silhouette.api.services.IdentityService
-import web.models.rbac.{MemberProfile, MemberRole}
+import web.models.rbac.{MemberProfile, MemberRole, Theme}
 import play.api.cache.SyncCacheApi
 import web.models.requests.{CreateOrgWorkspace, ProvisionWorkspace, WorkspaceCreated}
 
@@ -30,6 +30,8 @@ trait MemberService extends IdentityService[Member] {
   def save(member: Member, secretStore: SecretStore): Future[Long]
 
   def updateMemberName(name: String, memId: Long): Future[Boolean]
+
+  def updateMemberProfileTheme(memberId: Long, webTheme: Theme.Value, desktopTheme: Theme.Value): Future[Boolean]
 
   def updateCredentials(loginInfo: LoginInfo, credentialInfo: CredentialInfo): Future[CredentialInfo]
 

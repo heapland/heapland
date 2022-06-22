@@ -43,6 +43,6 @@ cd ../ && cp -r console/build/ server/sbin/ui
 echo "> Building the zip and tar"
 
 sbt ";project heapland-server ;clean ;dist ;universal:packageZipTarball"
-cd server && docker build -t heapland/heapland:$NEW_VERSION .
+cd server && docker build -t heapland/heapland-dev:$NEW_VERSION .
 
 

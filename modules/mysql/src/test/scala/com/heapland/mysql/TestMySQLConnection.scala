@@ -22,6 +22,7 @@ class TestMySQLConnection extends AnyFlatSpec with Matchers {
     val catalogs = MySQLDatabaseService.getCatalogs(conn)
     val tables = MySQLDatabaseService.listTables("mysql", conn)
     val qs = MySQLDatabaseService.executeQuery("select * from agents", conn)
+    val desc = MySQLDatabaseService.describeTable("", "events_spark_app", conn)
 
     assert(meta.isSuccess)
     assert(schemas.isSuccess && schemas.get.size == 0)

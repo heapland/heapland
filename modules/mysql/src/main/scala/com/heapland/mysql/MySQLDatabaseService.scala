@@ -2,12 +2,12 @@ package com.heapland.mysql
 
 import java.sql.Connection
 
-import com.heapland.services.{ColumnMeta, DatabaseServer, DatabaseServiceProvider, MySQLConnection, QueryExecutionResult, SchemaObjects, TableKey, TableMeta}
+import com.heapland.services.{ColumnDetail, ColumnMeta, DatabaseServer, DatabaseServiceProvider, ForeignKey, MySQLConnection, PrimaryKey, QueryExecutionResult, SchemaObjects, TableIndex, TableKey, TableMeta}
 import scalikejdbc._
 import java.sql.ResultSet
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.{ArrayBuffer, ListBuffer}
 import scala.util.Try
 
 object MySQLDatabaseService extends DatabaseServiceProvider[MySQLConnection] {
@@ -108,7 +108,46 @@ object MySQLDatabaseService extends DatabaseServiceProvider[MySQLConnection] {
     SchemaObjects(views = listViews.toSeq, tables = listTables.toSeq, routines = listFunctions.toSeq)
   }
 
-  override def describeTable(schema: String, table: String, config: MySQLConnection): Try[TableMeta] = ???
+  override def describeTable(schema: String, table: String, config: MySQLConnection): Try[TableMeta] = usingConfig(config) { conn =>
+    val q = s"SELECT * FROM ${table} LIMIT 1"
+    val rs       = conn.prepareStatement(q).executeQuery()
+    val md       = rs.getMetaData
+
+    val columns = (1 to md.getColumnCount).map { id =>
+      ColumnDetail(name = md.getColumnName(id), dataType = md.getColumnTypeName(id), isForeignKey = false, isPrimaryKey = false)
+    }
+    val primaryKeysRS = conn.getMetaData.getPrimaryKeys(config.database, schema, table)
+    val tablePrimaryKeys = ArrayBuffer.empty[PrimaryKey]
+    while(primaryKeysRS.next()){
+      tablePrimaryKeys.addOne(PrimaryKey(colName = primaryKeysRS.getString("COLUMN_NAME"),
+        name = primaryKeysRS.getString("PK_NAME")))
+    }
+
+    val indexRS = conn.getMetaData.getIndexInfo(config.database, null, table, false, false)
+    val tableIndexes = ArrayBuffer.empty[TableIndex]
+    while(indexRS.next()){
+      tableIndexes.addOne(TableIndex(name = indexRS.getString("INDEX_NAME"), col = indexRS.getString("COLUMN_NAME")))
+    }
+
+    val irs       = conn.getMetaData.getImportedKeys(config.database, schema, table)
+    val foreignKeys = ArrayBuffer.empty[ForeignKey]
+    while (irs.next()) {
+      foreignKeys.addOne(
+        ForeignKey(colName = irs.getString("FKCOLUMN_NAME"),
+          name = irs.getString("FK_NAME"),
+          foreignTable = irs.getString("PKTABLE_NAME"),
+          foreignCol = irs.getString("PKCOLUMN_NAME")
+        )
+      )
+    }
+
+    val withKeysCols = columns.map{ cm =>
+      cm.copy(isForeignKey = foreignKeys.exists(_.colName.equals(cm.name)),isPrimaryKey = tablePrimaryKeys.exists(_.colName.equals(cm.name)))
+    }
+
+
+    TableMeta(columns = withKeysCols, primaryKeys = tablePrimaryKeys.toSeq, foreignKeys = foreignKeys.toSeq, indexes = tableIndexes.toSeq)
+  }
 
   private def buildMap(queryResult: ResultSet, colNames: Seq[String]): Option[Map[String, Object]] =
     if (queryResult.next())

@@ -4,6 +4,7 @@ import play.api.libs.json._
 
 
 case class NameChangeRequest(name: String)
+case class ThemeRequest(webTheme: String, desktopTheme: String)
 case class PasswordChangeRequest(email: String, oldPassword: String, newPassword: String)
 case class SignInRequest(rememberMe: Boolean)
 case class ListBetaRequest(pageSize: Int, pageNum: Int)
@@ -18,5 +19,6 @@ trait AuthRequestsJsonFormatter {
   implicit val lstBetaFmt               = Json.format[ListBetaRequest]
   implicit val sacFmt                   = Json.format[SendActivationCode]
   implicit val approveRequestFmt        = Json.format[ApproveRequest]
+  implicit val themeRequestFmt = Json.format[ThemeRequest]
 }
 

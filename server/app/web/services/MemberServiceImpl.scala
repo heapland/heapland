@@ -5,9 +5,8 @@ import web.repo.{LoginInfoRepo, MemberRepository, WorkspaceRepo}
 import com.mohiva.play.silhouette.api.{AuthInfo, LoginInfo}
 import com.mohiva.play.silhouette.api.repositories.AuthInfoRepository
 import javax.inject.Inject
-import web.models.rbac.{MemberProfile, MemberRole}
+import web.models.rbac.{MemberProfile, MemberRole, Theme}
 import play.api.cache.SyncCacheApi
-
 import web.models.requests.{CreateOrgWorkspace, ProvisionWorkspace, WorkspaceCreated}
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -51,6 +50,9 @@ class MemberServiceImpl @Inject()(memberRepository: MemberRepository,
   }
 
   override def updateMemberName(name: String, memId: Long): Future[Boolean] = memberRepository.updateName(name, memId)
+
+  override def updateMemberProfileTheme(memberId: Long, webTheme: Theme.Value, desktopTheme: Theme.Value): Future[Boolean] =
+    memberRepository.updateMemberTheme(memberId, webTheme, desktopTheme)
 
   override def updateCredentials(loginInfo: LoginInfo, credentialInfo: CredentialInfo): Future[CredentialInfo] =
     authInfoRepository.update(loginInfo, credentialInfo)

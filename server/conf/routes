@@ -44,6 +44,7 @@ POST        /web/v1/clusters/:clusterId/stop                        web.controll
 POST        /web/signin                          web.controllers.auth.AuthController.signIn
 GET         /web/signout                         web.controllers.auth.AuthController.signOut
 GET         /web/account                         web.controllers.auth.MemberController.accountDetails
+POST        /web/theme                           web.controllers.auth.MemberController.updateTheme
 GET         /web/v1/orgs                         web.controllers.auth.MemberController.listOrgsWithKeys
 
 #Orgs and Workspace

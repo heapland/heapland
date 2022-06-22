@@ -5,7 +5,7 @@ import java.time.{Period, ZonedDateTime}
 import com.mohiva.play.silhouette.api.LoginInfo
 import javax.inject.Inject
 import web.models.rbac.{AccessPolicy, AccessRoles, MemberProfile, MemberRole, SubjectType, Theme}
-import web.models.{ Member, MemberValue, OrgDetail, OrgUsagePlan, OrgWithKeys, WorkspaceViewResponse}
+import web.models.{Member, MemberValue, OrgDetail, OrgUsagePlan, OrgWithKeys, WorkspaceViewResponse}
 import web.repo.MemberRepository
 import web.services.{APISecretsGenerator, SecretStore}
 import web.utils.DateUtil
@@ -107,6 +107,16 @@ class PgMemberRepoImpl @Inject()(blockingEC: ExecutionContext, apiKeyGenerator: 
           ))
           .single()
           .apply()
+      }
+    }
+  }
+
+  override def updateMemberTheme(id: Long, webTheme: Theme.Value, desktopTheme: Theme.Value): Future[Boolean] = Future {
+    blocking {
+      DB localTx { implicit session =>
+        sql"""update member_profile SET web_theme = ${webTheme.toString} , desktop_theme = ${desktopTheme.toString} """
+          .executeUpdate()
+          .apply() > 0
       }
     }
   }

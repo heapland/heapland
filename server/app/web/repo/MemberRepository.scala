@@ -2,7 +2,7 @@ package web.repo
 
 import web.models.{Member, MemberValue, OrgDetail, OrgUsagePlan, OrgWithKeys, WorkspaceViewResponse}
 import com.mohiva.play.silhouette.api.LoginInfo
-import web.models.rbac.{MemberProfile, MemberRole}
+import web.models.rbac.{MemberProfile, MemberRole, Theme}
 import web.services.SecretStore
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -24,6 +24,8 @@ trait MemberRepository {
   def createOrg(name: String, ownerId: Long, orgSlug: String, thumbnailImg: Option[String]): Future[Either[Throwable, Long]]
 
   def getMemberProfile(id: Long): Future[Option[MemberProfile]]
+
+  def updateMemberTheme(id: Long, webTheme: Theme.Value, desktopTheme: Theme.Value): Future[Boolean]
 
   def findByToken(token: String): Future[Option[Member]]
 

@@ -37,6 +37,35 @@ export interface ConnectionView {
   dateCreated: number;
 }
 
+export interface ColumnDetails {
+  name: string;
+  dataType: string;
+  isPrimaryKey: boolean;
+  isForegnKey: boolean;
+}
+
+export interface PrimaryKey {
+  colName: string;
+  name: string;
+}
+export interface ForeignKeys {
+  colName: string;
+  name: string;
+  foreignTable: string;
+  foreignCol: string;
+}
+
+export interface TableIndex {
+  name: string;
+  col: string;
+}
+export interface TableObjects {
+  columns: ColumnDetails[];
+  primaryKey: PrimaryKey[];
+  foreignKeys: ForeignKeys[];
+  indexes: TableIndex[];
+}
+
 class ConnectionService extends IErrorHandler {
   private webAPI: WebService = new WebService();
 
@@ -221,7 +250,7 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  getQuery = async (dbId: number, queryId: number, onSuccess: (query: DBQuery) => void) => {
+  getQuery = async (dbId: number, queryId: number | string, onSuccess: (query: DBQuery) => void) => {
     try {
       const response = this.webAPI.get<DBQuery | InternalServerError>(`/web/v1/rdbms/${dbId}/queries/${queryId}`);
 
@@ -267,7 +296,7 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  updateQuery = async (dbId: number, qId: number, name: string, text: string, onSuccess: (res: OpResult) => void) => {
+  updateQuery = async (dbId: number, qId: number | string, name: string, text: string, onSuccess: (res: OpResult) => void) => {
     try {
       const response = this.webAPI.put<OpResult | InternalServerError>(`/web/v1/rdbms/${dbId}/queries/${qId}`, {
         name: name,
@@ -288,7 +317,7 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  deleteQuery = async (dbId: number, qId: number, onSuccess: (res: OpResult) => void) => {
+  deleteQuery = async (dbId: number, qId: number | string, onSuccess: (res: OpResult) => void) => {
     try {
       const response = this.webAPI.delete<OpResult | InternalServerError>(`/web/v1/rdbms/${dbId}/queries/${qId}`, {});
 
@@ -324,10 +353,29 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
+  listTablesObjects = async (dbId: number, schema: string, table: string, onSuccess: (tables: TableObjects) => void) => {
+    try {
+      const response = this.webAPI.get<TableObjects | InternalServerError>(
+        `/web/v1/rdbms/${dbId}/schemas/${schema}/tables/${table}/describe`
+      );
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as TableObjects;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the schemas");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
   listSchemaObjects = async (dbId: number, schema: string, onSuccess: (schemaObjects: SchemaObjects) => void) => {
     try {
       const response = this.webAPI.get<SchemaObjects | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/objects`);
-
       const r = await response;
       if (r.status === 200 && r.parsedBody) {
         const result = r.parsedBody as SchemaObjects;

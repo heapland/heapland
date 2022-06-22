@@ -15,6 +15,7 @@ import web.controllers.handlers.SecuredWebRequestHandler
 import web.models.requests.{CreateOrUpdateOrg, OrgRequestsJsonFormat}
 import web.models._
 import web.models.formats.AuthResponseFormats
+import web.models.rbac.Theme
 import web.providers.EmailCredentialsProvider
 import web.services.{MemberService, OrgService}
 
@@ -45,7 +46,6 @@ class MemberController @Inject()(
 
 
   def accountDetails = silhouette.UserAwareAction.async { implicit request =>
-
     val result = request.identity match {
       case Some(m) if m.id.isDefined =>
         for {
@@ -63,6 +63,18 @@ class MemberController @Inject()(
       }
     }
     result.map(r => Ok(Json.toJson(r)))
+  }
+
+  def updateTheme = silhouette.UserAwareAction.async(validateJson[ThemeRequest]) { implicit request =>
+    request.identity match {
+      case Some(m) if m.id.nonEmpty =>
+        memberService
+          .updateMemberProfileTheme(m.id.get, Theme.withName(request.body.webTheme) ,Theme.withName(request.body.desktopTheme))
+          .map(x => Ok(Json.parse(s"""{"themeUpdated": ${x}}""")))
+      case _ => {
+        Future.successful(Unauthorized(Json.toJson(UserNotAuthenticated(request.path))))
+      }
+    }
   }
 
 

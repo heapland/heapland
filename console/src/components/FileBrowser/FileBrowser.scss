@@ -20,6 +20,8 @@ div.file-info-drawer {
   padding: 10px;
   border-top: 1px solid #eee;
   background: $lt-bg;
+  display: flex;
+  justify-content: space-between;
 
   input.ant-input {
     border: 1px solid $lt-card-bg;
