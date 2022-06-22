@@ -168,6 +168,7 @@
 
     &:hover {
       background-color: $lt-main-bg;
+      color: var(--title-hover-color);
     }
 
     .org-initials {
@@ -279,12 +280,13 @@
 }
 
 .hex-sider-light {
-  background-color: $lt-card-bg !important;
+  background-color: var(--primary-bg-bolor);
 }
 .workspace-side-nav {
   border-right: 1px solid #eee;
   max-height: 100vh;
   min-height: 100vh;
+  background: var(--primary-bg-bolor);
   & > div {
     display: flex;
     flex-direction: column;
@@ -293,6 +295,7 @@
   .ant-menu {
     font-size: 12px;
     border-right: none;
+    background: var(--primary-bg-bolor);
   }
   .ant-menu-sub.ant-menu-inline > .ant-menu-item {
     height: 30px;
@@ -372,6 +375,10 @@
     border-radius: 4px;
   }
 }
+.main-content-bg {
+  background: var(--background-color);
+}
+
 .drawer-light {
   .ant-drawer-body {
     background-color: $lt-main-bg;

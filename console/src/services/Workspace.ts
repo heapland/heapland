@@ -64,6 +64,11 @@ export function getEnvKeys() {
     secretKeyId: "GHX_API_KEY_SECRET",
   };
 }
+
+export interface Theme {
+  webTheme: string;
+  desktopTheme: string;
+}
 export interface ServiceOption {
   id: string;
   image: string;
@@ -968,6 +973,23 @@ class WorkspaceService extends IErrorHandler {
         onFailure(body.message);
       } else {
         const err = this.getDefaultError("Fetch provisioning the organisation");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  updateTheme = async (theme: Theme, onSuccess: (theme: { themeUpdated: boolean }) => void) => {
+    try {
+      const response = this.webAPI.post<{ themeUpdated: boolean } | IllegalParam | UnAuthorized | InternalServerError>(`/web/theme`, theme);
+      const r = await response;
+      if (r.parsedBody) {
+        const result = r.parsedBody as { themeUpdated: boolean };
+        onSuccess(result);
+      } else if (r.status === 400 && r.parsedBody) {
+        const body = r.parsedBody as IllegalParam;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the Theme");
         this.showError(err.message);
       }
     } catch (e) {}
