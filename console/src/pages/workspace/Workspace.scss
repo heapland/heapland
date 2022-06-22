@@ -167,7 +167,7 @@
     transition: all 0.5s;
 
     &:hover {
-      background-color: $lt-main-bg;
+      background-color: var(--hover-bg);
       color: var(--title-hover-color);
     }
 
@@ -288,7 +288,7 @@
   min-height: 100vh;
   background: var(--primary-bg-color);
 
-  .ant-tree{
+  .ant-tree {
     color: var(--secondary-color);
     background-color: var(--background-color);
   }
@@ -296,13 +296,13 @@
   .ant-tabs {
     color: var(--primary-color);
 
-    & > .ant-tabs-nav{
-      &::before{
+    & > .ant-tabs-nav {
+      &::before {
         border-bottom: 1px solid var(--border-color);
       }
     }
   }
-  
+
   & > div {
     display: flex;
     flex-direction: column;
@@ -322,7 +322,7 @@
       }
     }
 
-    div.ant-menu-submenu-title{
+    div.ant-menu-submenu-title {
       &:active {
         background-color: var(--background-selected);
       }
@@ -357,7 +357,7 @@
       color: $lt-btn-primary;
     }
   }
-  
+
   div.ant-menu-submenu-title {
     display: flex;
   }

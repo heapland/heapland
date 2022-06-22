@@ -573,7 +573,6 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 width: "200px",
                 height: "100vh",
               }}
-              style={{ borderRight: "1px solid  #c9c8c8" }}
               className='workspace-side-nav hex-sider-light'
               maxWidth='40%'
               minWidth='20%'>
@@ -628,7 +627,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 </TabPane>
               </Tabs>
             </Resizable>
-            <div height-100 db-info-container style={{ width: "100%", minWidth: "1px" }}>
+            <div height-100 db-info-container className='tabs-content-wrapper' style={{ width: "100%", minWidth: "1px" }}>
               {!dbState.hasError && (
                 <Tabs
                   hideAdd

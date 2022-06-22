@@ -124,6 +124,14 @@
     span.ant-tree-node-content-wrapper {
       line-height: 20px;
       font-size: var(--text-size);
+      &:hover {
+        color: var(--default-green);
+        background-color: var(--background-selected);
+      }
+    }
+    span.ant-tree-node-selected {
+      color: var(--default-green);
+      background-color: var(--background-selected);
     }
   }
   .db-browser-header {
@@ -140,9 +148,12 @@
       align-items: center;
       justify-content: center;
       transition: all 0.5s;
+      background-color: var(--background-color);
+      color: var(--title-color);
 
       &:hover {
         background-color: var(--hover-bg);
+        color: var(--default-green);
       }
 
       & > svg {
@@ -369,4 +380,8 @@
       flex-basis: 60%;
     }
   }
+}
+
+.tabs-content-wrapper {
+  background-color: var(--light-bg);
 }

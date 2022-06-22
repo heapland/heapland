@@ -9,6 +9,7 @@
   --label-color: "";
   --hover-bg: #eee;
   --title-hover-color: #eee;
+  --default-green: #52b788;
 }
 
 html[data-theme="light"] {
@@ -26,6 +27,7 @@ html[data-theme="light"] {
   --label-color: "";
   --title-color: #3b4a73;
   --title-hover-color: #3b4a73;
+  --default-green: #52b788;
 }
 
 html[data-size="small"] {
@@ -37,15 +39,15 @@ html[data-theme="dark"] {
   --background-color: #0b132c;
   --secondary-bg: #191f3c;
   --light-bg: #1a233d;
-  --title-color: #f0f2f5;
   --border-color: #47526d;
-  --primary-color: #FFF;
-  --secondary-color: #B3BFD7;
+  --primary-color: #fff;
+  --secondary-color: #b3bfd7;
   --label-color: "";
   --hover-bg: #eee;
   --title-color: #eee;
   --primary-bg-color: #0b132c;
   --title-hover-color: #3b4a73;
+  --default-green: #52b788;
 }
 
 div.nav-item-title {

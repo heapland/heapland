@@ -149,7 +149,6 @@ const QueryPane: FC<{
       label: "Save Query",
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
       contextMenuGroupId: "editor-cmds",
-
       run: (editor: any) => {
         updateQuery(true, queryView.queryName, editor.getValue());
       },
@@ -227,6 +226,7 @@ const QueryPane: FC<{
                 onMount={onEditorMount}
                 beforeMount={handleEditorBeforeMount}
                 language={editorLang}
+                theme='vs-dark'
                 defaultValue={queryView.savedQuery}
                 value={queryView.savedQuery}
                 onChange={(v, ev) => {
