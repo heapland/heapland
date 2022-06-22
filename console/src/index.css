@@ -33,15 +33,18 @@ html[data-size="small"] {
 }
 
 html[data-theme="dark"] {
-  --background-color: #282828;
+  --background-selected: #000;
+  --background-color: #0b132c;
+  --secondary-bg: #191f3c;
+  --light-bg: #1a233d;
   --title-color: #f0f2f5;
-
-  --primary-color: "";
-  --secondary-color: "";
+  --border-color: #47526d;
+  --primary-color: #FFF;
+  --secondary-color: #B3BFD7;
   --label-color: "";
   --hover-bg: #eee;
   --title-color: #eee;
-  --primary-bg-bolor: #212a2e;
+  --primary-bg-color: #0b132c;
   --title-hover-color: #3b4a73;
 }
 

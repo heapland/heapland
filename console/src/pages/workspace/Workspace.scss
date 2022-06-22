@@ -160,7 +160,7 @@
   .logo {
     display: flex;
     text-decoration: none;
-    color: #1c245d;
+    color: var(--primary-color);
     cursor: pointer;
     padding: 0 10px;
     align-items: center;
@@ -254,7 +254,7 @@
   padding: 5px;
   justify-content: space-between;
   align-items: baseline;
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--border-color);
 
   .brand-logo-container {
     display: flex;
@@ -280,13 +280,29 @@
 }
 
 .hex-sider-light {
-  background-color: var(--primary-bg-bolor);
+  background-color: var(--primary-bg-color);
 }
 .workspace-side-nav {
-  border-right: 1px solid #eee;
+  border-right: 1px solid var(--border-color);
   max-height: 100vh;
   min-height: 100vh;
-  background: var(--primary-bg-bolor);
+  background: var(--primary-bg-color);
+
+  .ant-tree{
+    color: var(--secondary-color);
+    background-color: var(--background-color);
+  }
+
+  .ant-tabs {
+    color: var(--primary-color);
+
+    & > .ant-tabs-nav{
+      &::before{
+        border-bottom: 1px solid var(--border-color);
+      }
+    }
+  }
+  
   & > div {
     display: flex;
     flex-direction: column;
@@ -295,7 +311,22 @@
   .ant-menu {
     font-size: 12px;
     border-right: none;
-    background: var(--primary-bg-bolor);
+    color: var(--secondary-color);
+    font-weight: bold;
+    background: var(--primary-bg-color);
+
+    li.ant-menu-item-selected {
+      background-color: var(--background-selected);
+      i {
+        color: $lt-btn-primary;
+      }
+    }
+
+    div.ant-menu-submenu-title{
+      &:active {
+        background-color: var(--background-selected);
+      }
+    }
   }
   .ant-menu-sub.ant-menu-inline > .ant-menu-item {
     height: 30px;
@@ -326,11 +357,7 @@
       color: $lt-btn-primary;
     }
   }
-  li.ant-menu-item-selected {
-    i {
-      color: $lt-btn-primary;
-    }
-  }
+  
   div.ant-menu-submenu-title {
     display: flex;
   }

@@ -127,7 +127,7 @@
     }
   }
   .db-browser-header {
-    border-bottom: 1px solid $lt-card-border;
+    border-bottom: 1px solid var(--border-color);
     display: flex;
     justify-content: space-between;
     flex-direction: row;
@@ -159,6 +159,7 @@
         font-size: 12px;
         font-weight: bold;
         margin-bottom: 2px;
+        color: var(--primary-color);
       }
       .db-product {
         font-size: 11px;

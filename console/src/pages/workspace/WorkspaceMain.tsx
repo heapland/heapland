@@ -265,7 +265,7 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
 
           <Switch size='small' checked={state.isDark} defaultChecked={state.isDark} onChange={onChangeTheme} />
 
-          <GitHubButton href='https://github.com/heapland/heapland' data-show-count='true' aria-label='Star heapland/heapland on GitHub'>
+          <GitHubButton href='https://github.com/heapland/heapland' data-color-scheme={state.isDark ? 'dark': "light"} data-show-count='true' aria-label='Star heapland/heapland on GitHub'>
             Star
           </GitHubButton>
         </div>
