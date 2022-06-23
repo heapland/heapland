@@ -123,9 +123,17 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
         if (res.themeUpdated) {
           setState({ ...state, isDark: checked });
           if (checked) {
+            context.updateUser(context.currentUser.id, context.currentUser.name, context.currentUser.email, context.currentUser.loggedIn, {
+              ...context.currentUser.profile,
+              webTheme: "dark",
+            });
             document.documentElement.setAttribute("data-theme", "dark");
           } else {
             document.documentElement.setAttribute("data-theme", "light");
+            context.updateUser(context.currentUser.id, context.currentUser.name, context.currentUser.email, context.currentUser.loggedIn, {
+              ...context.currentUser.profile,
+              webTheme: "light",
+            });
           }
         }
       }
@@ -265,7 +273,11 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
 
           <Switch size='small' checked={state.isDark} defaultChecked={state.isDark} onChange={onChangeTheme} />
 
-          <GitHubButton href='https://github.com/heapland/heapland' data-color-scheme={state.isDark ? 'dark': "light"} data-show-count='true' aria-label='Star heapland/heapland on GitHub'>
+          <GitHubButton
+            href='https://github.com/heapland/heapland'
+            data-color-scheme={state.isDark ? "dark" : "light"}
+            data-show-count='true'
+            aria-label='Star heapland/heapland on GitHub'>
             Star
           </GitHubButton>
         </div>

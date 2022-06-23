@@ -79,7 +79,7 @@ const ServiceConnectionBuilder: React.FC<{
             {editMode ? "Update Connection" : "Save Connection"}
           </Button>
 
-          <Button type='default' onClick={(e) => testConnection()}>
+          <Button className='test-connection-btn' type='default' onClick={(e) => testConnection()}>
             Test Connection
           </Button>
         </Space>

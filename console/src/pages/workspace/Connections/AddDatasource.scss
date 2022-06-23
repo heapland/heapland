@@ -7,31 +7,40 @@
     font-size: 14px;
     color: var(--primary-color);
     font-weight: 600;
-    border-bottom: 1px solid $lt-card-border;
+    border-bottom: 1px solid var(--border-color);
   }
   .data-source-menu {
-    background-color: #fff;
+    .ant-menu {
+      background-color: var(--light-bg);
+      border-bottom-color: var(--border-color);
+    }
 
     .ant-menu-item {
       padding: 0 15px;
       font-weight: 400;
+
+      &:not(.ant-menu-item-selected) {
+        a {
+          color: var(--secondary-color);
+        }
+      }
     }
   }
   .data-source-list {
-    background-color: #fff;
+    background-color: var(--background-color);
     height: calc(100vh - 101px);
     overflow-y: auto;
     scroll-behavior: smooth;
     .data-source-section {
       padding: 20px 20px;
-      border-bottom: 1px solid $lt-card-border;
+      border-bottom: 1px solid var(--border-color);
       &:last-child {
         padding-bottom: 180px;
       }
       .tabs-title {
         font-size: 16px;
         font-weight: 500;
-        color: $lt-font-color;
+        color: var(--title-color);
         padding-bottom: 15px;
       }
       .sources-cards {
@@ -42,7 +51,8 @@
 
       .datasource-card {
         width: 300px;
-
+        background-color: var(--light-bg);
+        border-color: var(--light-bg);
         position: relative;
         margin: 0 20px 20px 0;
 
@@ -66,22 +76,28 @@
             font-size: 14px;
             font-weight: bold;
             margin-bottom: 10px;
-            color: $lt-font-color;
+            color: var(--title-color);
           }
 
           & > div.source-desc {
             font-size: 12px;
-            color: $lt-font-dull-color;
+            color: var(--secondary-color);
           }
         }
 
         .source-icon {
           font-size: 30px;
         }
-        .add-btn {
-          position: absolute;
-          bottom: 15px;
-          right: 20px;
+        .ant-btn {
+          background-color: var(--default-btn-color);
+          color: var(--secondary-color);
+          border-color: var(--default-btn-color);
+
+          &:hover {
+            background-color: var(--default-green);
+            border-color: var(--default-green);
+            color: var(--primary-color);
+          }
         }
       }
     }

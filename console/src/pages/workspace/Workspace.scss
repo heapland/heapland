@@ -555,7 +555,7 @@
     }
 
     .ant-form-item-label > label {
-      color: $lt-font-color;
+      color: var(--title-color);
     }
 
     .service-options {
@@ -660,7 +660,6 @@
     .ant-form-item-control-input-content {
       .btn-action {
         padding: 0.625rem 1.25rem;
-        border-radius: 4px;
         display: inline-block;
         line-height: 1;
         height: 40px;
@@ -679,8 +678,6 @@
       }
 
       input {
-        box-shadow: 0 4px 6px #cececb40, 0 1px 3px #c5c2c2;
-        border-radius: 4px;
         padding: 8px;
         border: none;
       }
@@ -729,11 +726,145 @@
 
 .addon-form-input {
   box-shadow: 0 4px 6px #cececb40, 0 1px 3px #c5c2c2;
-  border-radius: 4px !important;
+  border-radius: 4px;
   padding: 8px !important;
   border: none !important;
 }
 
 .height-100 {
   height: 100%;
+}
+
+.org-setting-wrapper {
+  background: var(--light-bg);
+  height: 100%;
+  .ant-page-header-heading-title {
+    color: var(--title-color);
+  }
+  .ant-page-header-heading-sub-title,
+  .ant-form-item-label > label {
+    color: var(--secondary-color);
+  }
+  .ant-form-item-has-error .ant-input {
+    background-color: var(--background-color);
+    &:hover {
+      background-color: var(--background-color);
+    }
+  }
+
+  .ant-upload {
+    background-color: var(--background-color);
+    border-color: var(--border-color);
+    &:hover {
+      background-color: var(--light-bg);
+    }
+
+    span {
+      color: var(--secondary-color);
+    }
+  }
+  .ant-input {
+    box-shadow: none;
+    border-radius: 0;
+    background-color: var(--background-color);
+    color: var(--title-color);
+    &::placeholder {
+      color: var(--placeholder-color);
+    }
+  }
+}
+
+// global style for all modal and drawer
+
+.ant-drawer-header {
+  background: var(--background-color) !important;
+  border-bottom-color: var(--border-color) !important;
+  .ant-drawer-title,
+  .ant-drawer-close {
+    color: var(--title-color);
+    &:hover {
+      color: var(--hover-bg);
+    }
+  }
+}
+
+.ant-drawer-body {
+  background: var(--light-bg);
+  .ant-form-item-label label {
+    color: var(--title-color);
+  }
+  .ant-input-affix-wrapper,
+  .ant-input-number,
+  .ant-input-number-input,
+  .ant-input,
+  .ant-select-selector {
+    background-color: var(--background-color);
+    border-color: var(--background-color);
+    color: var(--title-color);
+    &::placeholder {
+      color: var(--placeholder-color);
+    }
+  }
+  .ant-input-number {
+    border-left-color: var(--light-bg);
+    .ant-input-number-handler-wrap {
+      background: var(--light-bg);
+    }
+
+    .ant-input-number-handler,
+    .ant-input-number-handler-down-inner {
+      color: var(--secondary-color);
+    }
+  }
+  .ant-input-password-icon {
+    color: var(--title-color);
+    &:hover {
+      color: var(--secondary-color);
+    }
+  }
+  .ant-form-item-has-error .ant-input {
+    background-color: var(--background-color);
+    &:hover {
+      background-color: var(--background-color);
+    }
+  }
+}
+
+.ant-drawer-footer {
+  background-color: var(--background-color);
+  border-top-color: var(--border-color) !important;
+  .test-connection-btn {
+    background: var(--background-color);
+    color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    &:hover {
+      background-color: var(--light-bg);
+    }
+  }
+}
+.ant-modal-body {
+  .antd-img-crop-control button:disabled {
+    color: var(--secondary-color);
+    cursor: not-allowed;
+  }
+  .antd-img-crop-control button {
+    color: var(--title-color);
+  }
+}
+
+.ant-modal-footer {
+  button {
+    &:first-child {
+      color: var(--secondary-color);
+      background-color: var(--background-color);
+      border-color: var(--light-bg);
+      &:hover {
+        background-color: var(--light-bg);
+      }
+    }
+  }
+}
+
+.ant-form-item-explain.ant-form-item-explain-error {
+  color: var(--form-error-text-color);
 }

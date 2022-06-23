@@ -235,7 +235,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
             scroll={{ x: "calc(100vw - 470px)" }}
             pagination={false}
             className='tbl-data'
-            style={{ minHeight: "50vh", backgroundColor: "#fff" }}
+            style={{ minHeight: "50vh"}}
           />
         </Form>
       </Skeleton>

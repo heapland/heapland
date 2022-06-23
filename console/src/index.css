@@ -35,7 +35,8 @@ html[data-size="small"] {
 }
 
 html[data-theme="dark"] {
-  --background-selected: #000;
+  --background-selected: #1a233d;
+  --primary-bg-color: #0b132c;
   --background-color: #0b132c;
   --secondary-bg: #191f3c;
   --light-bg: #1a233d;
@@ -45,9 +46,14 @@ html[data-theme="dark"] {
   --label-color: "";
   --hover-bg: #eee;
   --title-color: #eee;
-  --primary-bg-color: #0b132c;
   --title-hover-color: #3b4a73;
   --default-green: #52b788;
+  --table-header: #0b132c;
+  --input-bg: #11142c;
+  --default-btn-color: #39415a;
+  --disabled-color: "";
+  --placeholder-color: gray;
+  --form-error-text-color: #a34546;
 }
 
 div.nav-item-title {
@@ -68,4 +74,8 @@ body {
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+input:-internal-autofill-selected {
+  background-color: var(--light-bg) !important;
 }

@@ -137,8 +137,12 @@ const DownloadModal: FC<{
       visible={isDownloadModal}
       footer={
         <Space>
-          <Button>Cancel</Button>
-          <Button onClick={() => copyTextToClipboard(downloadInfo.downContent, message)}>Copy to Clipboard</Button>
+          <Button onClick={closeDownloadModal} className='cancel-modal-btn'>
+            Cancel
+          </Button>
+          <Button className='copy-text-btn' onClick={() => copyTextToClipboard(downloadInfo.downContent, message)}>
+            Copy to Clipboard
+          </Button>
           <Button type='primary' onClick={onDownloadData}>
             Export to file
           </Button>
