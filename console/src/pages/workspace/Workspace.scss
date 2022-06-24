@@ -738,10 +738,7 @@
   .ant-page-header-heading-title {
     color: var(--title-color);
   }
-  .ant-page-header-heading-sub-title,
-  .ant-form-item-label > label {
-    color: var(--secondary-color);
-  }
+
   .ant-form-item-has-error .ant-input {
     background-color: var(--background-color);
     &:hover {
@@ -931,4 +928,9 @@
   &:hover {
     background-color: var(--background-color);
   }
+}
+
+.ant-page-header-heading-sub-title,
+.ant-form-item-label > label {
+  color: var(--secondary-color);
 }

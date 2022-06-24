@@ -286,11 +286,12 @@ const QueryPane: FC<{
           visible={queryView.saveAsModal}
           onOk={handleSaveAs}
           onCancel={closeSaveAsModal}
+          cancelButtonProps={{ className: "cancel-modal-btn" }}
           okText='Save'
           cancelText='Cancel'>
           <Form layout='vertical' form={modalForm} requiredMark={false} onFinish={onSaveAsFormSubmission} scrollToFirstError>
-            <Form.Item name='queryName' label='Query name' rules={[{ required: true, message: "This field is required." }]}>
-              <Input />
+            <Form.Item name='queryName' label='Query Name' rules={[{ required: true, message: "This field is required." }]}>
+              <Input placeholder='Query Name' />
             </Form.Item>
           </Form>
         </Modal>
