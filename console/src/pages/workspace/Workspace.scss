@@ -180,7 +180,7 @@
 
       height: 32px;
       min-width: 32px;
-      color: $lt-font-color;
+      color: var(--title-color);
       line-height: 1.2;
       text-align: center;
     }
@@ -543,7 +543,6 @@
 
   .card-shadow-light {
     box-shadow: 0 0 1rem 0 rgba(136, 152, 170, 0.15);
-    border: 1px solid rgba(0, 0, 0, 0.05);
   }
 
   .wizard-form {
@@ -774,6 +773,45 @@
   }
 }
 
+.connection-list-wrapper {
+  background-color: var(--light-bg);
+  height: 100%;
+  .ant-card-head {
+    background-color: var(--background-color);
+    .ant-card-head-title {
+      color: var(--title-color);
+    }
+  }
+
+  .connection-list-table {
+    .ant-table-thead tr th {
+      background-color: var(--background-color);
+      border-color: var(--border-color);
+      border-top: 1px solid var(--border-color);
+    }
+    .ant-table-tbody tr td {
+      background-color: var(--light-bg);
+      border-color: var(--border-color);
+      color: var(--secondary-color);
+    }
+
+    .ant-tag-geekblue {
+      background-color: var(--background-color);
+      border-color: var(--border-color);
+      color: var(--secondary-color);
+    }
+    .config-key,
+    .config-val {
+      border-color: var(--border-color);
+    }
+
+    .config-val {
+      background-color: var(--background-color);
+      color: var(--secondary-color);
+    }
+  }
+}
+
 // global style for all modal and drawer
 
 .ant-drawer-header {
@@ -853,18 +891,45 @@
 }
 
 .ant-modal-footer {
-  button {
-    &:first-child {
-      color: var(--secondary-color);
-      background-color: var(--background-color);
-      border-color: var(--light-bg);
-      &:hover {
-        background-color: var(--light-bg);
-      }
-    }
-  }
+  // button {
+  //   // &:last-child {
+  //   //   color: var(--secondary-color);
+  //   //   background-color: var(--background-color);
+  //   //   border-color: var(--light-bg);
+  //   //   &:hover {
+  //   //     background-color: var(--light-bg);
+  //   //   }
+  //   // }
+  // }
 }
 
 .ant-form-item-explain.ant-form-item-explain-error {
   color: var(--form-error-text-color);
+}
+.ant-checkbox-indeterminate .ant-checkbox-inner {
+  background-color: var(--light-bg);
+  border-color: var(--border-color);
+}
+
+.ant-checkbox-inner {
+  background-color: var(--background-color);
+  border-color: var(--border-color);
+}
+
+.ant-dropdown-menu-item-divider {
+  background-color: var(--border-color);
+}
+.ant-dropdown-open {
+  background-color: var(--default-btn-color) !important;
+}
+
+.ant-input {
+  box-shadow: none;
+  border-radius: 0;
+  background-color: var(--background-color);
+  color: var(--title-color);
+  border-color: var(--border-color);
+  &::placeholder {
+    color: var(--placeholder-color);
+  }
 }

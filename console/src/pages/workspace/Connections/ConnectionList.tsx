@@ -47,7 +47,7 @@ const ConnectionList: FC = () => {
   }, []);
 
   return (
-    <div className='workspace-wrapper clusters-container'>
+    <div className='workspace-wrapper clusters-container connection-list-wrapper'>
       <Skeleton loading={connectionsState.loading} paragraph={{ rows: 4 }} active>
         {connectionsState.connections.length === 0 && (
           <div>
@@ -61,12 +61,12 @@ const ConnectionList: FC = () => {
         )}
         {connectionsState.connections.length > 0 && (
           <>
-            <Card title='Connections' className='card-shadow-light' bordered={false}>
+            <Card title='Connections' bordered={false}>
               <Table
                 dataSource={connectionsState.connections}
                 pagination={false}
                 bordered={false}
-                className='tbl-cluster'
+                className='tbl-cluster connection-list-table'
                 rowKey={(record: ConnectionView) => record.id}>
                 <Column
                   title='NAME'
@@ -89,7 +89,11 @@ const ConnectionList: FC = () => {
                   dataIndex=''
                   className='run-history-col table-cell-light'
                   render={(v: ConnectionView) => {
-                    return <Tag color='geekblue'>{v.provider}</Tag>;
+                    return (
+                      <Tag color='geekblue' className=''>
+                        {v.provider}
+                      </Tag>
+                    );
                   }}
                 />
                 <Column

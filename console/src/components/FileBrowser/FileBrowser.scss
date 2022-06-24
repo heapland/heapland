@@ -32,10 +32,10 @@ div.file-info-drawer {
   }
 
   .trigger-menu {
-    background-color: var(--background-color);
+    background-color: var(--default-btn-color);
     color: var(--secondary-color);
     .ant-btn {
-      background-color: var(--background-color);
+      background-color: var(--default-btn-color);
       color: var(--secondary-color);
     }
   }

@@ -13,17 +13,20 @@
 }
 
 html[data-theme="light"] {
-  --background-color: #f0f2f5;
+  --background-selected: #e9f7ee;
+  --background-color: #fff;
+  --primary-bg-color: #fff;
+  --light-bg: #e5e5e5;
   --hover-bg: #eee;
   --nav-bg: #fff;
   --border-color: #eee;
   --nav-title: #a5a1a1;
   --table-header: #e8ecf1;
   --action-header-bg: #e2e5ea;
-  --primary-bg-bolor: #fff;
-
+  --default-btn-color: #fff;
+  --input-bg: #fff;
   --primary-color: "";
-  --secondary-color: "";
+  --secondary-color: #3b4a73;
   --label-color: "";
   --title-color: #3b4a73;
   --title-hover-color: #3b4a73;

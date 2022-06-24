@@ -200,7 +200,7 @@
       color: var(--title-color);
 
       &:hover {
-        background-color: var(--hover-bg);
+        background-color: var(--default-btn-color);
         color: var(--default-green);
       }
 
@@ -318,6 +318,7 @@
     div.trigger-menu {
       button.ant-dropdown-trigger {
         border-left: 1px solid var(--border-color);
+        padding-right: 5px;
       }
     }
 
@@ -390,7 +391,7 @@
       border-top: 0;
       border-bottom: 0;
       border-left: 0;
-      background: var(--background-color);
+      background: var(--default-btn-color);
       color: var(--secondary-color);
       &:last-child {
         border-right: 0;
@@ -491,7 +492,7 @@
   border-top: none;
   .cancel-modal-btn,
   .copy-text-btn {
-    background-color: var(--background-color);
+    background-color: var(--default-btn-color);
     &:hover {
       background-color: var(--light-bg);
     }
