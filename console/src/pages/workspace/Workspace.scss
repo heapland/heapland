@@ -167,8 +167,7 @@
     transition: all 0.5s;
 
     &:hover {
-      background-color: var(--hover-bg);
-      color: var(--title-hover-color);
+      background-color: var(--light-bg);
     }
 
     .org-initials {
@@ -177,7 +176,6 @@
       padding: 5px;
       border: 2px solid $lt-font-dull-color;
       border-radius: 3px;
-
       height: 32px;
       min-width: 32px;
       color: var(--title-color);
@@ -831,41 +829,6 @@
   .ant-form-item-label label {
     color: var(--title-color);
   }
-  .ant-input-affix-wrapper,
-  .ant-input-number,
-  .ant-input-number-input,
-  .ant-input,
-  .ant-select-selector {
-    background-color: var(--background-color);
-    border-color: var(--background-color);
-    color: var(--title-color);
-    &::placeholder {
-      color: var(--placeholder-color);
-    }
-  }
-  .ant-input-number {
-    border-left-color: var(--light-bg);
-    .ant-input-number-handler-wrap {
-      background: var(--light-bg);
-    }
-
-    .ant-input-number-handler,
-    .ant-input-number-handler-down-inner {
-      color: var(--secondary-color);
-    }
-  }
-  .ant-input-password-icon {
-    color: var(--title-color);
-    &:hover {
-      color: var(--secondary-color);
-    }
-  }
-  .ant-form-item-has-error .ant-input {
-    background-color: var(--background-color);
-    &:hover {
-      background-color: var(--background-color);
-    }
-  }
 }
 
 .ant-drawer-footer {
@@ -923,13 +886,49 @@
   background-color: var(--default-btn-color) !important;
 }
 
-.ant-input {
-  box-shadow: none;
-  border-radius: 0;
-  background-color: var(--background-color);
+// .ant-input {
+//   box-shadow: none;
+//   border-radius: 0;
+//   background-color: var(--background-color);
+//   color: var(--title-color);
+//   border-color: var(--border-color);
+//   &::placeholder {
+//     color: var(--placeholder-color);
+//   }
+// }
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-input-number-input,
+.ant-input,
+.ant-select-selector {
+  background-color: var(--background-color) !important;
+  border: 1px solid var(--border-color) !important;
   color: var(--title-color);
-  border-color: var(--border-color);
   &::placeholder {
     color: var(--placeholder-color);
+  }
+}
+.ant-input-number {
+  background-color: var(--input-bg);
+  border-left-color: var(--light-bg);
+  .ant-input-number-handler-wrap {
+    background: var(--light-bg);
+  }
+
+  .ant-input-number-handler,
+  .ant-input-number-handler-down-inner {
+    color: var(--secondary-color);
+  }
+}
+.ant-input-password-icon {
+  color: var(--title-color);
+  &:hover {
+    color: var(--secondary-color);
+  }
+}
+.ant-form-item-has-error .ant-input {
+  background-color: var(--background-color);
+  &:hover {
+    background-color: var(--background-color);
   }
 }
