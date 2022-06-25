@@ -80,37 +80,18 @@
       }
     }
     th.table-cell-light {
-      background-color: var(--table-header);
-      color: $lt-font-dull-color;
+      // background-color: var(--table-header);
+      // color: $lt-font-dull-color;
       padding: 10px;
     }
     th {
       font-size: 11.5px;
     }
-    .ant-table-thead > tr > th {
-      border-bottom: none;
-    }
-    .ant-table-tbody {
-      background-color: var(--light-bg);
-      .ant-table-placeholder:hover {
-        background-color: var(--light-bg);
-      }
-      .ant-empty-description {
-        color: var(--secondary-color);
-      }
-    }
+
     .ant-table-tbody > tr > td {
       font-size: 12px;
       height: 50px;
       padding: 5px 16px;
-      border-bottom-color: var(--border-color);
-    }
-    .ant-table-tbody .ant-table-row-selected td {
-      background-color: #e2f4e8;
-    }
-    .ant-table-tbody .ant-table-row td {
-      background-color: var(--light-bg);
-      color: var(--primary-color);
     }
     td.run-history-col {
       display: flex;
@@ -120,8 +101,8 @@
     }
 
     td.table-cell-light {
-      color: $lt-font-color;
-      background-color: $lt-card-bg;
+      // color: $lt-font-color;
+      // background-color: $lt-card-bg;
       // border-bottom: none;
     }
     .app-icon {
