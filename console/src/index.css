@@ -25,7 +25,7 @@ html[data-theme="light"] {
   --action-header-bg: #e2e5ea;
   --default-btn-color: #fff;
   --input-bg: #fff;
-  --primary-color: "";
+  --primary-color: #3b4a73;
   --secondary-color: #3b4a73;
   --label-color: "";
   --title-color: #3b4a73;
@@ -33,6 +33,9 @@ html[data-theme="light"] {
   --default-green: #52b788;
   --form-error-text-color: #ff4d4f;
   --connection-card-bg: #fff;
+  --card-border: #f0f0f0;
+
+  --select-item-bg: #fff;
 
   --input-bg: #fff;
   --input-border: #d9d9d9;
@@ -55,6 +58,9 @@ html[data-theme="light"] {
 
   --drawer-modal-border: #d9d9d9;
   --drawer-modal-bg: #fff;
+
+  --btn-border: #d9d9d9;
+  --btn-hover-color: #fff;
 }
 
 html[data-size="small"] {
@@ -83,6 +89,9 @@ html[data-theme="dark"] {
   --placeholder-color: gray;
   --form-error-text-color: #a34546;
   --connection-card-bg: var(--light-bg);
+  --card-border: var(--border-color);
+
+  --select-item-bg: var(--background-color);
 
   --tag-color: #3b4a73;
   --font-color: #3b4a73;
@@ -107,6 +116,8 @@ html[data-theme="dark"] {
   --config-val-color: var(--title-color);
 
   --tab-active-color: var(var(--light-bg));
+  --btn-border: var(--default-btn-color);
+  --btn-hover-color: var(--primary-color);
 }
 
 div.nav-item-title {

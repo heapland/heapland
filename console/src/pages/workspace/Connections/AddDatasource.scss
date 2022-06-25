@@ -11,7 +11,7 @@
   }
   .data-source-menu {
     .ant-menu {
-      background-color: var(--light-bg);
+      background-color: var(--connection-card-bg);
       border-bottom-color: var(--border-color);
     }
 
@@ -52,7 +52,7 @@
       .datasource-card {
         width: 300px;
         background-color: var(--connection-card-bg);
-        border-color: var(--light-bg);
+        border-color: var(--card-border);
         position: relative;
         margin: 0 20px 20px 0;
 
@@ -91,12 +91,12 @@
         .ant-btn {
           background-color: var(--default-btn-color);
           color: var(--secondary-color);
-          border-color: var(--default-btn-color);
+          border-color: var(--btn-border);
 
           &:hover {
             background-color: var(--default-green);
             border-color: var(--default-green);
-            color: var(--primary-color);
+            color: var(--btn-hover-color);
           }
         }
       }

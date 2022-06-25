@@ -408,7 +408,7 @@
     .ant-input,
     .ant-select-selector {
       background-color: var(--background-color);
-      border-color: var(--background-color);
+      border-color: var(--input-border);
       color: var(--title-color);
       &::placeholder {
         color: var(--placeholder-color);
@@ -433,16 +433,16 @@
 }
 
 .ant-select-dropdown {
-  background-color: var(--light-bg);
+  background-color: var(--select-item-bg);
 }
 
 .ant-select-item {
-  background-color: var(--light-bg);
+  background-color: var(--select-item-bg);
   color: var(--secondary-color);
 }
 .ant-select-item-option-selected:not(.ant-select-item-option-disabled),
 .ant-select-item-option-active:not(.ant-select-item-option-disabled) {
-  background-color: var(--background-color);
+  background-color: var(--background-selected);
   color: var(--title-color);
 }
 
