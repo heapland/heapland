@@ -251,7 +251,7 @@ const QueryPane: FC<{
                           scroll={{ x: "calc(100vw - 400px)" }}
                           pagination={false}
                           className='tbl-data'
-                          style={{ minHeight: "20vh", backgroundColor: "#fff" }}>
+                          style={{ minHeight: "20vh" }}>
                           {qr.result.columns.map((c, i) => {
                             if (c.name.toUpperCase() === "PROPERTIES") {
                               return (

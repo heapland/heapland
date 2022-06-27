@@ -16,12 +16,14 @@
 .ant-drawer-header {
   background: var(--background-color) !important;
   border-bottom-color: var(--drawer-modal-border) !important;
-  .ant-drawer-title,
+  .ant-drawer-title {
+    color: var(--title-color);
+  }
   .ant-drawer-close {
     color: var(--title-color);
-    &:hover {
-      color: var(--hover-bg);
-    }
+    // &:hover {
+    //   color: var(--hover-bg);
+    // }
   }
 }
 
@@ -205,4 +207,16 @@
   background-color: var(--tag-geekblue-bg);
   border-color: var(--tag--geekbule-border);
   color: var(--tag-geekblue-color);
+}
+
+// removed transition
+.ant-menu,
+.db-tabs > .ant-tabs-nav .ant-tabs-tab:not(:last-of-type),
+.ant-tabs-tab,
+.ant-tree,
+.ant-menu-item,
+.ant-dropdown-trigger,
+.ant-tree > .db-objects,
+.ant-btn {
+  transition: none;
 }

@@ -11,10 +11,16 @@
     margin-bottom: 5px;
     padding: 0 10px;
   }
+  .ant-tabs-tab-btn {
+    font-size: 12px;
+  }
   .ant-menu-inline .ant-menu-item {
     margin-bottom: 0;
     margin-top: 0;
     padding-left: 15px;
+    &:active {
+      background: var(--background-selected);
+    }
   }
   .query-item {
     font-size: 12px;
@@ -179,7 +185,7 @@
       transition: all 0.5s;
       background-color: var(--background-color);
       color: var(--title-color);
-
+      transition: none;
       &:hover {
         background-color: var(--default-btn-color);
         color: var(--default-green);

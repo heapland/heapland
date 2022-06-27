@@ -16,13 +16,13 @@ html[data-theme="light"] {
   --background-selected: #e9f7ee;
   --background-color: #fff;
   --primary-bg-color: #fff;
-  --light-bg: #e2e5ea;
+  --light-bg: #f0f2f5;
   --hover-bg: #eee;
   --nav-bg: #fff;
   --border-color: #eee;
   --nav-title: #a5a1a1;
   --table-header: #e8ecf1;
-  --action-header-bg: #e2e5ea;
+  --action-header-bg: #f0f2f5;
   --default-btn-color: #fff;
   --input-bg: #fff;
   --primary-color: #3b4a73;
@@ -39,6 +39,7 @@ html[data-theme="light"] {
 
   --input-bg: #fff;
   --input-border: #d9d9d9;
+  --placeholder-color: #d9d9d9;
 
   --table-header-color: #a5aec0;
   --table-body-color: #3b4a73;
@@ -61,6 +62,7 @@ html[data-theme="light"] {
 
   --btn-border: #d9d9d9;
   --btn-hover-color: #fff;
+  --theme-btn-shadow: 0px 3px 3px 0px rgba(37, 46, 113, 0.12);
 }
 
 html[data-size="small"] {
@@ -89,7 +91,7 @@ html[data-theme="dark"] {
   --placeholder-color: gray;
   --form-error-text-color: #a34546;
   --connection-card-bg: var(--light-bg);
-  --card-border: var(--border-color);
+  --card-border: var(--light-bg);
 
   --select-item-bg: var(--background-color);
 
@@ -118,6 +120,8 @@ html[data-theme="dark"] {
   --tab-active-color: var(var(--light-bg));
   --btn-border: var(--default-btn-color);
   --btn-hover-color: var(--primary-color);
+
+  --theme-btn-shadow: 0px 0px 4px 2px rgb(151 151 151 / 12%);
 }
 
 div.nav-item-title {
