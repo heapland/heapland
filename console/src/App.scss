@@ -121,7 +121,8 @@
   }
 
   .ant-input-number-handler,
-  .ant-input-number-handler-down-inner {
+  .ant-input-number-handler-down-inner,
+  .ant-input-number-handler-up-inner {
     color: var(--secondary-color);
   }
 }
@@ -150,14 +151,14 @@
 // comman input and select style end
 
 // comman table
-.ant-table-tbody {
+
+.ant-table-placeholder,
+.ant-table-tbody > tr.ant-table-placeholder:hover > td {
   background-color: var(--light-bg);
-  .ant-table-placeholder:hover {
-    background-color: var(--light-bg);
-  }
-  .ant-empty-description {
-    color: var(--secondary-color);
-  }
+}
+
+.ant-empty-description {
+  color: var(--secondary-color);
 }
 .ant-table-thead tr th {
   background-color: var(--table-header-bg);
@@ -219,4 +220,8 @@
 .ant-tree > .db-objects,
 .ant-btn {
   transition: none;
+}
+
+.ant-table-small .ant-table-thead > tr > th {
+  background: var(--table-header-bg);
 }

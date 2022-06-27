@@ -802,7 +802,8 @@
   border-color: var(--border-color);
 }
 
-.ant-checkbox-inner {
+.ant-checkbox-inner,
+.ant-checkbox-disabled .ant-checkbox-inner {
   background-color: var(--background-color);
-  border-color: var(--border-color);
+  border-color: var(--border-color) !important;
 }
