@@ -66,9 +66,9 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   useEffect(() => {
     setTableData({ loading: true });
     Connections.getTableData(connectionId, name, schema, (data) => {
-      const indexOfLastTodo = showTableData.currentPage * showTableData.pageSize;
-      const indexOfFirstTodo = indexOfLastTodo - showTableData.pageSize;
-      const tableRowData = data.result.slice(indexOfFirstTodo, indexOfLastTodo);
+      const indexOfLastRow = showTableData.currentPage * showTableData.pageSize;
+      const indexOfFirstRow = indexOfLastRow - showTableData.pageSize;
+      const tableRowData = data.result.slice(indexOfFirstRow, indexOfLastRow);
       setTableData({ ...tableData, loading: false, result: { ...data, result: tableRowData } });
       setNewData(data);
     });
@@ -212,9 +212,9 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   };
   const onPagiChange = (currentPage: number, rowPerPage: number) => {
     // Logic for displaying todos
-    const indexOfLastTodo = currentPage * rowPerPage;
-    const indexOfFirstTodo = indexOfLastTodo - rowPerPage;
-    const tableRowData = isNewData.result.slice(indexOfFirstTodo, indexOfLastTodo);
+    const indexOfLastRow = currentPage * rowPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowPerPage;
+    const tableRowData = isNewData.result.slice(indexOfFirstRow, indexOfLastRow);
     setTableData({ ...tableData, result: { ...tableData.result, result: tableRowData } });
     setShowTableData({
       ...showTableData,
