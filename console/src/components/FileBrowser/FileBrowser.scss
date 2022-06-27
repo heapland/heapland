@@ -17,10 +17,45 @@ div.file-info-drawer {
 
 .file-browser-controls {
   height: 45px;
-  padding: 10px;
+  padding: 10px 15px 10px 10px;
   background: var(--light-bg);
   display: flex;
   justify-content: space-between;
+
+  .table-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0 15px;
+
+    .edit-cancel-btn {
+      background-color: var(--default-btn-color);
+      color: var(--secondary-color);
+      border-color: var(--border-color);
+      &:hover {
+        color: var(--primary-color);
+      }
+    }
+
+    .ant-pagination-item-link:disabled {
+      color: var(--secondary-color);
+      cursor: not-allowed;
+    }
+    .ant-pagination-item-link {
+      color: var(--primary-color);
+    }
+    .ant-pagination-item > a {
+      color: var(--secondary-color);
+    }
+    .ant-pagination {
+      color: var(--secondary-color);
+    }
+
+    .ant-pagination-simple .ant-pagination-simple-pager input {
+      background: var(--background-color);
+      border-color: var(--input-border);
+    }
+  }
 
   input.ant-input {
     border: 1px solid $lt-card-bg;

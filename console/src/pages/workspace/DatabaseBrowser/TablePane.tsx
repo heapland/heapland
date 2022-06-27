@@ -6,7 +6,7 @@ import Connections from "../../../services/Connections";
 import TableActionHeader from "./TableActionHeader";
 import "./DatabaseBrowser.scss";
 import DownloadModal from "./DownloadModal";
-import { createSQLInsert, createSQLUpdate } from "../../../components/utils/utils";
+import { createSQLInsert, createSQLUpdate, truncateString } from "../../../components/utils/utils";
 import { InternalServerError } from "../../../services/SparkService";
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
@@ -50,6 +50,11 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   dbName,
 }) => {
   const [tableData, setTableData] = useState<{ loading: boolean; result?: QueryExecutionResult }>({ loading: true });
+  const [showTableData, setShowTableData] = useState<{ currentPage: number; pageSize: number }>({
+    currentPage: 1,
+    pageSize: 50,
+  });
+
   const [isNewData, setNewData] = useState<QueryExecutionResult>();
   const [refres, setRefres] = useState<boolean>(false);
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
@@ -61,7 +66,10 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   useEffect(() => {
     setTableData({ loading: true });
     Connections.getTableData(connectionId, name, schema, (data) => {
-      setTableData({ ...tableData, loading: false, result: data });
+      const indexOfLastTodo = showTableData.currentPage * showTableData.pageSize;
+      const indexOfFirstTodo = indexOfLastTodo - showTableData.pageSize;
+      const tableRowData = data.result.slice(indexOfFirstTodo, indexOfLastTodo);
+      setTableData({ ...tableData, loading: false, result: { ...data, result: tableRowData } });
       setNewData(data);
     });
   }, [name, refres]);
@@ -170,6 +178,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
 
   const mergedColumns = columns.map((col: any) => {
     if (!col.editable) {
+      console.log(col);
       return col;
     }
     return {
@@ -201,6 +210,17 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       setRefres(!refres);
     }
   };
+  const onPagiChange = (currentPage: number, rowPerPage: number) => {
+    // Logic for displaying todos
+    const indexOfLastTodo = currentPage * rowPerPage;
+    const indexOfFirstTodo = indexOfLastTodo - rowPerPage;
+    const tableRowData = isNewData.result.slice(indexOfFirstTodo, indexOfLastTodo);
+    setTableData({ ...tableData, result: { ...tableData.result, result: tableRowData } });
+    setShowTableData({
+      ...showTableData,
+      currentPage: currentPage,
+    });
+  };
 
   return (
     <>
@@ -215,6 +235,10 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         onUploadData={() => {}}
         selectedRow={selectedRows}
         editingKey={editingKey}
+        onPagiChange={onPagiChange}
+        currentPage={showTableData.currentPage}
+        pageSize={showTableData.pageSize}
+        totalRows={isNewData?.result?.length}
       />
       <Skeleton loading={tableData.loading} active paragraph={{ rows: 4 }}>
         <Form form={form} component={false}>
@@ -229,13 +253,14 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
                 cell: EditableCell,
               },
             }}
+            size='small'
             rowKey={(c) => c.id}
             columns={mergedColumns}
             dataSource={tableData.result ? tableData.result.result : []}
-            scroll={{ x: "calc(100vw - 470px)" }}
+            scroll={{ x: "calc(100vw - 600px)" }}
             pagination={false}
             className='tbl-data'
-            style={{ minHeight: "50vh"}}
+            style={{ minHeight: "50vh" }}
           />
         </Form>
       </Skeleton>
