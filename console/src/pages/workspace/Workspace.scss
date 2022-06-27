@@ -6,8 +6,26 @@
   overflow-x: hidden;
 
   .site-layout-background {
+    position: relative;
     overflow-y: auto;
     background: var(--background-color);
+    .theme-change-btn {
+      position: absolute;
+      bottom: 20px;
+      right: 30px;
+      width: 45px;
+      height: 45px;
+      background-color: var(--background-color);
+      border-radius: 50%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: var(--theme-btn-shadow);
+      svg {
+        font-size: 40px;
+      }
+    }
 
     & > div.ant-skeleton {
       padding: 20px;
@@ -278,6 +296,7 @@
 }
 
 .hex-sider-light {
+  transition: none;
   background-color: var(--primary-bg-color);
 }
 .workspace-side-nav {
@@ -329,7 +348,10 @@
   .ant-menu-sub.ant-menu-inline > .ant-menu-item {
     height: 30px;
     line-height: 30px;
-    margin: 2px 0;
+    margin: 0 0;
+    &:active {
+      background: var(--background-selected);
+    }
   }
   .side-nav-icon {
     font-size: 0.9rem;
@@ -671,7 +693,6 @@
 
       input {
         padding: 8px;
-        border: none;
       }
     }
   }
@@ -772,19 +793,16 @@
       color: var(--title-color);
     }
   }
-
-  .connection-list-table {
-  }
 }
 
 // global style for all modal and drawer
 
 .ant-checkbox-indeterminate .ant-checkbox-inner {
   background-color: var(--light-bg);
-  border-color: var(--drawer-modal-border);
+  border-color: var(--border-color);
 }
 
 .ant-checkbox-inner {
   background-color: var(--background-color);
-  border-color: var(--drawer-modal-border);
+  border-color: var(--border-color);
 }
