@@ -433,6 +433,10 @@
     }
     .preview-container {
       flex-basis: 60%;
+      .cm-s-material.CodeMirror {
+        max-width: 570px;
+        height: 460px;
+      }
     }
   }
 }

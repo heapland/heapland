@@ -264,15 +264,17 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
           />
         </Form>
       </Skeleton>
-      <DownloadModal
-        schema={schema}
-        tableName={name}
-        dbName={dbName}
-        connectionId={connectionId}
-        isDownloadModal={isDownloadModal}
-        closeDownloadModal={closeDownloadModal}
-        tableData={tableData.result}
-      />
+      {isDownloadModal && (
+        <DownloadModal
+          schema={schema}
+          tableName={name}
+          dbName={dbName}
+          connectionId={connectionId}
+          isDownloadModal={isDownloadModal}
+          closeDownloadModal={closeDownloadModal}
+          tableData={tableData.result}
+        />
+      )}
     </>
   );
 };
