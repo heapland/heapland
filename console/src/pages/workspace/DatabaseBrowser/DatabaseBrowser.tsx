@@ -1,6 +1,8 @@
 import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List, Empty } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
 import { FaDatabase, FaTable } from "react-icons/fa";
+import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
+
 import { Resizable } from "re-resizable";
 import {
   MdCode,
@@ -12,7 +14,6 @@ import {
   MdTableRows,
   MdViewColumn,
 } from "react-icons/md";
-import Editor from "@monaco-editor/react";
 import "./DatabaseBrowser.scss";
 import { DownOutlined, MailOutlined } from "@ant-design/icons";
 import CustomScroll from "react-custom-scroll";
@@ -27,6 +28,7 @@ import QueryPane from "./QueryPane";
 import { UserContext } from "../../../store/User";
 import { history } from "../../../configureStore";
 import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
+import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -95,6 +97,7 @@ interface DBObject {
 
 const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: number }> = ({ orgSlugId, workspaceId, databaseId }) => {
   const context = React.useContext(UserContext);
+  const monacoIns = useMonaco();
   const [dbState, setDBState] = useState<{
     loading: boolean;
     connectionName: string;
@@ -544,6 +547,17 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     addToPane(selectedQuery.id, selectedQuery.name, "query");
   };
 
+  React.useEffect(() => {
+    let autoComp: any;
+    if (monacoIns) {
+      autoComp = getPgsqlCompletionProvider(monacoIns, "pgsql", databaseId);
+      return () => {
+        autoComp.dispose();
+        monacoIns.editor.getModels().map((m: any) => m.dispose());
+      };
+    }
+  }, [monacoIns]);
+
   return (
     <Layout className='database-browser-wrapper ant-layout-has-sider'>
       <Content
@@ -668,6 +682,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             onUpdateQueryName={updateQuery}
                             onDeleteQuery={onDeleteQuery}
                             editorLang='pgsql'
+                            monacoIns={monacoIns}
                           />
                         </TabPane>
                       )}

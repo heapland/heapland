@@ -5,7 +5,7 @@ import Column from "antd/lib/table/Column";
 import { LoadingOutlined } from "@ant-design/icons";
 import { string } from "prop-types";
 import { TabPane } from "rc-tabs";
-import React, { FC, ReactNode, useEffect, useState } from "react";
+import React, { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { MdCreateNewFolder, MdPlayCircle, MdSave, MdSync } from "react-icons/md";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import Connections from "../../../services/Connections";
@@ -23,11 +23,12 @@ const QueryPane: FC<{
   queryId: number | string;
   name: string;
   editorLang: EditorLang;
+  monacoIns: Monaco;
   onUpdateQueryName: (id: number | string, newName: string) => void;
   onDeleteQuery: (id: number | string) => void;
-}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang }) => {
+}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang, monacoIns }) => {
   const [modalForm] = Form.useForm();
-  const monaco = useMonaco();
+
   const [queryView, setQueryView] = useState<{
     queryName: string;
     savedQuery: string;
@@ -134,7 +135,7 @@ const QueryPane: FC<{
       contextMenuGroupId: "editor-cmds",
 
       run: (editor: any) => {
-        console.log(editor.getValue());
+        // console.log(editor.getValue());
         const selectedText = editor.getModel().getValueInRange(editor.getSelection());
         if (selectedText != "") {
           runQuery(selectedText);
@@ -155,7 +156,7 @@ const QueryPane: FC<{
     });
     editor.addAction({
       id: "open-autocomp",
-      label: "Auto Complition",
+      label: "Auto Completion",
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ],
       contextMenuGroupId: "editor-cmds",
       run: (editor: any) => {
@@ -163,21 +164,10 @@ const QueryPane: FC<{
       },
     });
   };
-  const handleEditorBeforeMount = (monaco: any) => {
+  const handleEditorBeforeMount = (monaco: Monaco) => {
     monaco.languages.register({ id: editorLang });
     monaco.languages.setMonarchTokensProvider(editorLang, getLangDefinition());
   };
-
-  React.useEffect(() => {
-    let autoComp: any;
-    if (monaco) {
-      autoComp = getPgsqlCompletionProvider(monaco, editorLang, connectionId);
-      return () => {
-        autoComp.dispose();
-        monaco.editor.getModels().forEach((model: any) => model.dispose());
-      };
-    }
-  }, [monaco]);
 
   return (
     <>
