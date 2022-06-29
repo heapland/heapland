@@ -11,6 +11,7 @@ const TableActionHeader: FC<{
   onEditRow: () => void;
   onSaveRow: () => void;
   onCancel: () => void;
+  openDDL: () => void;
   onPagiChange: (page: number, pageSize: number) => void;
   editingKey: string;
   onDownloadDataModal: () => void;
@@ -28,6 +29,7 @@ const TableActionHeader: FC<{
   onSaveRow,
   onCancel,
   onPagiChange,
+  openDDL,
   selectedRow,
   editingKey,
   currentPage,
@@ -60,7 +62,7 @@ const TableActionHeader: FC<{
             </Tooltip>
           </div>
           <div className='action-btn-group'>
-            <Button size='small' className='label'>
+            <Button size='small' className='label' onClick={openDDL}>
               DDL
             </Button>
           </div>

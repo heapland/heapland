@@ -97,7 +97,13 @@ export const readTSVData = (tableData: QueryExecutionResult, showLabel: boolean,
   return TSV;
 };
 
-export const createSQLInsert = (tableData: QueryExecutionResult, schema: string, tableName: string, tableDefinition: boolean) => {
+export const createSQLInsert = (
+  tableData: QueryExecutionResult,
+  schema: string,
+  tableName: string,
+  tableDefinition: boolean,
+  insertQuery: boolean = true
+) => {
   let arrData = tableData.result;
   let colsData = tableData.columns;
   let keys = colsData.map((k) => k.name).join(",");
@@ -116,24 +122,26 @@ export const createSQLInsert = (tableData: QueryExecutionResult, schema: string,
 
   //1st loop is to extract each row
 
-  arrData.map((d) => {
-    let sql_insert = "INSERT INTO " + schema + "." + tableName;
-    let keyName = ` (${keys}) `;
-    sql_insert += keyName;
-    let value: any[] = [];
+  if (insertQuery) {
+    arrData.map((d) => {
+      let sql_insert = "INSERT INTO " + schema + "." + tableName;
+      let keyName = ` (${keys}) `;
+      sql_insert += keyName;
+      let value: any[] = [];
 
-    colsData.map((c) => {
-      if (c.dataType === "int8" || c.dataType === "int16") {
-        value.push(d[c.name]);
-      } else {
-        value.push(`'${d[c.name]}'`);
-      }
+      colsData.map((c) => {
+        if (c.dataType === "int8" || c.dataType === "int16") {
+          value.push(d[c.name]);
+        } else {
+          value.push(`'${d[c.name]}'`);
+        }
+      });
+      let joinValue = value.join(",");
+
+      sql_insert += `VALUES(${joinValue});\r\n`;
+      sql += sql_insert;
     });
-    let joinValue = value.join(",");
-
-    sql_insert += `VALUES(${joinValue});\r\n`;
-    sql += sql_insert;
-  });
+  }
 
   return sql;
 };

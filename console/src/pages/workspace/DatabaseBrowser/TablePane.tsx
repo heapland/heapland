@@ -1,4 +1,4 @@
-import { Select, Skeleton, Table, Tabs, Form, Input, InputNumber, Popconfirm, Typography, message } from "antd";
+import { Select, Skeleton, Table, Tabs, Form, Input, InputNumber, Popconfirm, Typography, message, Modal, Button, Space } from "antd";
 import Column from "antd/lib/table/Column";
 import React, { useEffect, useState } from "react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
@@ -6,8 +6,17 @@ import Connections from "../../../services/Connections";
 import TableActionHeader from "./TableActionHeader";
 import "./DatabaseBrowser.scss";
 import DownloadModal from "./DownloadModal";
-import { createSQLInsert, createSQLUpdate, truncateString } from "../../../components/utils/utils";
+import { copyTextToClipboard, createSQLInsert, createSQLUpdate, truncateString } from "../../../components/utils/utils";
 import { InternalServerError } from "../../../services/SparkService";
+import { Controlled as Codemirror } from "react-codemirror2";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
+
+const editorOptions = {
+  mode: "shell",
+  theme: "material",
+  lineNumbers: true,
+};
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
@@ -56,6 +65,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   });
 
   const [isNewData, setNewData] = useState<QueryExecutionResult>();
+  const [openDDL, setOpenDDL] = useState(false);
   const [refres, setRefres] = useState<boolean>(false);
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
   const [form] = Form.useForm();
@@ -222,11 +232,16 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     });
   };
 
+  const closeDDLModal = () => {
+    setOpenDDL(false);
+  };
+
   return (
     <>
       <TableActionHeader
         onEditRow={() => edit(selectedRows[0])}
         onSaveRow={() => save(editingKey)}
+        openDDL={() => setOpenDDL(true)}
         onCancel={cancel}
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}
@@ -274,6 +289,36 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
           closeDownloadModal={closeDownloadModal}
           tableData={tableData.result}
         />
+      )}
+      {openDDL && (
+        <Modal
+          width={600}
+          centered
+          className='download-modal-wrapper'
+          title='Auto Generated Definition'
+          visible={openDDL}
+          footer={
+            <Space>
+              <Button onClick={closeDDLModal} className='cancel-modal-btn'>
+                Cancel
+              </Button>
+              <Button
+                type='primary'
+                onClick={() => copyTextToClipboard(createSQLInsert(tableData.result, schema, name, true, false), message)}>
+                Copy to Clipboard
+              </Button>
+            </Space>
+          }
+          onCancel={closeDDLModal}>
+          <Codemirror
+            className=''
+            autoCursor={true}
+            value={createSQLInsert(tableData.result, schema, name, true, false)}
+            options={editorOptions}
+            onBeforeChange={(editor, data, value: string) => {}}
+            onChange={(editor, data, value) => {}}
+          />
+        </Modal>
       )}
     </>
   );
