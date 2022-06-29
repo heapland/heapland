@@ -1,7 +1,7 @@
 import { table } from "console";
 import Connections from "../../../services/Connections";
 import { EditorLang } from "./DatabaseBrowser";
-import { pgsqlFunction, pgsqlKeywords, operators } from "./PgSQL";
+import { pgsqlFunction, pgsqlKeywords, operators, pgsqlSnippet } from "./PgSQL";
 
 interface Tables {
   tblName: string;
@@ -72,6 +72,7 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
       // console.log(query, word, splitQuery);
       // console.log("last 2nd ", lastScndQryWord);
       // console.log("last ", lastQueryWord);
+      // console.log("range ", range);
 
       try {
         let items: any[];
@@ -140,8 +141,29 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
               };
             }),
           ];
+        } else if (range.startColumn === 1 && range.endColumn === 1) {
+          items = [
+            ...pgsqlSnippet.map((d) => {
+              return {
+                label: d.key,
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                detail: d.detail,
+                range: range,
+                insertText: d.insertText,
+              };
+            }),
+          ];
         } else {
           items = [
+            ...pgsqlSnippet.map((d) => {
+              return {
+                label: d.key,
+                kind: monaco.languages.CompletionItemKind.Snippet,
+                detail: d.detail,
+                range: range,
+                insertText: d.insertText,
+              };
+            }),
             ...pgsqlKeywords.map((k) => {
               return {
                 label: k.key,

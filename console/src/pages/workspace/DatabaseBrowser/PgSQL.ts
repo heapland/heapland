@@ -367,6 +367,12 @@ interface PGSQLFunction {
   insertText: string;
 }
 
+interface PGSQLSnippet {
+  key: string;
+  detail: string;
+  insertText: string;
+}
+
 export const pgsqlKeywords: PGSQLKeywords[] = [
   {
     key: "ADD",
@@ -502,6 +508,65 @@ export const pgsqlFunction: PGSQLFunction[] = [
     key: "LAST",
     detail: "Returns the last value",
     insertText: "LAST()",
+  },
+];
+export const pgsqlSnippet: PGSQLSnippet[] = [
+  {
+    key: "col",
+    detail: "new column definitioin",
+    insertText: "col int not null",
+  },
+  {
+    key: "del",
+    detail: "delete rows forom a table",
+    insertText: "delete from  where;",
+  },
+  {
+    key: "ins",
+    detail: "insert rows into table",
+    insertText: "insert into  () values ();",
+  },
+  {
+    key: "lim",
+    detail: "select first N rows from a table",
+    insertText: "select * from limit ;",
+  },
+  {
+    key: "sel",
+    detail: "select all rows from a table",
+    insertText: "select * from ;",
+  },
+  {
+    key: "selc",
+    detail: "select the number of specific rows in a table",
+    insertText: "select count(*) from alias where alias.;",
+  },
+  {
+    key: "selw",
+    detail: "select specific rows from a table",
+    insertText: "select * from alias where alias.;",
+  },
+  {
+    key: "tab",
+    detail: "new table definition",
+    insertText: `create table new_table
+(    
+  col int not null
+);
+`,
+  },
+  {
+    key: "upd",
+    detail: "update values in  a table",
+    insertText: "update set = where;",
+  },
+  {
+    key: "view",
+    detail: "new view definition",
+    insertText: `create view new_view as
+select * 
+from ;
+    `,
   },
 ];
 

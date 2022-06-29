@@ -153,6 +153,15 @@ const QueryPane: FC<{
         updateQuery(true, queryView.queryName, editor.getValue());
       },
     });
+    editor.addAction({
+      id: "open-autocomp",
+      label: "Auto Complition",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ],
+      contextMenuGroupId: "editor-cmds",
+      run: (editor: any) => {
+        editor.trigger("", "editor.action.triggerSuggest", {});
+      },
+    });
   };
   const handleEditorBeforeMount = (monaco: any) => {
     monaco.languages.register({ id: editorLang });
