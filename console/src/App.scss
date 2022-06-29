@@ -206,7 +206,7 @@
 
 .ant-tag-geekblue {
   background-color: var(--tag-geekblue-bg);
-  border-color: var(--tag--geekbule-border);
+  border-color: var(--tag-geekbule-border);
   color: var(--tag-geekblue-color);
 }
 
@@ -224,4 +224,27 @@
 
 .ant-table-small .ant-table-thead > tr > th {
   background: var(--table-header-bg);
+}
+
+// tabs styles
+
+.ant-tabs > .ant-tabs-nav .ant-tabs-nav-more {
+  color: var(--primary-color);
+}
+
+.ant-tabs-dropdown-menu {
+  background-color: var(--background-color);
+
+  li {
+    color: var(--secondary-color);
+    &:hover {
+      background-color: var(--selected-td-bg);
+    }
+  }
+}
+
+.ant-btn-loading,
+.ant-btn-primary[disabled] {
+  background: var(--background-color);
+  color: var(--secondary-color);
 }

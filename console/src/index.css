@@ -50,7 +50,7 @@ html[data-theme="light"] {
 
   --tag-geekblue-bg: #f0f5ff;
   --tag-geekblue-color: #2f54eb;
-  --tag--geekbule-border: #adc6ff;
+  --tag-geekbule-border: #adc6ff;
 
   --config-key-color: #a5aec0;
   --config-key-bg: #a5aec0;
@@ -106,7 +106,7 @@ html[data-theme="dark"] {
 
   --tag-geekblue-bg: #0b132c;
   --tag-geekblue-color: #b3bfd7;
-  --tag--geekbule-border: var(--border-color);
+  --tag-geekbule-border: var(--border-color);
 
   --hover-td-bg: #39415a;
   --drawer-modal-border: #0b132c;
