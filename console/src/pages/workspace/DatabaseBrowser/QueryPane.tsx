@@ -5,15 +5,14 @@ import Column from "antd/lib/table/Column";
 import { LoadingOutlined } from "@ant-design/icons";
 import { string } from "prop-types";
 import { TabPane } from "rc-tabs";
-import React, { FC, ReactNode, useEffect, useState } from "react";
+import React, { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { MdCreateNewFolder, MdPlayCircle, MdSave, MdSync } from "react-icons/md";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import Connections from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
-import { truncateString } from "../../../components/utils/utils";
+import { truncateString, getLangDefinition } from "../../../components/utils/utils";
 import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
-import { getLangDefinition } from "./PgSQL";
 import { EditorLang } from "./DatabaseBrowser";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
@@ -27,7 +26,6 @@ const QueryPane: FC<{
   onDeleteQuery: (id: number | string) => void;
 }> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang }) => {
   const [modalForm] = Form.useForm();
-  const monaco = useMonaco();
   const [queryView, setQueryView] = useState<{
     queryName: string;
     savedQuery: string;
@@ -51,7 +49,7 @@ const QueryPane: FC<{
     Connections.getQuery(connectionId, queryId, (q) => {
       setQueryView({ ...queryView, loading: false, savedQuery: q.text, currentState: q.text });
     });
-  }, [queryId, queryView.savedQuery]);
+  }, [queryId]);
 
   const closeSaveAsModal = () => {
     modalForm.resetFields();
@@ -101,7 +99,7 @@ const QueryPane: FC<{
       .split(";")
       .map((q) => q.trim())
       .filter((q) => q !== "");
-    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true });
+    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true, currentState: q, savedQuery: q });
     const results = queries.map((q) => Connections.executeQuery(connectionId, q));
     Promise.all(results).then((values) => {
       const allResults: QueryResult[] = values.map((v) => {
@@ -113,7 +111,7 @@ const QueryPane: FC<{
           }
         }
       });
-      setQueryView({ ...queryView, queryResults: allResults, isQueryExecuting: false });
+      setQueryView({ ...queryView, queryResults: allResults, isQueryExecuting: false, currentState: q, savedQuery: q });
     });
   };
 
@@ -134,7 +132,7 @@ const QueryPane: FC<{
       contextMenuGroupId: "editor-cmds",
 
       run: (editor: any) => {
-        console.log(editor.getValue());
+        // console.log(editor.getValue());
         const selectedText = editor.getModel().getValueInRange(editor.getSelection());
         if (selectedText != "") {
           runQuery(selectedText);
@@ -149,27 +147,24 @@ const QueryPane: FC<{
       label: "Save Query",
       keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
       contextMenuGroupId: "editor-cmds",
-
       run: (editor: any) => {
         updateQuery(true, queryView.queryName, editor.getValue());
       },
     });
+    editor.addAction({
+      id: "open-autocomp",
+      label: "Auto Completion",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyJ],
+      contextMenuGroupId: "editor-cmds",
+      run: (editor: any) => {
+        editor.trigger("", "editor.action.triggerSuggest", {});
+      },
+    });
   };
-  const handleEditorBeforeMount = (monaco: any) => {
+  const handleEditorBeforeMount = (monaco: Monaco) => {
     monaco.languages.register({ id: editorLang });
-    monaco.languages.setMonarchTokensProvider(editorLang, getLangDefinition());
+    monaco.languages.setMonarchTokensProvider(editorLang, getLangDefinition(editorLang));
   };
-
-  React.useEffect(() => {
-    let autoComp: any;
-    if (monaco) {
-      autoComp = getPgsqlCompletionProvider(monaco, editorLang, connectionId);
-      return () => {
-        autoComp.dispose();
-        monaco.editor.getModels().forEach((model: any) => model.dispose());
-      };
-    }
-  }, [monaco]);
 
   return (
     <>
@@ -227,6 +222,7 @@ const QueryPane: FC<{
                 onMount={onEditorMount}
                 beforeMount={handleEditorBeforeMount}
                 language={editorLang}
+                theme='vs-dark'
                 defaultValue={queryView.savedQuery}
                 value={queryView.savedQuery}
                 onChange={(v, ev) => {
@@ -251,7 +247,7 @@ const QueryPane: FC<{
                           scroll={{ x: "calc(100vw - 400px)" }}
                           pagination={false}
                           className='tbl-data'
-                          style={{ minHeight: "20vh", backgroundColor: "#fff" }}>
+                          style={{ minHeight: "20vh" }}>
                           {qr.result.columns.map((c, i) => {
                             if (c.name.toUpperCase() === "PROPERTIES") {
                               return (
@@ -286,11 +282,12 @@ const QueryPane: FC<{
           visible={queryView.saveAsModal}
           onOk={handleSaveAs}
           onCancel={closeSaveAsModal}
+          cancelButtonProps={{ className: "cancel-modal-btn" }}
           okText='Save'
           cancelText='Cancel'>
           <Form layout='vertical' form={modalForm} requiredMark={false} onFinish={onSaveAsFormSubmission} scrollToFirstError>
-            <Form.Item name='queryName' label='Query name' rules={[{ required: true, message: "This field is required." }]}>
-              <Input />
+            <Form.Item name='queryName' label='Query Name' rules={[{ required: true, message: "This field is required." }]}>
+              <Input placeholder='Query Name' />
             </Form.Item>
           </Form>
         </Modal>

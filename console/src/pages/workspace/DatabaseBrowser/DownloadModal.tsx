@@ -3,6 +3,7 @@ import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import { Button, Input, Modal, Select, Space, Checkbox, message } from "antd";
 import { SwitcherTwoTone } from "@ant-design/icons";
+import { Controlled as Codemirror } from "react-codemirror2";
 import {
   createSQLInsert,
   readCSVData,
@@ -12,9 +13,17 @@ import {
   copyTextToClipboard,
 } from "../../../components/utils/utils";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
 const { Option } = Select;
 
 export type Extractor = "sql_insert" | "csv" | "tsv" | "json" | "sql_update";
+
+const editorOptions = {
+  mode: "shell",
+  theme: "material",
+  lineNumbers: true,
+};
 
 interface DownloadInfo {
   extractor: Extractor;
@@ -37,14 +46,14 @@ const DownloadModal: FC<{
   const [downloadInfo, setDownloadInfo] = useState<DownloadInfo>({
     extractor: "sql_insert",
     editorLang: "sql",
-    downContent: "sql_insert",
+    downContent: "",
     isColumnHeader: false,
     isRowHeader: false,
     isTableDefinition: false,
   });
 
   const onChangeExtractor = (value: Extractor) => {
-    if (value.includes("sql_insert")) {
+    if (value === "sql_insert") {
       setDownloadInfo({
         ...downloadInfo,
         extractor: value,
@@ -90,12 +99,15 @@ const DownloadModal: FC<{
     donwloadFile(downloadInfo.downContent, tableName, downloadInfo.extractor);
   };
   useEffect(() => {
-    // if (tableData.result && name && schema) {
-    //   setDownloadInfo({
-    //     ...downloadInfo,
-    //     downContent: createSQLInsert(tableData.result, schema, name),
-    //   });
-    // }
+    if (tableData && tableName && schema) {
+      setDownloadInfo({
+        ...downloadInfo,
+        extractor: "sql_insert",
+        editorLang: "sql",
+        downContent: createSQLInsert(tableData, schema, tableName, false),
+        isTableDefinition: false,
+      });
+    }
   }, []);
 
   const onShowColumnRow = (e: CheckboxChangeEvent) => {
@@ -137,8 +149,12 @@ const DownloadModal: FC<{
       visible={isDownloadModal}
       footer={
         <Space>
-          <Button>Cancel</Button>
-          <Button onClick={() => copyTextToClipboard(downloadInfo.downContent, message)}>Copy to Clipboard</Button>
+          <Button onClick={closeDownloadModal} className='cancel-modal-btn'>
+            Cancel
+          </Button>
+          <Button className='copy-text-btn' onClick={() => copyTextToClipboard(downloadInfo.downContent, message)}>
+            Copy to Clipboard
+          </Button>
           <Button type='primary' onClick={onDownloadData}>
             Export to file
           </Button>
@@ -181,12 +197,12 @@ const DownloadModal: FC<{
           {(downloadInfo.extractor === "csv" || downloadInfo.extractor === "tsv") && (
             <>
               <div className='form-group'>
-                <Checkbox name='column' onChange={onShowColumnRow}>
+                <Checkbox name='column' checked={downloadInfo.isColumnHeader} onChange={onShowColumnRow}>
                   Add column header
                 </Checkbox>
               </div>
               <div className='form-group'>
-                <Checkbox name='row' onChange={onShowColumnRow}>
+                <Checkbox name='row' checked={downloadInfo.isRowHeader} onChange={onShowColumnRow}>
                   Add row header
                 </Checkbox>
               </div>
@@ -195,12 +211,14 @@ const DownloadModal: FC<{
         </Space>
         <div className='preview-container'>
           <div className='preview-title'>Export Preview:</div>
-          {tableData?.result && (
-            <Editor
-              height='430px'
+          {downloadInfo.downContent && (
+            <Codemirror
+              className=''
+              autoCursor={true}
               value={downloadInfo.downContent}
-              defaultLanguage={downloadInfo.editorLang}
-              language={downloadInfo.editorLang}
+              options={editorOptions}
+              onBeforeChange={(editor, data, value: string) => {}}
+              onChange={(editor, data, value) => {}}
             />
           )}
         </div>

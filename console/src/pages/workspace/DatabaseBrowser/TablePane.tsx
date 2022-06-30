@@ -1,4 +1,4 @@
-import { Select, Skeleton, Table, Tabs, Form, Input, InputNumber, Popconfirm, Typography, message } from "antd";
+import { Select, Skeleton, Table, Tabs, Form, Input, InputNumber, Popconfirm, Typography, message, Modal, Button, Space } from "antd";
 import Column from "antd/lib/table/Column";
 import React, { useEffect, useState } from "react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
@@ -6,8 +6,17 @@ import Connections from "../../../services/Connections";
 import TableActionHeader from "./TableActionHeader";
 import "./DatabaseBrowser.scss";
 import DownloadModal from "./DownloadModal";
-import { createSQLInsert, createSQLUpdate } from "../../../components/utils/utils";
+import { copyTextToClipboard, createSQLInsert, createSQLUpdate, truncateString } from "../../../components/utils/utils";
 import { InternalServerError } from "../../../services/SparkService";
+import { Controlled as Codemirror } from "react-codemirror2";
+import "codemirror/lib/codemirror.css";
+import "codemirror/theme/material.css";
+
+const editorOptions = {
+  mode: "shell",
+  theme: "material",
+  lineNumbers: true,
+};
 
 interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
@@ -50,7 +59,13 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   dbName,
 }) => {
   const [tableData, setTableData] = useState<{ loading: boolean; result?: QueryExecutionResult }>({ loading: true });
+  const [showTableData, setShowTableData] = useState<{ currentPage: number; pageSize: number }>({
+    currentPage: 1,
+    pageSize: 50,
+  });
+
   const [isNewData, setNewData] = useState<QueryExecutionResult>();
+  const [openDDL, setOpenDDL] = useState(false);
   const [refres, setRefres] = useState<boolean>(false);
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
   const [form] = Form.useForm();
@@ -61,7 +76,10 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   useEffect(() => {
     setTableData({ loading: true });
     Connections.getTableData(connectionId, name, schema, (data) => {
-      setTableData({ ...tableData, loading: false, result: data });
+      const indexOfLastRow = showTableData.currentPage * showTableData.pageSize;
+      const indexOfFirstRow = indexOfLastRow - showTableData.pageSize;
+      const tableRowData = data.result.slice(indexOfFirstRow, indexOfLastRow);
+      setTableData({ ...tableData, loading: false, result: { ...data, result: tableRowData } });
       setNewData(data);
     });
   }, [name, refres]);
@@ -170,6 +188,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
 
   const mergedColumns = columns.map((col: any) => {
     if (!col.editable) {
+      console.log(col);
       return col;
     }
     return {
@@ -201,12 +220,28 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       setRefres(!refres);
     }
   };
+  const onPagiChange = (currentPage: number, rowPerPage: number) => {
+    // Logic for displaying todos
+    const indexOfLastRow = currentPage * rowPerPage;
+    const indexOfFirstRow = indexOfLastRow - rowPerPage;
+    const tableRowData = isNewData.result.slice(indexOfFirstRow, indexOfLastRow);
+    setTableData({ ...tableData, result: { ...tableData.result, result: tableRowData } });
+    setShowTableData({
+      ...showTableData,
+      currentPage: currentPage,
+    });
+  };
+
+  const closeDDLModal = () => {
+    setOpenDDL(false);
+  };
 
   return (
     <>
       <TableActionHeader
         onEditRow={() => edit(selectedRows[0])}
         onSaveRow={() => save(editingKey)}
+        openDDL={() => setOpenDDL(true)}
         onCancel={cancel}
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}
@@ -215,6 +250,10 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         onUploadData={() => {}}
         selectedRow={selectedRows}
         editingKey={editingKey}
+        onPagiChange={onPagiChange}
+        currentPage={showTableData.currentPage}
+        pageSize={showTableData.pageSize}
+        totalRows={isNewData?.result?.length}
       />
       <Skeleton loading={tableData.loading} active paragraph={{ rows: 4 }}>
         <Form form={form} component={false}>
@@ -229,25 +268,58 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
                 cell: EditableCell,
               },
             }}
+            size='small'
             rowKey={(c) => c.id}
             columns={mergedColumns}
             dataSource={tableData.result ? tableData.result.result : []}
-            scroll={{ x: "calc(100vw - 470px)" }}
+            scroll={{ x: "calc(100vw - 600px)" }}
             pagination={false}
             className='tbl-data'
-            style={{ minHeight: "50vh", backgroundColor: "#fff" }}
+            style={{ minHeight: "50vh" }}
           />
         </Form>
       </Skeleton>
-      <DownloadModal
-        schema={schema}
-        tableName={name}
-        dbName={dbName}
-        connectionId={connectionId}
-        isDownloadModal={isDownloadModal}
-        closeDownloadModal={closeDownloadModal}
-        tableData={tableData.result}
-      />
+      {isDownloadModal && (
+        <DownloadModal
+          schema={schema}
+          tableName={name}
+          dbName={dbName}
+          connectionId={connectionId}
+          isDownloadModal={isDownloadModal}
+          closeDownloadModal={closeDownloadModal}
+          tableData={tableData.result}
+        />
+      )}
+      {openDDL && (
+        <Modal
+          width={600}
+          centered
+          className='download-modal-wrapper'
+          title='Auto Generated Definition'
+          visible={openDDL}
+          footer={
+            <Space>
+              <Button onClick={closeDDLModal} className='cancel-modal-btn'>
+                Cancel
+              </Button>
+              <Button
+                type='primary'
+                onClick={() => copyTextToClipboard(createSQLInsert(tableData.result, schema, name, true, false), message)}>
+                Copy to Clipboard
+              </Button>
+            </Space>
+          }
+          onCancel={closeDDLModal}>
+          <Codemirror
+            className=''
+            autoCursor={true}
+            value={createSQLInsert(tableData.result, schema, name, true, false)}
+            options={editorOptions}
+            onBeforeChange={(editor, data, value: string) => {}}
+            onChange={(editor, data, value) => {}}
+          />
+        </Modal>
+      )}
     </>
   );
 };

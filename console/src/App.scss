@@ -9,3 +9,242 @@
 .title {
   color: $lt-font-color;
 }
+
+// global style for all modal and drawer
+
+// comman drawer style
+.ant-drawer-header {
+  background: var(--background-color) !important;
+  border-bottom-color: var(--drawer-modal-border) !important;
+  .ant-drawer-title {
+    color: var(--title-color);
+  }
+  .ant-drawer-close {
+    color: var(--title-color);
+    // &:hover {
+    //   color: var(--hover-bg);
+    // }
+  }
+}
+
+.ant-drawer-body {
+  background: var(--drawer-modal-bg);
+  .ant-form-item-label label {
+    color: var(--title-color);
+  }
+}
+
+.ant-drawer-footer {
+  background-color: var(--background-color);
+  border-top-color: var(--drawer-modal-border) !important;
+  .test-connection-btn {
+    background: var(--background-color);
+    color: var(--secondary-color);
+    border: 1px solid var(--border-color);
+    &:hover {
+      background-color: var(--light-bg);
+    }
+  }
+}
+
+// comman drawer style end
+
+// comman modal style
+.ant-modal-body {
+  background-color: var(--drawer-modal-bg);
+  border: 1px solid var(--drawer-modal-border);
+  .antd-img-crop-control button:disabled {
+    color: var(--secondary-color);
+    cursor: not-allowed;
+  }
+  .antd-img-crop-control button {
+    color: var(--title-color);
+  }
+}
+
+.ant-modal-footer {
+  // button {
+  //   // &:last-child {
+  //   //   color: var(--secondary-color);
+  //   //   background-color: var(--background-color);
+  //   //   border-color: var(--light-bg);
+  //   //   &:hover {
+  //   //     background-color: var(--light-bg);
+  //   //   }
+  //   // }
+  // }
+}
+// comman modal style end
+
+// comman checkbox style
+.ant-form-item-explain.ant-form-item-explain-error {
+  color: var(--form-error-text-color);
+}
+
+.ant-dropdown-menu-item-divider {
+  background-color: var(--border-color);
+}
+.ant-dropdown-open {
+  background-color: var(--default-btn-color) !important;
+}
+// comman checkbox style end
+
+// comman input and select style
+
+// .ant-input {
+//   box-shadow: none;
+//   border-radius: 0;
+//   background-color: var(--background-color);
+//   color: var(--title-color);
+//   border-color: var(--border-color);
+//   &::placeholder {
+//     color: var(--placeholder-color);
+//   }
+// }
+.ant-input-affix-wrapper,
+.ant-input-number,
+.ant-input-number-input,
+.ant-input,
+.ant-select-selector {
+  background-color: var(--background-color) !important;
+  border-color: var(--input-border);
+  color: var(--title-color);
+  &::placeholder {
+    color: var(--placeholder-color);
+  }
+}
+.ant-input-number {
+  background-color: var(--input-border);
+  border-left-color: var(--input-border);
+  .ant-input-number-handler-wrap {
+    background: var(--light-bg);
+  }
+
+  .ant-input-number-handler,
+  .ant-input-number-handler-down-inner,
+  .ant-input-number-handler-up-inner {
+    color: var(--secondary-color);
+  }
+}
+.ant-input-password-icon {
+  color: var(--title-color);
+  &:hover {
+    color: var(--secondary-color);
+  }
+}
+.ant-form-item-has-error .ant-input {
+  background-color: var(--background-color);
+  &:hover {
+    background-color: var(--background-color);
+  }
+}
+
+.ant-page-header-heading-sub-title,
+.ant-form-item-label > label {
+  color: var(--secondary-color);
+}
+
+.ant-input-number {
+  border-color: var(--input-border) !important;
+}
+
+// comman input and select style end
+
+// comman table
+
+.ant-table-placeholder,
+.ant-table-tbody > tr.ant-table-placeholder:hover > td {
+  background-color: var(--light-bg);
+}
+
+.ant-empty-description {
+  color: var(--secondary-color);
+}
+.ant-table-thead tr th {
+  background-color: var(--table-header-bg);
+  border-color: var(--border-color);
+  border-top: 1px solid var(--border-color);
+  color: var(--table-header-color);
+}
+.ant-table-tbody tr td {
+  background-color: var(--table-body-bg);
+  border-color: var(--border-color);
+  color: var(--table-body-color);
+}
+.ant-table-tbody > tr.ant-table-row:hover > td {
+  background-color: var(--hover-td-bg);
+}
+.ant-table-tbody > tr.ant-table-row-selected:hover > td {
+  background-color: var(--selected-td-bg);
+  color: var(--title-color);
+}
+.ant-table-tbody .ant-table-row-selected:hover td,
+.ant-table-tbody > tr.ant-table-row-selected > td {
+  background-color: var(--selected-td-bg);
+}
+// comman table end
+
+.config-key {
+  font-size: 13px;
+  color: var(--config-key-color);
+  border-top-left-radius: 4px;
+  border-bottom-left-radius: 4px;
+}
+.config-key,
+.config-val {
+  padding: 2px 6px;
+  border: 1px solid var(--border-color);
+}
+
+.config-val {
+  background-color: var(--config-val-bg);
+  color: var(--config-val-color);
+  border-left: none;
+  border-top-right-radius: 4px;
+  border-bottom-right-radius: 4px;
+}
+
+.ant-tag-geekblue {
+  background-color: var(--tag-geekblue-bg);
+  border-color: var(--tag-geekbule-border);
+  color: var(--tag-geekblue-color);
+}
+
+// removed transition
+.ant-menu,
+.db-tabs > .ant-tabs-nav .ant-tabs-tab:not(:last-of-type),
+.ant-tabs-tab,
+.ant-tree,
+.ant-menu-item,
+.ant-dropdown-trigger,
+.ant-tree > .db-objects,
+.ant-btn {
+  transition: none;
+}
+
+.ant-table-small .ant-table-thead > tr > th {
+  background: var(--table-header-bg);
+}
+
+// tabs styles
+
+.ant-tabs > .ant-tabs-nav .ant-tabs-nav-more {
+  color: var(--primary-color);
+}
+
+.ant-tabs-dropdown-menu {
+  background-color: var(--background-color);
+
+  li {
+    color: var(--secondary-color);
+    &:hover {
+      background-color: var(--selected-td-bg);
+    }
+  }
+}
+
+.ant-btn-loading,
+.ant-btn-primary[disabled] {
+  background: var(--background-color);
+  color: var(--secondary-color);
+}

@@ -111,7 +111,7 @@ const OrgSetting: React.FC<{}> = () => {
     },
   ];
   return (
-    <div className='workspace-wrapper'>
+    <div className='workspace-wrapper org-setting-wrapper'>
       <PageHeader title='Account' subTitle='Manage your account setting' className='wizard-form' />
       <div>
         <div className='form-container'>
@@ -150,7 +150,7 @@ const OrgSetting: React.FC<{}> = () => {
 
             <Form.Item>
               {orgState.errorMessage && <div className='error-msg'>{orgState.errorMessage}</div>}
-              <Button type='primary' htmlType='submit' className='btn-action btn-action-light' loading={orgState.loading}>
+              <Button type='primary' htmlType='submit' className='btn-action' loading={orgState.loading}>
                 Update
               </Button>
             </Form.Item>

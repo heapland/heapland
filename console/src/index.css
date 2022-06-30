@@ -1,17 +1,68 @@
 :root {
-  --background-color: #fff;
+  --background-color: #f0f2f5;
+  --primary-bg-bolor: #fff;
   --title-color: #3b4a73;
   --text-size: 12px;
+
+  --primary-color: "";
+  --secondary-color: "";
+  --label-color: "";
+  --hover-bg: #eee;
+  --title-hover-color: #eee;
+  --default-green: #52b788;
 }
 
 html[data-theme="light"] {
-  --background-color: #f0f2f5;
+  --background-selected: #e9f7ee;
+  --background-color: #fff;
+  --primary-bg-color: #fff;
+  --light-bg: #f0f2f5;
   --hover-bg: #eee;
   --nav-bg: #fff;
-  --border-color: #eee;
+  --border-color: #d9d9d9;
   --nav-title: #a5a1a1;
   --table-header: #e8ecf1;
-  --action-header-bg: #e2e5ea;
+  --action-header-bg: #f0f2f5;
+  --default-btn-color: #fff;
+  --input-bg: #fff;
+  --primary-color: #3b4a73;
+  --secondary-color: #3b4a73;
+  --label-color: "";
+  --title-color: #3b4a73;
+  --title-hover-color: #3b4a73;
+  --default-green: #52b788;
+  --form-error-text-color: #ff4d4f;
+  --connection-card-bg: #fff;
+  --card-border: #f0f0f0;
+
+  --select-item-bg: #fff;
+
+  --input-bg: #fff;
+  --input-border: #d9d9d9;
+  --placeholder-color: #d9d9d9;
+
+  --table-header-color: #a5aec0;
+  --table-body-color: #3b4a73;
+  --table-header-bg: #e8ecf1;
+  --table-body-bg: #fff;
+  --selected-td-bg: #e9f7ee;
+  --hover-td-bg: #fff;
+
+  --tag-geekblue-bg: #f0f5ff;
+  --tag-geekblue-color: #2f54eb;
+  --tag-geekbule-border: #adc6ff;
+
+  --config-key-color: #a5aec0;
+  --config-key-bg: #a5aec0;
+  --config-val-bg: #e4e5f1;
+  --config-val-color: #3b4a73;
+
+  --drawer-modal-border: #d9d9d9;
+  --drawer-modal-bg: #fff;
+
+  --btn-border: #d9d9d9;
+  --btn-hover-color: #fff;
+  --theme-btn-shadow: 0px 3px 3px 0px rgba(37, 46, 113, 0.12);
 }
 
 html[data-size="small"] {
@@ -19,7 +70,58 @@ html[data-size="small"] {
 }
 
 html[data-theme="dark"] {
-  --background-color: #212a2e;
+  --background-selected: #1a233d;
+  --primary-bg-color: #0b132c;
+  --background-color: #0b132c;
+  --secondary-bg: #191f3c;
+  --light-bg: #1a233d;
+  --border-color: #47526d;
+  --primary-color: #fff;
+  --secondary-color: #b3bfd7;
+  --label-color: "";
+  --hover-bg: #eee;
+  --title-color: #eee;
+  --title-hover-color: #3b4a73;
+  --default-green: #52b788;
+  --table-header: #0b132c;
+  --input-bg: #11142c;
+  --input-border: var(--border-color);
+  --default-btn-color: #39415a;
+  --disabled-color: "";
+  --placeholder-color: gray;
+  --form-error-text-color: #a34546;
+  --connection-card-bg: var(--light-bg);
+  --card-border: var(--light-bg);
+
+  --select-item-bg: var(--background-color);
+
+  --tag-color: #3b4a73;
+  --font-color: #3b4a73;
+
+  --table-header-color: #a5aec0;
+  --table-body-color: #b3bfd7;
+  --table-header-bg: #0b132c;
+  --table-body-bg: #1a233d;
+  --selected-td-bg: #39415a;
+
+  --tag-geekblue-bg: #0b132c;
+  --tag-geekblue-color: #b3bfd7;
+  --tag-geekbule-border: var(--border-color);
+
+  --hover-td-bg: #39415a;
+  --drawer-modal-border: #0b132c;
+  --drawer-modal-bg: var(--light-bg);
+
+  --config-key-color: #a5aec0;
+  --config-key-bg: #a5aec0;
+  --config-val-bg: var(--background-color);
+  --config-val-color: var(--title-color);
+
+  --tab-active-color: var(var(--light-bg));
+  --btn-border: var(--default-btn-color);
+  --btn-hover-color: var(--primary-color);
+
+  --theme-btn-shadow: 0px 0px 4px 2px rgb(151 151 151 / 12%);
 }
 
 div.nav-item-title {
@@ -40,4 +142,8 @@ body {
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+input:-internal-autofill-selected {
+  background-color: var(--light-bg) !important;
 }
