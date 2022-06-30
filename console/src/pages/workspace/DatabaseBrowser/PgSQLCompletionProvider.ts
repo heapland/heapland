@@ -1,7 +1,7 @@
 import { table } from "console";
 import Connections from "../../../services/Connections";
 import { EditorLang } from "./DatabaseBrowser";
-import { pgsqlFunction, pgsqlKeywords, operators, pgsqlSnippet } from "./PgSQL";
+import { pgsqlFunction, pgsqlKeywords, pgsql_operators, pgsqlSnippet } from "../../../components/DatabasesKeywords/PgSQL";
 
 interface Tables {
   tblName: string;
@@ -173,7 +173,7 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
                 insertText: k.key,
               };
             }),
-            ...operators.map((o) => {
+            ...pgsql_operators.map((o) => {
               return {
                 label: o,
                 kind: monaco.languages.CompletionItemKind.Operator,

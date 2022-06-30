@@ -11,9 +11,8 @@ import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import Connections from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
-import { truncateString } from "../../../components/utils/utils";
+import { truncateString, getLangDefinition } from "../../../components/utils/utils";
 import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
-import { getLangDefinition } from "./PgSQL";
 import { EditorLang } from "./DatabaseBrowser";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
@@ -23,12 +22,10 @@ const QueryPane: FC<{
   queryId: number | string;
   name: string;
   editorLang: EditorLang;
-  monacoIns: Monaco;
   onUpdateQueryName: (id: number | string, newName: string) => void;
   onDeleteQuery: (id: number | string) => void;
-}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang, monacoIns }) => {
+}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang }) => {
   const [modalForm] = Form.useForm();
-
   const [queryView, setQueryView] = useState<{
     queryName: string;
     savedQuery: string;
@@ -166,7 +163,7 @@ const QueryPane: FC<{
   };
   const handleEditorBeforeMount = (monaco: Monaco) => {
     monaco.languages.register({ id: editorLang });
-    monaco.languages.setMonarchTokensProvider(editorLang, getLangDefinition());
+    monaco.languages.setMonarchTokensProvider(editorLang, getLangDefinition(editorLang));
   };
 
   return (

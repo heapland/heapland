@@ -682,7 +682,6 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             onUpdateQueryName={updateQuery}
                             onDeleteQuery={onDeleteQuery}
                             editorLang='pgsql'
-                            monacoIns={monacoIns}
                           />
                         </TabPane>
                       )}

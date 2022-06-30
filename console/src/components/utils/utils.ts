@@ -1,6 +1,8 @@
 import { MessageApi } from "antd/lib/message";
 import { QueryExecutionResult } from "../../models/DatabaseBrowser";
+import { EditorLang } from "../../pages/workspace/DatabaseBrowser/DatabaseBrowser";
 import { Extractor } from "../../pages/workspace/DatabaseBrowser/DownloadModal";
+import { pgsql_operators, pgsql_builtinVariables, pgsql_typeKeywords, pgsqlFunction, pgsqlKeywords } from "../DatabasesKeywords/PgSQL";
 
 export const truncateString = (str: string, num: number) => {
   if (str.length > num) {
@@ -207,4 +209,151 @@ export const copyTextToClipboard = (text: string, message: MessageApi) => {
       message.error("Could not copy text");
     }
   );
+};
+
+export const getLangDefinition = (editorLang: EditorLang) => {
+  let keywords: string[] = [];
+  let typeKeywords: string[] = [];
+  let operators: string[] = [];
+  switch (editorLang) {
+    case "pgsql":
+      keywords = [...pgsqlKeywords.map((k) => k.key), ...pgsqlFunction.map((f) => f.key)];
+      operators = [...pgsql_operators];
+      typeKeywords = [...pgsql_typeKeywords, ...pgsql_builtinVariables];
+      break;
+    default:
+      break;
+  }
+
+  return {
+    ignoreCase: true,
+    keywords: keywords,
+    typeKeywords: typeKeywords,
+    operators: [
+      ...operators,
+      "=",
+      ">",
+      "<",
+      "!",
+      "~",
+      "?",
+      ":",
+      "==",
+      "<=",
+      ">=",
+      "!=",
+      "&&",
+      "||",
+      "++",
+      "--",
+      "+",
+      "-",
+      "*",
+      "/",
+      "&",
+      "|",
+      "^",
+      "%",
+      "<<",
+      ">>",
+      ">>>",
+      "+=",
+      "-=",
+      "*=",
+      "/=",
+      "&=",
+      "|=",
+      "^=",
+      "%=",
+      "<<=",
+      ">>=",
+      ">>>=",
+    ],
+
+    // we include these common regular expressions
+    symbols: /[=><!~?:&|+\-*\/^%]+/,
+    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+
+    // The main tokenizer for our languages
+    tokenizer: {
+      root: [
+        // identifiers and keywords
+        { include: "custom" },
+        [
+          /[a-z_$][\w$]*/,
+          {
+            cases: {
+              "@keywords": "keyword",
+              "@typeKeywords": "keyword",
+              "@default": "identifier",
+            },
+          },
+        ],
+        [/[A-Z][\w$]*/, "type.identifier"], // to show class names nicely
+
+        // whitespace
+        { include: "@whitespace" },
+
+        // delimiters and operators
+        [/[{}()\[\]]/, "@brackets"],
+        [/[<>](?!@symbols)/, "@brackets"],
+        [
+          /@symbols/,
+          {
+            cases: {
+              "@operators": "operator",
+              "@default": "",
+            },
+          },
+        ],
+
+        // numbers
+        [/\d*\.\d+([eE][\-+]?\d+)?[fFdD]?/, "number.float"],
+        [/0[xX][0-9a-fA-F_]*[0-9a-fA-F][Ll]?/, "number.hex"],
+        [/0[0-7_]*[0-7][Ll]?/, "number.octal"],
+        [/0[bB][0-1_]*[0-1][Ll]?/, "number.binary"],
+        [/\d+[lL]?/, "number"],
+
+        // delimiter: after number because of .\d floats
+        [/[;,.]/, "delimiter"],
+
+        // strings
+        [/"([^"\\]|\\.)*$/, "string.invalid"], // non-teminated string
+        [/"/, "string", "@string"],
+
+        // characters
+        [/'[^\\']'/, "string"],
+        [/(')(@escapes)(')/, ["string", "string.escape", "string"]],
+        [/'/, "string.invalid"],
+      ],
+
+      custom: [
+        ["someSampleWord", "customClass"],
+        ["Array", "redClass"],
+      ],
+
+      whitespace: [
+        [/[ \t\r\n]+/, "white"],
+        [/\/\*/, "comment", "@comment"],
+        [/\/\+/, "comment", "@comment"],
+        [/\/\/.*$/, "comment"],
+      ],
+
+      comment: [
+        [/[^\/*]+/, "comment"],
+        [/\/\+/, "comment", "@push"],
+        [/\/\*/, "comment.invalid"],
+        ["\\*/", "comment", "@pop"],
+        ["\\+/", "comment", "@pop"],
+        [/[\/*]/, "comment"],
+      ],
+
+      string: [
+        [/[^\\"]+/, "string"],
+        [/@escapes/, "string.escape"],
+        [/\\./, "string.escape.invalid"],
+        [/"/, "string", "@pop"],
+      ],
+    },
+  };
 };
