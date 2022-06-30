@@ -503,19 +503,7 @@
     grid-template-columns: repeat(3, auto);
     row-gap: 20px;
     grid-column-gap: 10px;
-    span.config-key {
-    }
 
-    a.config-val,
-    span.config-val {
-      // padding: 4px 8px;
-      // border: 1px solid #eee;
-      // background-color: #e4e5f1;
-      // color: $lt-font-color;
-      // border-left: none;
-      // border-top-right-radius: 4px;
-      // border-bottom-right-radius: 4px;
-    }
     a.config-val {
       color: $lt-btn-primary;
       &:hover {
@@ -697,25 +685,7 @@
     }
   }
 
-  span.config-key {
-    // padding: 2px 6px;
-    // border: 1px solid #eee;
-    // font-size: 13px;
-    // color: $lt-font-dull-color;
-    // border-top-left-radius: 4px;
-    // border-bottom-left-radius: 4px;
-  }
 
-  span.config-val {
-    // padding: 2px 6px;
-    // font-size: 13px;
-    // border: 1px solid #eee;
-    // background-color: #e4e5f1;
-    // color: $lt-font-color;
-    // border-left: none;
-    // border-top-right-radius: 4px;
-    // border-bottom-right-radius: 4px;
-  }
 }
 .addons-form {
   .ant-select-selector-light {
