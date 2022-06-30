@@ -49,7 +49,7 @@ const QueryPane: FC<{
     Connections.getQuery(connectionId, queryId, (q) => {
       setQueryView({ ...queryView, loading: false, savedQuery: q.text, currentState: q.text });
     });
-  }, [queryId, queryView.savedQuery]);
+  }, [queryId]);
 
   const closeSaveAsModal = () => {
     modalForm.resetFields();
@@ -99,7 +99,7 @@ const QueryPane: FC<{
       .split(";")
       .map((q) => q.trim())
       .filter((q) => q !== "");
-    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true });
+    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true, currentState: q, savedQuery: q });
     const results = queries.map((q) => Connections.executeQuery(connectionId, q));
     Promise.all(results).then((values) => {
       const allResults: QueryResult[] = values.map((v) => {
@@ -111,7 +111,7 @@ const QueryPane: FC<{
           }
         }
       });
-      setQueryView({ ...queryView, queryResults: allResults, isQueryExecuting: false });
+      setQueryView({ ...queryView, queryResults: allResults, isQueryExecuting: false, currentState: q, savedQuery: q });
     });
   };
 
