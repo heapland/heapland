@@ -1,6 +1,6 @@
 import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List, Empty } from "antd";
 import React, { FC, ReactNode, useEffect, useState } from "react";
-import { FaDatabase, FaTable } from "react-icons/fa";
+import { FaDatabase, FaNetworkWired, FaTable } from "react-icons/fa";
 import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
 
 import { Resizable } from "re-resizable";
@@ -17,7 +17,7 @@ import {
 import "./DatabaseBrowser.scss";
 import { DownOutlined, MailOutlined } from "@ant-design/icons";
 import CustomScroll from "react-custom-scroll";
-import Connections from "../../../services/Connections";
+import Connections, { SchemaObjects } from "../../../services/Connections";
 import { ConnectionIcon } from "../../../components/Cards/DatasourceCard";
 import Sider from "antd/lib/layout/Sider";
 import { Content, Header } from "antd/lib/layout/layout";
@@ -36,7 +36,7 @@ const { DirectoryTree } = Tree;
 const { TabPane } = Tabs;
 
 type ObjType = "query" | "table";
-export type EditorLang = "pgsql" | "sql";
+export type EditorLang = "pgsql" | "mysql";
 interface DBPane {
   name: string;
   id: number | string;
@@ -88,7 +88,7 @@ const DBBrowserHeader: FC<{
 };
 
 interface DBObject {
-  title: string;
+  title: any;
   key: string;
   icon?: JSX.Element;
   children?: DBObject[];
@@ -110,6 +110,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     editMode: boolean;
     hasError: boolean;
     errorMsg?: string;
+    editorLang: EditorLang;
     selectedSchema?: string;
   }>({
     loading: true,
@@ -122,6 +123,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     hasError: false,
     schemas: [],
     catalogs: [],
+    editorLang: "pgsql",
   });
 
   const [dbQueries, setDBQueries] = useState<{ loading: boolean; queries: DBQuery[] }>({
@@ -176,55 +178,77 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     Connections.getDBSummary(
       databaseId,
       (s) => {
-        Connections.listSchemas(databaseId, (schemas) => {
-          const dbObjects = schemas.map((s) => {
-            return {
-              title: s,
-              key: s,
-            };
+        if (s.productName.toLowerCase() === "mysql") {
+          Connections.listSchemaObjects(databaseId, "default", (objs) => {
+            setDBState({
+              ...dbState,
+              loading: false,
+              productName: s.productName,
+              dbName: s.dbName,
+              dbObjects: makeTreeNodefromObj("default", objs),
+              connectionName: s.connectionName,
+              hasError: false,
+              editMode: false,
+              version: `${s.majorVersion}.${s.minorVersion}`,
+              schemas: [],
+              selectedSchema: "default",
+            });
           });
-          if (s.productName.toLowerCase() === "postgresql") {
-            setDBState({
-              ...dbState,
-              loading: false,
-              connectionName: s.connectionName,
-              productName: s.productName,
-              dbName: s.dbName,
-              version: `${s.majorVersion}.${s.minorVersion}`,
-              schemas: schemas,
-              dbObjects: dbObjects,
-              hasError: false,
-              editMode: false,
-              selectedSchema: "public",
+        } else {
+          Connections.listSchemas(databaseId, (schemas) => {
+            const dbObjects = schemas.map((s) => {
+              return {
+                title: (
+                  <Space align='center' size={3}>
+                    <FaNetworkWired size={14} style={{ marginTop: 5 }} /> <span>{s}</span>
+                  </Space>
+                ),
+                key: s,
+              };
             });
-          } else if (s.productName.toLowerCase() == "cassandra") {
-            setDBState({
-              ...dbState,
-              loading: false,
-              connectionName: s.connectionName,
-              productName: s.productName,
-              version: `${s.majorVersion}.${s.minorVersion}`,
-              schemas: schemas,
-              dbObjects: dbObjects,
-              hasError: false,
-              editMode: false,
-              selectedSchema: schemas[0],
-            });
-          } else {
-            setDBState({
-              ...dbState,
-              loading: false,
-              productName: s.productName,
-              dbName: s.dbName,
-              connectionName: s.connectionName,
-              hasError: false,
-              editMode: false,
-              version: `${s.majorVersion}.${s.minorVersion}`,
-              schemas: schemas,
-              selectedSchema: "na",
-            });
-          }
-        });
+            if (s.productName.toLowerCase() === "postgresql") {
+              setDBState({
+                ...dbState,
+                loading: false,
+                connectionName: s.connectionName,
+                productName: s.productName,
+                dbName: s.dbName,
+                version: `${s.majorVersion}.${s.minorVersion}`,
+                schemas: schemas,
+                dbObjects: dbObjects,
+                hasError: false,
+                editMode: false,
+                selectedSchema: "public",
+              });
+            } else if (s.productName.toLowerCase() == "cassandra") {
+              setDBState({
+                ...dbState,
+                loading: false,
+                connectionName: s.connectionName,
+                productName: s.productName,
+                version: `${s.majorVersion}.${s.minorVersion}`,
+                schemas: schemas,
+                dbObjects: dbObjects,
+                hasError: false,
+                editMode: false,
+                selectedSchema: schemas[0],
+              });
+            } else {
+              setDBState({
+                ...dbState,
+                loading: false,
+                productName: s.productName,
+                dbName: s.dbName,
+                connectionName: s.connectionName,
+                hasError: false,
+                editMode: false,
+                version: `${s.majorVersion}.${s.minorVersion}`,
+                schemas: schemas,
+                selectedSchema: "na",
+              });
+            }
+          });
+        }
       },
       (err) => {
         //message.error(`Unable to connect: ${err}`);
@@ -335,7 +359,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
 
   useEffect(() => {
     if (dbState.selectedSchema) {
-      Connections.listTables(databaseId, dbState.selectedSchema, (tables) => {
+      Connections.listTables(databaseId, dbState.selectedSchema, dbState.productName, (tables) => {
         setDBTables({ ...dbTables, tables: tables, loading: false });
       });
     }
@@ -405,7 +429,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           return {
             ...k,
             children: k.children.map((t) => {
-              if (t.key === "public--table") {
+              if (t.key === "public--table" || t.key.includes("default--table")) {
                 return {
                   ...t,
                   children: t.children.map((o) => {
@@ -421,88 +445,106 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               }
             }),
           };
+        } else if (k.key.includes("default--table")) {
+          return {
+            ...k,
+            children: k.children.map((t) => {
+              if (t.key === key) {
+                return {
+                  ...t,
+                  children: schemaLevel1Objs,
+                };
+              } else {
+                return t;
+              }
+            }),
+          };
         } else {
           return k;
         }
       });
-
       setDBState({ ...dbState, dbObjects: newDBObjects });
       resolve();
     });
   };
 
+  const makeTreeNodefromObj = (key: string, objs: SchemaObjects) => {
+    let schemaLevel1Objs: DBObject[] = [];
+    if (objs.routines.length > 0) {
+      schemaLevel1Objs.push({
+        title: "routines",
+        key: `${key}--routine`,
+        icon: (
+          <i className={`side-nav-icon`}>
+            <MdFolder />,
+          </i>
+        ),
+        children: objs.routines.map((r) => {
+          return {
+            title: r,
+            key: `${key}--routine--${r}`,
+            icon: (
+              <i className={`side-nav-icon`}>
+                <MdOutlineFunctions />,
+              </i>
+            ),
+            isLeaf: true,
+          };
+        }),
+      });
+    }
+    if (objs.tables.length > 0) {
+      schemaLevel1Objs.push({
+        title: "tables",
+        key: `${key}--table`,
+        icon: (
+          <i className={`side-nav-icon`}>
+            <MdFolder />,
+          </i>
+        ),
+        children: objs.tables.map((r) => {
+          return {
+            title: r,
+            key: `${key}--table--${r}`,
+            icon: (
+              <i className={`side-nav-icon`}>
+                <FaTable />,
+              </i>
+            ),
+          };
+        }),
+      });
+    }
+    if (objs.views.length > 0) {
+      schemaLevel1Objs.push({
+        title: "views",
+        key: `${key}--view`,
+        icon: (
+          <i className={`side-nav-icon`}>
+            <MdFolder />,
+          </i>
+        ),
+        children: objs.views.map((r) => {
+          return {
+            title: r,
+            key: `${key}--view--${r}`,
+            icon: (
+              <i className={`side-nav-icon`}>
+                <MdOutlineViewSidebar />,
+              </i>
+            ),
+            isLeaf: true,
+          };
+        }),
+      });
+    }
+
+    return schemaLevel1Objs;
+  };
+
   const fetchSchemaObjects = (key: string, resolve: () => void) => {
     Connections.listSchemaObjects(databaseId, key, (objs) => {
-      let schemaLevel1Objs: DBObject[] = [];
-      if (objs.routines.length > 0) {
-        schemaLevel1Objs.push({
-          title: "routines",
-          key: `${key}--routine`,
-          icon: (
-            <i className={`side-nav-icon`}>
-              <MdFolder />,
-            </i>
-          ),
-          children: objs.routines.map((r) => {
-            return {
-              title: r,
-              key: `${key}--routine--${r}`,
-              icon: (
-                <i className={`side-nav-icon`}>
-                  <MdOutlineFunctions />,
-                </i>
-              ),
-              isLeaf: true,
-            };
-          }),
-        });
-      }
-      if (objs.tables.length > 0) {
-        schemaLevel1Objs.push({
-          title: "tables",
-          key: `${key}--table`,
-          icon: (
-            <i className={`side-nav-icon`}>
-              <MdFolder />,
-            </i>
-          ),
-          children: objs.tables.map((r) => {
-            return {
-              title: r,
-              key: `${key}--table--${r}`,
-              icon: (
-                <i className={`side-nav-icon`}>
-                  <FaTable />,
-                </i>
-              ),
-            };
-          }),
-        });
-      }
-      if (objs.views.length > 0) {
-        schemaLevel1Objs.push({
-          title: "views",
-          key: `${key}--view`,
-          icon: (
-            <i className={`side-nav-icon`}>
-              <MdFolder />,
-            </i>
-          ),
-          children: objs.views.map((r) => {
-            return {
-              title: r,
-              key: `${key}--view--${r}`,
-              icon: (
-                <i className={`side-nav-icon`}>
-                  <MdOutlineViewSidebar />,
-                </i>
-              ),
-              isLeaf: true,
-            };
-          }),
-        });
-      }
-
+      const schemaLevel1Objs = makeTreeNodefromObj(key, objs);
       const newDBObjects = dbState.dbObjects.map((k) => {
         if (k.key === key) {
           return { ...k, children: schemaLevel1Objs };
@@ -521,7 +563,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         resolve();
         return;
       }
-      if (key.includes("public--table")) {
+      if (key.includes("public--table") || key.includes("default--table")) {
         fetchTableObjects(key, resolve);
       } else {
         fetchSchemaObjects(key, resolve);
@@ -550,7 +592,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   React.useEffect(() => {
     let autoComp: any;
     if (monacoIns) {
-      autoComp = getPgsqlCompletionProvider(monacoIns, "pgsql", databaseId);
+      autoComp = getPgsqlCompletionProvider(monacoIns, dbState.editorLang, databaseId);
       return () => {
         autoComp.dispose();
         monacoIns.editor.getModels().map((m: any) => m.dispose());
@@ -573,7 +615,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               <Button type='primary' onClick={(e) => enableEditMode()}>
                 Edit Connection
               </Button>
-              <Button type='default' onClick={(e) => deleteWarning(dbState.connectionName)}>
+              <Button type='default' className='delete-con-btn' onClick={(e) => deleteWarning(dbState.connectionName)}>
                 Delete Connection
               </Button>
             </Space>
@@ -590,7 +632,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               className='workspace-side-nav hex-sider-light'
               maxWidth='40%'
               minWidth='20%'>
-              <Skeleton title={true} active avatar paragraph={false} loading={dbState.loading}>
+              <Skeleton title={true} active avatar={{ shape: "square" }} paragraph={false} loading={dbState.loading}>
                 <DBBrowserHeader
                   connectionId={databaseId}
                   name={dbState.connectionName}
@@ -681,7 +723,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             name={pane.name}
                             onUpdateQueryName={updateQuery}
                             onDeleteQuery={onDeleteQuery}
-                            editorLang='pgsql'
+                            editorLang={dbState.editorLang}
                           />
                         </TabPane>
                       )}

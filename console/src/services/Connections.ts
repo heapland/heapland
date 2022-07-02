@@ -12,7 +12,7 @@ interface OpResult {
   success: boolean;
 }
 
-interface SchemaObjects {
+export interface SchemaObjects {
   views: string[];
   tables: string[];
   routines: string[];
@@ -335,10 +335,14 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  listTables = async (dbId: number, schema: string, onSuccess: (tables: string[]) => void) => {
+  listTables = async (dbId: number, schema: string, productName: string, onSuccess: (tables: string[]) => void) => {
     try {
-      const response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables`);
-
+      let response;
+      if (productName.toLowerCase() === "mysql") {
+        response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/default/tables`);
+      } else {
+        response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables`);
+      }
       const r = await response;
       if (r.status === 200 && r.parsedBody) {
         const result = r.parsedBody as string[];

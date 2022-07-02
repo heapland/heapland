@@ -205,10 +205,11 @@ const QueryPane: FC<{
           <div
             style={{
               width: "100%",
-              height: "calc(100vh - 100)",
+              height: "calc(100vh - 90px)",
               display: "flex",
               flexDirection: "column",
-              overflow: "hidden",
+              overflowY: "scroll",
+              overflowX: "hidden",
             }}>
             <Resizable
               defaultSize={{

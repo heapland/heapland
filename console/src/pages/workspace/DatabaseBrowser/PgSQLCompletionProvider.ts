@@ -39,25 +39,38 @@ const checkIfTablePres = (tblNames: Tables[], splitQuery: string[]) => {
 };
 
 export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, connectionId: number) => {
+  console.log(editorLang);
   let tblNames: Tables[] = [];
   let colsNames: Columns[] = [];
-
-  Connections.listSchemas(connectionId, (schemas) => {
-    if (schemas.length > 0) {
-      schemas.map((schema) => {
-        Connections.listTables(connectionId, schema, (tables) => {
-          tables.map((table) => {
-            tblNames.push({ tblName: table, detail: `Table in Schema: ${schema}` });
-            Connections.listTablesObjects(connectionId, schema, table, (objs) => {
-              objs?.columns?.map((col) => {
-                colsNames.push({ colName: col.name, detail: `Column in table ${table}: ${col.name} | ${col.dataType}`, tblName: table });
+  if (editorLang === "mysql") {
+    Connections.listTables(connectionId, "default", editorLang, (tables) => {
+      tables.map((table) => {
+        tblNames.push({ tblName: table, detail: `Table in Database:` });
+        Connections.listTablesObjects(connectionId, "default", table, (objs) => {
+          objs?.columns?.map((col) => {
+            colsNames.push({ colName: col.name, detail: `Column in table ${table}: ${col.name} | ${col.dataType}`, tblName: table });
+          });
+        });
+      });
+    });
+  } else {
+    Connections.listSchemas(connectionId, (schemas) => {
+      if (schemas.length > 0) {
+        schemas.map((schema) => {
+          Connections.listTables(connectionId, schema, editorLang, (tables) => {
+            tables.map((table) => {
+              tblNames.push({ tblName: table, detail: `Table in Schema: ${schema}` });
+              Connections.listTablesObjects(connectionId, schema, table, (objs) => {
+                objs?.columns?.map((col) => {
+                  colsNames.push({ colName: col.name, detail: `Column in table ${table}: ${col.name} | ${col.dataType}`, tblName: table });
+                });
               });
             });
           });
         });
-      });
-    }
-  });
+      }
+    });
+  }
   return monaco.languages.registerCompletionItemProvider(editorLang, {
     triggerCharacters: [".", '"', "(", ","],
     provideCompletionItems: (model: any, position: any, context: any) => {
@@ -69,11 +82,6 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
       const splitQuery = query.split(" ").map((q: string) => q?.toLowerCase());
       const lastQueryWord = splitQuery[splitQuery.length - 2]?.toLowerCase();
       const lastScndQryWord = splitQuery[splitQuery.length - 3]?.toLowerCase();
-      // console.log(query, word, splitQuery);
-      // console.log("last 2nd ", lastScndQryWord);
-      // console.log("last ", lastQueryWord);
-      // console.log("range ", range);
-
       try {
         let items: any[];
         if (lastQueryWord === "select" || lastQueryWord?.slice(-1) === ",") {

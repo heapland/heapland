@@ -217,6 +217,7 @@ export const getLangDefinition = (editorLang: EditorLang) => {
   let operators: string[] = [];
   switch (editorLang) {
     case "pgsql":
+    case "mysql":
       keywords = [...pgsqlKeywords.map((k) => k.key), ...pgsqlFunction.map((f) => f.key)];
       operators = [...pgsql_operators];
       typeKeywords = [...pgsql_typeKeywords, ...pgsql_builtinVariables];
