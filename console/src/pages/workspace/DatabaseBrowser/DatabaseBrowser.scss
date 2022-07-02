@@ -126,6 +126,7 @@
 }
 
 .database-browser-wrapper {
+  background-color: var(--background-color);
   .ant-skeleton {
     padding: 10px;
   }
@@ -134,9 +135,20 @@
   }
   .error-box {
     margin: 100px;
+    background-color: var(--background-color);
 
     div.ant-alert-error {
       margin-bottom: 20px;
+    }
+    .delete-con-btn {
+      background-color: var(--default-btn-color);
+      color: var(--secondary-color);
+      border-color: var(--btn-border);
+
+      &:hover {
+        border-color: var(--default-green);
+        color: var(--default-green);
+      }
     }
   }
   .ant-layout-sider {

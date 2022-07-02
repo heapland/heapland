@@ -288,7 +288,7 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
             minHeight: 280,
           }}>
           {content}
-          <Tooltip title={state.isDark ? "Switch to light" : "Switch to dark"}>
+          <Tooltip title={state.isDark ? "Light Mode" : "Dark Mode"}>
             <div className='theme-change-btn' onClick={() => onChangeTheme(!state.isDark)}>
               {state.isDark ? (
                 <svg xmlns='http://www.w3.org/2000/svg' width='1em' height='1em' version='1.1' viewBox='0 0 752 752'>

@@ -9,6 +9,7 @@
     position: relative;
     overflow-y: auto;
     background: var(--background-color);
+    overflow: hidden;
     .theme-change-btn {
       position: absolute;
       bottom: 20px;
@@ -304,6 +305,9 @@
   max-height: 100vh;
   min-height: 100vh;
   background: var(--primary-bg-color);
+  .ant-skeleton-with-avatar {
+    flex-direction: row;
+  }
 
   .ant-tree {
     color: var(--secondary-color);
@@ -331,6 +335,7 @@
     color: var(--secondary-color);
     font-weight: bold;
     background: var(--primary-bg-color);
+    transition: none;
 
     li.ant-menu-item-selected {
       background-color: var(--background-selected);
