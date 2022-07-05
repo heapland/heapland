@@ -199,8 +199,11 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
             const dbObjects = schemas.map((s) => {
               return {
                 title: (
-                  <Space align='center' size={3}>
-                    <FaNetworkWired size={14} style={{ marginTop: 5 }} /> <span>{s}</span>
+                  <Space align='center' size={-2}>
+                    <i className='side-nav-icon'>
+                      <FaNetworkWired size={14} style={{ marginTop: 5 }} />
+                    </i>
+                    <span>{s}</span>
                   </Space>
                 ),
                 key: s,

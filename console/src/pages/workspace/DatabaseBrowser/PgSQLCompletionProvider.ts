@@ -98,43 +98,33 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
       const lineContent = model.getLineContent(position.lineNumber).trim();
 
       const splitQuery = query.split(" ").map((q: string) => q?.toLowerCase());
-      const secondQryWord = splitQuery[splitQuery.length - 1]?.toLowerCase();
       const lastQueryWord = splitQuery[splitQuery.length - 2]?.toLowerCase();
       const lastScndQryWord = splitQuery[splitQuery.length - 3]?.toLowerCase();
 
-      let beforeJoinVarArr;
-      let afterJoinVarArr;
-      let regexAfter;
-      let regexBefore;
-
-      // join variable
-      if (lineContent?.includes("join")) {
-        beforeJoinVarArr = lineContent
-          .trim()
-          .match(/(?<=from\s).*(?=\sjoin)/gi)[0]
-          .replace("'", "")
-          .split(" ");
-        afterJoinVarArr = lineContent
-          .trim()
-          .match(/(?<=join\s).*(?=\son)/gi)[0]
-          .replace("'", "")
-          .split(" ");
-
-        regexBefore = new RegExp(beforeJoinVarArr[1], "g");
-        regexAfter = new RegExp(afterJoinVarArr[1], "g");
-      }
-
-      console.log("lastword", lastQueryWord);
-      console.log("last2ndword", lastScndQryWord);
+      // console.log("lastword", lastQueryWord);
+      // console.log("last2ndword", lastScndQryWord);
       // console.log("query", query, splitQuery, word);
-      // console.log("regex", query.match(regexAfter));
-      // console.log("regex", query.match(regexBefore), lineContent?.includes("join"));
+      // console.log("regex", query.match(regexAfterJoin));
+      // console.log("regex", query.match(regexBeforeJoin), lineContent?.includes("join"));
 
-      console.log(splitQuery, query);
+      // console.log(splitQuery, query);
       try {
         let items: any[];
-        if (lineContent?.includes("join") && (query.match(regexAfter)?.length || query.match(regexBefore)?.length)) {
-          if (query.match(regexAfter)?.length) {
+        if (lineContent?.includes("join")) {
+          const beforeJoinVarArr = lineContent
+            .trim()
+            .match(/(?<=from\s).*(?=\sjoin)/gi)[0]
+            .replace("'", "")
+            .split(" ");
+          const afterJoinVarArr = lineContent
+            .trim()
+            .match(/(?<=join\s).*(?=\son)/gi)[0]
+            .replace("'", "")
+            .split(" ");
+
+          const regexBeforeJoin = new RegExp(beforeJoinVarArr[1], "g");
+          const regexAfterJoin = new RegExp(afterJoinVarArr[1], "g");
+          if (query.match(regexAfterJoin)?.length) {
             items = [
               ...getFilterTableCols(colsNames, afterJoinVarArr[0]).map((c) => {
                 return {
@@ -146,7 +136,7 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
                 };
               }),
             ];
-          } else if (query.match(regexBefore)?.length) {
+          } else if (query.match(regexBeforeJoin)?.length) {
             items = [
               ...getFilterTableCols(colsNames, beforeJoinVarArr[0]).map((c) => {
                 return {
