@@ -1,14 +1,14 @@
-interface PGSQLKeywords {
+export interface PGSQLKeywords {
   key: string;
   detail: string;
 }
-interface PGSQLFunction {
+export interface PGSQLFunction {
   key: string;
   detail: string;
   insertText: string;
 }
 
-interface PGSQLSnippet {
+export interface LangSnippet {
   key: string;
   detail: string;
   insertText: string;
@@ -395,7 +395,7 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
   },
 ];
 
-export const pgsqlSnippet: PGSQLSnippet[] = [
+export const pgsqlSnippet: LangSnippet[] = [
   {
     key: "col",
     detail: "new column definitioin",
