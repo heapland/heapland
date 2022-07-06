@@ -29,6 +29,20 @@
   }
 }
 
+.query-tab {
+  .ant-tabs-nav-wrap {
+    background: var(--background-color);
+  }
+  .ant-tabs-tab {
+    width: 100px;
+    display: flex;
+    justify-content: center;
+  }
+  .ant-tabs-ink-bar {
+    display: none;
+  }
+}
+
 .db-tabs {
   width: 100%;
   & > .ant-tabs-nav {
@@ -310,10 +324,6 @@
 
   .query-container {
     width: 100%;
-    div.ant-tabs {
-      padding: 0 10px;
-    }
-
     div.trigger-menu {
       button.ant-dropdown-trigger {
         border-left: 1px solid var(--border-color);
