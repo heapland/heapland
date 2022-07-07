@@ -37,12 +37,12 @@ trait DatabaseServiceProvider[T <: ServiceConnection] {
 
   def listSchemaObjects(schema: String, config: T): Try[SchemaObjects]
 
+  def listTablesWithMeta(schema: String, config: T): Try[Map[String,TableMeta]]
+
   def describeTable(schema: String, table: String, config: T): Try[TableMeta]
 
   def executeQuery(q: String, config: T): Try[QueryExecutionResult]
 
   def executeUpdate(q: String, config: T): Try[Int]
-
-  def getTableKeys(catalog: String, schema: String, table: String, config: T): Try[Seq[TableKey]]
 
 }

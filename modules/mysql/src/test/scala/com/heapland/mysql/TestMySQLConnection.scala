@@ -10,7 +10,7 @@ class TestMySQLConnection extends AnyFlatSpec with Matchers {
 
   val conn = MySQLConnection(
     name = "test",
-    database = "gigahex_launcher",
+    database = "sys",
     username = "root",
     hostname = "127.0.0.1",
     password = "gigapass"
@@ -22,7 +22,7 @@ class TestMySQLConnection extends AnyFlatSpec with Matchers {
     val catalogs = MySQLDatabaseService.getCatalogs(conn)
     val tables = MySQLDatabaseService.listTables("mysql", conn)
     val qs = MySQLDatabaseService.executeQuery("select * from agents", conn)
-    val desc = MySQLDatabaseService.describeTable("", "events_spark_app", conn)
+    val desc = MySQLDatabaseService.listSchemaObjects("", conn)
 
     assert(meta.isSuccess)
     assert(schemas.isSuccess && schemas.get.size == 0)

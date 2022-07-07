@@ -184,6 +184,23 @@ class DatabasesController @Inject()(
     }
   }
 
+  def listTablesMetadata(connectionId: Long, schema: String) = silhouette.UserAwareAction.async { implicit request =>
+    handleMemberRequest(request, memberService) { (roles, profile) =>
+      if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { (_, dbm) =>
+          dbm
+            .listTablesDetail(schema)
+            .fold(
+              err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
+              res => Ok(Json.toJson(res))
+            )
+        }
+      } else {
+        Future.successful(Forbidden)
+      }
+    }
+  }
+
   def executeQuery(connectionId: Long) = silhouette.UserAwareAction.async(validateJson[RequestQueryExecution]) { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {

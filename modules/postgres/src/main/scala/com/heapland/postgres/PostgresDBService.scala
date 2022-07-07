@@ -103,6 +103,11 @@ object PostgresDBService extends DatabaseServiceProvider[PgConnection] {
     SchemaObjects(views = listViews.toSeq, tables = listTables.toSeq, routines = listFunctions.toSeq)
   }
 
+  override def listTablesWithMeta(schema: String, config: PgConnection): Try[Map[String,TableMeta]] =
+    listTables(schema, config).flatMap(tables => {
+      Try(tables.map(t => describeTable(schema, t, config).map(tm  => t -> tm)).map(_.get).toMap)
+    })
+
   override def describeTable(schema: String, table: String, config: PgConnection): Try[TableMeta] = usingConfig(config) { conn =>
   val q = s"SELECT * FROM ${schema}.${table} LIMIT 1"
     val rs       = conn.prepareStatement(q).executeQuery()
@@ -173,48 +178,5 @@ object PostgresDBService extends DatabaseServiceProvider[PgConnection] {
       conn.prepareStatement(q).executeUpdate()
     }
   }
-
-  override def getTableKeys(catalog: String, schema: String, table: String, config: PgConnection): Try[Seq[TableKey]] =
-    usingConfig(config) { conn =>
-      val irs       = conn.getMetaData.getImportedKeys(config.database, schema, table)
-      val ers       = conn.getMetaData.getExportedKeys(config.database, schema, table)
-      val tableKeys = ArrayBuffer.empty[TableKey]
-      while (irs.next()) {
-        tableKeys.addOne(
-          TableKey(
-            pkTableCat = irs.getString("PKTABLE_CAT"),
-            pkTableSchema = irs.getString("PKTABLE_CAT"),
-            pkTableName = irs.getString("PKTABLE_NAME"),
-            pkColName = irs.getString("PKCOLUMN_NAME"),
-            fkTableName = irs.getString("FKTABLE_NAME"),
-            fkColumnName = irs.getString("FKCOLUMN_NAME"),
-            updateRule = irs.getShort("UPDATE_RULE"),
-            deleteRule = irs.getShort("DELETE_RULE"),
-            fkName = irs.getString("FK_NAME"),
-            pkName = irs.getString("PK_NAME"),
-            isImportedKeys = true
-          ))
-      }
-
-      while (ers.next()) {
-        tableKeys.addOne(
-          TableKey(
-            pkTableCat = ers.getString("PKTABLE_CAT"),
-            pkTableSchema = ers.getString("PKTABLE_CAT"),
-            pkTableName = ers.getString("PKTABLE_NAME"),
-            pkColName = ers.getString("PKCOLUMN_NAME"),
-            fkTableName = ers.getString("FKTABLE_NAME"),
-            fkColumnName = ers.getString("FKCOLUMN_NAME"),
-            updateRule = ers.getShort("UPDATE_RULE"),
-            deleteRule = ers.getShort("DELETE_RULE"),
-            fkName = ers.getString("FK_NAME"),
-            pkName = ers.getString("PK_NAME"),
-            isImportedKeys = false
-          ))
-      }
-
-      tableKeys.toSeq
-
-    }
 
 }
