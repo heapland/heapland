@@ -23,6 +23,7 @@ class TestCassandraConnection extends AnyFlatSpec with Matchers {
                                                   |item_count int,
                                                   |last_update_timestamp timestamp
                                                   |);""".stripMargin, conn)
+    val tableMeta = CassandraService.tableDataView("store", "shopping_cart", conn)
     assert(meta.isSuccess)
   }
 

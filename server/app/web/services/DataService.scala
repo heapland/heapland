@@ -40,6 +40,7 @@ class DatabaseServiceManager[T <: ServiceConnection](connection: T, dbService: D
   def listTables(schema: String): Try[List[String]] = dbService.listTables(schema, connection)
 
   def listSchemaObjects(schema: String): Try[SchemaObjects] = dbService.listSchemaObjects(schema,connection)
+  def listTablesDetail(schema: String): Try[Map[String,TableMeta]] = dbService.listTablesWithMeta(schema,connection)
 
   def getTableData(schema: String, table: String): Try[QueryExecutionResult] = dbService.tableDataView(schema, table, connection)
   def describeTable(schema: String, table: String): Try[TableMeta] = dbService.describeTable(schema, table, connection)

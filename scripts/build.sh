@@ -2,7 +2,9 @@
 
 # Build the console after replacing the version
 SBT_VERSION_FILE=`cat version.sbt`
-
+KUBERNETES_FILES=`ls -lrt -h /Users/shad/Downloads | grep kubernetes`
+VARIABLE_NAME="SARAJUL"
+echo "SARAJUL"
 IFS=':=' read -ra ADDR <<< "$SBT_VERSION_FILE"
 for i in "${ADDR[@]}"; do
     CURRENT_VER=$(eval echo $i)
