@@ -12,6 +12,7 @@ import { Controlled as Codemirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
 
+const makeTableRowId = (c: [key: string]) => btoa(Object.values(c).join("-"));
 const editorOptions = {
   mode: "shell",
   theme: "material",
@@ -102,11 +103,11 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     },
   };
 
-  const isEditing = (record: any) => record.id === editingKey;
+  const isEditing = (record: any) => makeTableRowId(record) === editingKey;
 
   const edit = (record: any) => {
     form.setFieldsValue({ ...record });
-    setEditingKey(record.id);
+    setEditingKey(makeTableRowId(record));
   };
 
   const cancel = () => {
@@ -188,7 +189,6 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
 
   const mergedColumns = columns.map((col: any) => {
     if (!col.editable) {
-      console.log(col);
       return col;
     }
     return {
@@ -211,6 +211,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
 
     let queryData = delete_query;
     const res = await Connections.executeQuery(connectionId, queryData);
+
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
       setRefres(!refres);
@@ -255,7 +256,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         pageSize={showTableData.pageSize}
         totalRows={isNewData?.result?.length}
       />
-      <Skeleton loading={tableData.loading} active paragraph={{ rows: 4 }}>
+      <Skeleton loading={tableData.loading} title={false} active paragraph={{ rows: 4, width: "100%" }}>
         <Form form={form} component={false}>
           <Table
             rowSelection={{
@@ -269,7 +270,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
               },
             }}
             size='small'
-            rowKey={(c) => c.id}
+            rowKey={(c) => makeTableRowId(c)}
             columns={mergedColumns}
             dataSource={tableData.result ? tableData.result.result : []}
             scroll={{ x: "calc(100vw - 600px)" }}
