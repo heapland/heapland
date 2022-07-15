@@ -1,17 +1,7 @@
-export interface PGSQLKeywords {
+export interface completionInterface {
   key: string;
   detail: string;
-}
-export interface PGSQLFunction {
-  key: string;
-  detail: string;
-  insertText: string;
-}
-
-export interface LangSnippet {
-  key: string;
-  detail: string;
-  insertText: string;
+  insertText?: string;
 }
 
 export const pgsql_operators: string[] = [
@@ -119,7 +109,7 @@ export const pgsql_typeKeywords: string[] = [
   "void",
 ];
 
-export const pgsqlFunction: PGSQLFunction[] = [
+export const pgsqlFunction: completionInterface[] = [
   {
     key: "AVG",
     detail: "Returns the average value",
@@ -192,7 +182,7 @@ export const pgsqlFunction: PGSQLFunction[] = [
   },
 ];
 
-export const pgsqlKeywords: PGSQLKeywords[] = [
+export const pgsqlKeywords: completionInterface[] = [
   {
     key: "ADD",
     detail: "Adds a column in an existing table",
@@ -386,16 +376,24 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
     detail: "	Tests for non-empty values",
   },
   {
+    key: "NOT NULL",
+    detail: "for non-empty values",
+  },
+  {
     key: "JOIN",
-    detail: "	Joins tables",
+    detail: "Joins tables",
   },
   {
     key: "INTO",
     detail: "",
   },
+  {
+    key: "TYPE",
+    detail: "",
+  },
 ];
 
-export const pgsqlSnippet: LangSnippet[] = [
+export const pgsqlSnippet: completionInterface[] = [
   {
     key: "col",
     detail: "new column definitioin",
@@ -443,7 +441,7 @@ export const pgsqlSnippet: LangSnippet[] = [
   {
     key: "upd",
     detail: "update values in  a table",
-    insertText: "update set = where;",
+    insertText: "update set where;",
   },
   {
     key: "view",
@@ -452,5 +450,63 @@ export const pgsqlSnippet: LangSnippet[] = [
 select * 
 from ;
     `,
+  },
+];
+
+export const pgsqlDataTypes: completionInterface[] = [
+  {
+    key: "Boolean",
+    detail:
+      "In PostgreSQL, the “bool” or”boolean” keyword is used to initialize a Boolean data type. These data types can hold true, false, and null values. A boolean data type is stored in the database according to the following:",
+    insertText: "Boolean",
+  },
+  {
+    key: "Character",
+    detail: "PostgreSQL has three character data types namely, CHAR(n), VARCHAR(n), and TEXT.",
+    insertText: "Character",
+  },
+  {
+    key: "Numeric",
+    detail: "PostgreSQL has 2 types of numbers namely, integers and floating-point numbers.",
+    insertText: "Numeric ",
+  },
+  {
+    key: "Temporal",
+    detail: `This data type is used to store date-time data. PostgreSQL has 5 temporal data type: 
+DATE is used to store the dates only.
+TIME is used to stores the time of day values.
+TIMESTAMP is used to stores both date and time values.
+TIMESTAMPTZ is used to store a timezone-aware timestamp data type.
+INTERVAL is used to store periods of time.
+    `,
+    insertText: "Temporal ",
+  },
+  {
+    key: "UUID",
+    detail:
+      "The UUID data type allows you to store Universal Unique Identifiers defined by RFC 4122. The UUID values guarantee a better uniqueness than SERIAL and can be used to hide sensitive data exposed to the public such as values of id in URL. ",
+    insertText: "UUID",
+  },
+  {
+    key: "Array ",
+    detail:
+      "In PostgreSQL, an array column can be used to store an array of strings or an array of integers etc. It can be handy when storing data likes storing days of months, a year, or even a week, etc. ",
+    insertText: "Array ",
+  },
+  {
+    key: "JSON ",
+    detail:
+      "PostgreSQL supports 2 types of JSON types namely JSON and JSONB(Binary JSON). The JSON data type is used to store plain JSON data that get parsed every time it’s called by a query. Whereas the JSONB data type is used to store JSON data in a binary format. It is one hand makes querying data faster whereas slows down the data insertion process as it supports indexing of table data.",
+    insertText: "JSON ",
+  },
+  {
+    key: "hstore ",
+    detail: "",
+    insertText: "hstore ",
+  },
+  {
+    key: "Special ",
+    detail: "",
+    insertText: "Special ",
   },
 ];
