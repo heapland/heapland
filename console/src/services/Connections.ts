@@ -1,6 +1,7 @@
 import { message } from "antd";
 import { DBQuery, DBSummary, QueryExecutionResult } from "../models/DatabaseBrowser";
 import { FailedFileListing, FileListing, FileSummary } from "../models/FileBrowser";
+import { Columns, Tables } from "../pages/workspace/DatabaseBrowser/PgSQLCompletionProvider";
 import { PubKeyResponse } from "./AuthService";
 import { IErrorHandler } from "./IErrorHander";
 import { BadConnection, InternalServerError } from "./SparkService";

@@ -24,8 +24,7 @@ const QueryPane: FC<{
   editorLang: EditorLang;
   onUpdateQueryName: (id: number | string, newName: string) => void;
   onDeleteQuery: (id: number | string) => void;
-  tablesMeta: TableMeta;
-}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang, tablesMeta }) => {
+}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang }) => {
   const [modalForm] = Form.useForm();
   const [queryView, setQueryView] = useState<{
     queryName: string;

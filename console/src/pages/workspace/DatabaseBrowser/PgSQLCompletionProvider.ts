@@ -9,11 +9,11 @@ import {
   pgsqlDataTypes,
 } from "../../../components/DatabasesKeywords/PgSQL";
 
-interface Tables {
+export interface Tables {
   tblName: string;
   detail: string;
 }
-interface Columns {
+export interface Columns {
   colName: string;
   detail: string;
   tblName: string;
@@ -49,20 +49,14 @@ const getFilterTableCols = (colsNames: Columns[], table: string): Columns[] => {
   return newCols ? newCols : [];
 };
 
-export const getPgsqlCompletionProvider = (monaco: any, tablesMeta: TableMeta, editorLang: EditorLang, connectionId: number) => {
+export const getPgsqlCompletionProvider = (
+  monaco: any,
+  tblNames: Tables[],
+  colsNames: Columns[],
+  editorLang: EditorLang,
+  connectionId: number
+) => {
   // console.log(editorLang);
-  let tblNames: Tables[] = [];
-  let colsNames: Columns[] = [];
-  Object.entries(tablesMeta).map(([tableName, value]) => {
-    tblNames.push({ tblName: tableName, detail: `` });
-    value.columns.map((col) => {
-      colsNames.push({
-        colName: col.name,
-        detail: `Column in table ${tableName}: ${col.name} | ${col.dataType}`,
-        tblName: tableName,
-      });
-    });
-  });
 
   return monaco.languages.registerCompletionItemProvider(editorLang, {
     triggerCharacters: [".", '"'],
@@ -124,7 +118,6 @@ export const selectQuery = (
   monaco: any,
   range: any
 ) => {
-  console.log("select");
   if (selectedLineContent.includes("join")) {
     console.log("join");
     let items;

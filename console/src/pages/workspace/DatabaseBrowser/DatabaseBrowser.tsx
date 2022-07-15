@@ -17,7 +17,7 @@ import {
 import "./DatabaseBrowser.scss";
 import { DownOutlined, MailOutlined } from "@ant-design/icons";
 import CustomScroll from "react-custom-scroll";
-import Connections, { SchemaObjects, TableMeta } from "../../../services/Connections";
+import Connections, { ColumnDetails, SchemaObjects, TableMeta } from "../../../services/Connections";
 import { ConnectionIcon } from "../../../components/Cards/DatasourceCard";
 import Sider from "antd/lib/layout/Sider";
 import { Content, Header } from "antd/lib/layout/layout";
@@ -28,7 +28,7 @@ import QueryPane from "./QueryPane";
 import { UserContext } from "../../../store/User";
 import { history } from "../../../configureStore";
 import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
-import { getPgsqlCompletionProvider } from "./PgSQLCompletionProvider";
+import { Columns, getPgsqlCompletionProvider, Tables } from "./PgSQLCompletionProvider";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -36,7 +36,7 @@ const { DirectoryTree } = Tree;
 const { TabPane } = Tabs;
 
 type ObjType = "query" | "table";
-export type EditorLang = "pgsql" | "mysql";
+export type EditorLang = "pgsql" | "mysql" | "cql";
 interface DBPane {
   name: string;
   id: number | string;
@@ -123,7 +123,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     hasError: false,
     schemas: [],
     catalogs: [],
-    editorLang: "pgsql",
+    editorLang: "cql",
   });
 
   const [dbQueries, setDBQueries] = useState<{ loading: boolean; queries: DBQuery[] }>({
@@ -135,8 +135,9 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     tables: [],
     loading: true,
   });
-  const [tablesMeta, setTablesMets] = useState<{ loading: boolean; tablesMeta: TableMeta }>({
-    tablesMeta: {},
+  const [tablesMeta, setTablesMeta] = useState<{ loading: boolean; tableNames: Tables[]; columnNames: Columns[] }>({
+    tableNames: [],
+    columnNames: [],
     loading: true,
   });
 
@@ -196,6 +197,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               version: `${s.majorVersion}.${s.minorVersion}`,
               schemas: [],
               selectedSchema: "default",
+              editorLang: "mysql",
             });
           });
         } else {
@@ -226,6 +228,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 hasError: false,
                 editMode: false,
                 selectedSchema: "public",
+                editorLang: "pgsql",
               });
             } else if (s.productName.toLowerCase() == "cassandra") {
               setDBState({
@@ -240,6 +243,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 hasError: false,
                 editMode: false,
                 selectedSchema: schemas[0],
+                editorLang: "cql",
               });
             } else {
               setDBState({
@@ -607,14 +611,40 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   React.useEffect(() => {
     if (dbState.editorLang === "mysql") {
       Connections.listTablesMeta(databaseId, "default", (res) => {
-        setTablesMets({ tablesMeta: res, loading: false });
+        let tblNames: Tables[] = [];
+        let colsNames: Columns[] = [];
+        Object.entries(res).map(([tableName, value]) => {
+          tblNames.push({ tblName: tableName, detail: `` });
+          value.columns.map((col: ColumnDetails) => {
+            colsNames.push({
+              colName: col.name,
+              detail: `Column in table ${tableName}: ${col.name} | ${col.dataType}`,
+              tblName: tableName,
+            });
+          });
+        });
+
+        setTablesMeta({ tableNames: tblNames, columnNames: colsNames, loading: false });
       });
-    } else if (dbState.editorLang === "pgsql") {
+    } else if (dbState.editorLang === "pgsql" || dbState.editorLang === "cql") {
       Connections.listSchemas(databaseId, (schemas) => {
         if (schemas.length > 0) {
           schemas.map((schema) => {
             Connections.listTablesMeta(databaseId, schema, (res) => {
-              setTablesMets({ tablesMeta: { ...tablesMeta.tablesMeta, ...res }, loading: false });
+              let tblNames: Tables[] = [];
+              let colsNames: Columns[] = [];
+              Object.entries(res).map(([tableName, value]) => {
+                tblNames.push({ tblName: tableName, detail: `Table in Keyspace : ${schema}` });
+                value.columns.map((col: ColumnDetails) => {
+                  colsNames.push({
+                    colName: col.name,
+                    detail: `Column in table ${tableName}: ${col.name} | ${col.dataType}`,
+                    tblName: tableName,
+                  });
+                });
+              });
+
+              setTablesMeta({ tableNames: tblNames, columnNames: colsNames, loading: false });
             });
           });
         }
@@ -623,13 +653,19 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   }, []);
 
   React.useEffect(() => {
-    if (monacoIns && Object.keys(tablesMeta.tablesMeta).length > 0) {
-      const pgsqlCompleteProvider = getPgsqlCompletionProvider(monacoIns, tablesMeta?.tablesMeta, dbState.editorLang, databaseId);
+    if (monacoIns && tablesMeta.columnNames.length > 0) {
+      const pgsqlCompleteProvider = getPgsqlCompletionProvider(
+        monacoIns,
+        tablesMeta.tableNames,
+        tablesMeta.columnNames,
+        dbState.editorLang,
+        databaseId
+      );
       return () => {
         pgsqlCompleteProvider?.dispose();
       };
     }
-  }, [monacoIns, tablesMeta.tablesMeta]);
+  }, [monacoIns, tablesMeta.columnNames]);
 
   return (
     <Layout className='database-browser-wrapper ant-layout-has-sider'>
@@ -750,7 +786,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`q-${pane.id}`}>
-                          {Object.keys(tablesMeta.tablesMeta).length > 0 && (
+                          {tablesMeta.columnNames.length > 0 && (
                             <QueryPane
                               connectionId={databaseId}
                               queryId={pane.id}
@@ -758,7 +794,6 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                               onUpdateQueryName={updateQuery}
                               onDeleteQuery={onDeleteQuery}
                               editorLang={dbState.editorLang}
-                              tablesMeta={tablesMeta.tablesMeta}
                             />
                           )}
                         </TabPane>
