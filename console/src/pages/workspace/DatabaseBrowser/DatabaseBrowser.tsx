@@ -1,7 +1,7 @@
 import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List, Empty } from "antd";
-import React, { FC, ReactNode, useEffect, useState } from "react";
+import React, { FC, ReactNode, useEffect, useState, useRef } from "react";
 import { FaDatabase, FaNetworkWired, FaTable } from "react-icons/fa";
-import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
+import Editor, { Monaco, useMonaco, loader } from "@monaco-editor/react";
 
 import { Resizable } from "re-resizable";
 import {
@@ -17,7 +17,7 @@ import {
 import "./DatabaseBrowser.scss";
 import { DownOutlined, MailOutlined } from "@ant-design/icons";
 import CustomScroll from "react-custom-scroll";
-import Connections, { SchemaObjects } from "../../../services/Connections";
+import Connections, { SchemaObjects, TableMeta } from "../../../services/Connections";
 import { ConnectionIcon } from "../../../components/Cards/DatasourceCard";
 import Sider from "antd/lib/layout/Sider";
 import { Content, Header } from "antd/lib/layout/layout";
@@ -135,6 +135,10 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     tables: [],
     loading: true,
   });
+  const [tablesMeta, setTablesMets] = useState<{ loading: boolean; tablesMeta: TableMeta }>({
+    tablesMeta: {},
+    loading: true,
+  });
 
   const enableEditMode = () => {
     setDBState({ ...dbState, editMode: true });
@@ -227,6 +231,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               setDBState({
                 ...dbState,
                 loading: false,
+                dbName: s.dbName,
                 connectionName: s.connectionName,
                 productName: s.productName,
                 version: `${s.majorVersion}.${s.minorVersion}`,
@@ -379,16 +384,18 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   };
 
   const onSelectTreeNode = (selectedKeys: any, info: any) => {
-    const splitKey = selectedKeys[0]?.split("--");
-    const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
-    if (isOpenTab?.length === 0 && splitKey?.length === 3 && splitKey.includes("table")) {
-      addToPane(info.node.key, info?.node?.title, "table");
-    } else if (splitKey.length === 3 && splitKey.includes("table")) {
-      setDBTabs({
-        ...dbTabs,
-        activeKey: `t-${info.node.key}`,
-        selectedTreeNode: info.node.key,
-      });
+    if (selectedKeys.length > 0) {
+      const splitKey = selectedKeys[0]?.split("--");
+      const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
+      if (isOpenTab?.length === 0 && splitKey?.length === 3 && splitKey?.includes("table")) {
+        addToPane(info.node.key, info?.node?.title, "table");
+      } else if (splitKey.length === 3 && splitKey.includes("table")) {
+        setDBTabs({
+          ...dbTabs,
+          activeKey: `t-${info.node.key}`,
+          selectedTreeNode: info.node.key,
+        });
+      }
     }
   };
 
@@ -411,7 +418,16 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 return {
                   title: (
                     <Space size={4}>
-                      <span>{r?.name}</span> <span className='label'>{r?.dataType}</span>
+                      <span>
+                        {r.colName ? (
+                          <>
+                            {r.colName} {r.name ? `(${r.name})` : ""}
+                          </>
+                        ) : (
+                          r.name
+                        )}
+                      </span>
+                      <span className='label'>{r?.dataType}</span>
                     </Space>
                   ),
                   isLeaf: true,
@@ -432,20 +448,16 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           return {
             ...k,
             children: k.children.map((t) => {
-              if (t.key === "public--table" || t.key.includes("default--table")) {
-                return {
-                  ...t,
-                  children: t.children.map((o) => {
-                    if (o.key === key) {
-                      return { ...o, children: schemaLevel1Objs };
-                    } else {
-                      return o;
-                    }
-                  }),
-                };
-              } else {
-                return t;
-              }
+              return {
+                ...t,
+                children: t.children.map((o) => {
+                  if (o.key === key) {
+                    return { ...o, children: schemaLevel1Objs };
+                  } else {
+                    return o;
+                  }
+                }),
+              };
             }),
           };
         } else if (k.key.includes("default--table")) {
@@ -566,7 +578,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         resolve();
         return;
       }
-      if (key.includes("public--table") || key.includes("default--table")) {
+      if (key.includes("table")) {
         fetchTableObjects(key, resolve);
       } else {
         fetchSchemaObjects(key, resolve);
@@ -593,15 +605,31 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   };
 
   React.useEffect(() => {
-    let autoComp: any;
-    if (monacoIns) {
-      autoComp = getPgsqlCompletionProvider(monacoIns, dbState.editorLang, databaseId);
+    if (dbState.editorLang === "mysql") {
+      Connections.listTablesMeta(databaseId, "default", (res) => {
+        setTablesMets({ tablesMeta: res, loading: false });
+      });
+    } else if (dbState.editorLang === "pgsql") {
+      Connections.listSchemas(databaseId, (schemas) => {
+        if (schemas.length > 0) {
+          schemas.map((schema) => {
+            Connections.listTablesMeta(databaseId, schema, (res) => {
+              setTablesMets({ tablesMeta: { ...tablesMeta.tablesMeta, ...res }, loading: false });
+            });
+          });
+        }
+      });
+    }
+  }, []);
+
+  React.useEffect(() => {
+    if (monacoIns && Object.keys(tablesMeta.tablesMeta).length > 0) {
+      const pgsqlCompleteProvider = getPgsqlCompletionProvider(monacoIns, tablesMeta?.tablesMeta, dbState.editorLang, databaseId);
       return () => {
-        autoComp.dispose();
-        monacoIns.editor.getModels().map((m: any) => m.dispose());
+        pgsqlCompleteProvider?.dispose();
       };
     }
-  }, [monacoIns]);
+  }, [monacoIns, tablesMeta.tablesMeta]);
 
   return (
     <Layout className='database-browser-wrapper ant-layout-has-sider'>
@@ -650,24 +678,26 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
 
               <Tabs className='db-query-tabs' defaultActiveKey='database-object' onChange={() => {}}>
                 <TabPane tab='Database Objects' key='database-object'>
-                  <div style={{ padding: "0 10px" }}>
-                    <Space size={4}>
-                      <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
-                        <FaDatabase />
-                      </i>
-                      <span>{dbState.dbName}</span>
-                    </Space>
-                    <Tree
-                      className='db-objects'
-                      showIcon
-                      defaultSelectedKeys={["public"]}
-                      loadData={loadTables}
-                      treeData={dbState.dbObjects}
-                      onSelect={onSelectTreeNode}
-                      height={600}
-                      selectedKeys={[dbTabs.selectedTreeNode]}
-                    />
-                  </div>
+                  <Skeleton title={false} active avatar={false} paragraph={{ rows: 4, width: "100%" }} loading={dbState.loading}>
+                    <div style={{ padding: "0 10px" }}>
+                      <Space size={4}>
+                        <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
+                          <FaDatabase />
+                        </i>
+                        <span>{dbState?.dbName}</span>
+                      </Space>
+                      <Tree
+                        className='db-objects'
+                        showIcon
+                        defaultSelectedKeys={["public"]}
+                        loadData={loadTables}
+                        treeData={dbState.dbObjects}
+                        onSelect={onSelectTreeNode}
+                        height={600}
+                        selectedKeys={[dbTabs.selectedTreeNode]}
+                      />
+                    </div>
+                  </Skeleton>
                 </TabPane>
                 <TabPane tab='Queries' key='queries'>
                   <CustomScroll heightRelativeToParent='calc(100vh - 55px)'>
@@ -687,7 +717,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               </Tabs>
             </Resizable>
             <div height-100 db-info-container className='tabs-content-wrapper' style={{ width: "100%", minWidth: "1px" }}>
-              {!dbState.hasError && (
+              {!dbState.hasError && !tablesMeta.loading && (
                 <Tabs
                   hideAdd
                   onChange={onTabChange}
@@ -720,14 +750,17 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`q-${pane.id}`}>
-                          <QueryPane
-                            connectionId={databaseId}
-                            queryId={pane.id}
-                            name={pane.name}
-                            onUpdateQueryName={updateQuery}
-                            onDeleteQuery={onDeleteQuery}
-                            editorLang={dbState.editorLang}
-                          />
+                          {Object.keys(tablesMeta.tablesMeta).length > 0 && (
+                            <QueryPane
+                              connectionId={databaseId}
+                              queryId={pane.id}
+                              name={pane.name}
+                              onUpdateQueryName={updateQuery}
+                              onDeleteQuery={onDeleteQuery}
+                              editorLang={dbState.editorLang}
+                              tablesMeta={tablesMeta.tablesMeta}
+                            />
+                          )}
                         </TabPane>
                       )}
                     </>
