@@ -1,4 +1,4 @@
-import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
+import Editor, { Monaco, useMonaco, loader } from "@monaco-editor/react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Alert, Button, Dropdown, Form, Input, Menu, message, Modal, Select, Spin, Space, Table, Tabs, Tooltip } from "antd";
 import Column from "antd/lib/table/Column";
@@ -8,7 +8,7 @@ import { TabPane } from "rc-tabs";
 import React, { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { MdCreateNewFolder, MdPlayCircle, MdSave, MdSync } from "react-icons/md";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
-import Connections from "../../../services/Connections";
+import Connections, { TableMeta } from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
 import { truncateString, getLangDefinition } from "../../../components/utils/utils";
@@ -24,7 +24,8 @@ const QueryPane: FC<{
   editorLang: EditorLang;
   onUpdateQueryName: (id: number | string, newName: string) => void;
   onDeleteQuery: (id: number | string) => void;
-}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang }) => {
+  tablesMeta: TableMeta;
+}> = ({ connectionId, queryId, name, onUpdateQueryName, onDeleteQuery, editorLang, tablesMeta }) => {
   const [modalForm] = Form.useForm();
   const [queryView, setQueryView] = useState<{
     queryName: string;

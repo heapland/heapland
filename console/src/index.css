@@ -116,7 +116,7 @@ html[data-theme="dark"] {
   --config-val-bg: var(--background-color);
   --config-val-color: var(--title-color);
 
-  --tab-active-color: var(var(--light-bg));
+  --tab-active-color: var(--light-bg);
   --btn-border: var(--default-btn-color);
   --btn-hover-color: var(--primary-color);
   --label-color: #a5aec085;

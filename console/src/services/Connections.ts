@@ -65,6 +65,14 @@ export interface TableObjects {
   foreignKeys: ForeignKeys[];
   indexes: TableIndex[];
 }
+export interface TableMeta {
+  [key: string]: {
+    columns: ColumnDetails[];
+    primaryKey: PrimaryKey[];
+    foreignKeys: ForeignKeys[];
+    indexes: TableIndex[];
+  };
+}
 
 class ConnectionService extends IErrorHandler {
   private webAPI: WebService = new WebService();
@@ -330,6 +338,24 @@ class ConnectionService extends IErrorHandler {
         this.showError(body.message);
       } else {
         const err = this.getDefaultError("Delete the query");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listTablesMeta = async (dbId: number, schema: string, onSuccess: (tables: TableMeta) => void) => {
+    try {
+      const response = this.webAPI.get<TableMeta | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables-meta`);
+
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as TableMeta;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the tables meta");
         this.showError(err.message);
       }
     } catch (e) {}
