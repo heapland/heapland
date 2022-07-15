@@ -1,14 +1,12 @@
-import { table } from "console";
-import Connections from "../../../services/Connections";
+import Connections, { TableMeta } from "../../../services/Connections";
 import { EditorLang } from "./DatabaseBrowser";
 import {
   pgsqlFunction,
   pgsqlKeywords,
   pgsql_operators,
   pgsqlSnippet,
-  LangSnippet,
-  PGSQLFunction,
-  PGSQLKeywords,
+  completionInterface,
+  pgsqlDataTypes,
 } from "../../../components/DatabasesKeywords/PgSQL";
 
 interface Tables {
@@ -42,10 +40,6 @@ const getPrvRange = (word: any, position: any) => {
   };
 };
 
-const checkIfTablePres = (tblNames: Tables[], splitQuery: string[]) => {
-  return tblNames.find((t) => splitQuery.includes(t.tblName));
-};
-
 const getFilterTableColsWithDot = (colsNames: Columns[], table: string): Columns[] => {
   const newCols = colsNames.filter((c) => c.tblName === table.slice(0, -1));
   return newCols ? newCols : [];
@@ -55,130 +49,55 @@ const getFilterTableCols = (colsNames: Columns[], table: string): Columns[] => {
   return newCols ? newCols : [];
 };
 
-export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, connectionId: number) => {
+export const getPgsqlCompletionProvider = (monaco: any, tablesMeta: TableMeta, editorLang: EditorLang, connectionId: number) => {
+  // console.log(editorLang);
   let tblNames: Tables[] = [];
   let colsNames: Columns[] = [];
-  if (editorLang === "mysql") {
-    Connections.listTables(connectionId, "default", editorLang, (tables) => {
-      tables.map((table) => {
-        tblNames.push({ tblName: table, detail: `Table in Database:` });
-        Connections.listTablesObjects(connectionId, "default", table, (objs) => {
-          objs?.columns?.map((col) => {
-            colsNames.push({ colName: col.name, detail: `Column in table ${table}: ${col.name} | ${col.dataType}`, tblName: table });
-          });
-        });
+  Object.entries(tablesMeta).map(([tableName, value]) => {
+    tblNames.push({ tblName: tableName, detail: `` });
+    value.columns.map((col) => {
+      colsNames.push({
+        colName: col.name,
+        detail: `Column in table ${tableName}: ${col.name} | ${col.dataType}`,
+        tblName: tableName,
       });
     });
-  } else {
-    Connections.listSchemas(connectionId, (schemas) => {
-      if (schemas.length > 0) {
-        schemas.map((schema) => {
-          Connections.listTables(connectionId, schema, editorLang, (tables) => {
-            tables.map((table) => {
-              tblNames.push({ tblName: table, detail: `Table in Schema: ${schema}` });
-              Connections.listTablesObjects(connectionId, schema, table, (objs) => {
-                objs?.columns?.map((col) => {
-                  colsNames.push({ colName: col.name, detail: `Column in table ${table}: ${col.name} | ${col.dataType}`, tblName: table });
-                });
-              });
-            });
-          });
-        });
-      }
-    });
-  }
+  });
+
   return monaco.languages.registerCompletionItemProvider(editorLang, {
-    triggerCharacters: [".", '"', "(", ","],
+    triggerCharacters: [".", '"'],
     provideCompletionItems: (model: any, position: any, context: any) => {
       const word = model.getWordUntilPosition(position);
 
       const range = getRange(word, position);
       const prvRange = getPrvRange(word, position);
       const query = model.getValueInRange(prvRange);
-      const lineContent = model.getLineContent(position.lineNumber).trim();
+      const selectedLineContent = model.getLineContent(position.lineNumber).trim();
 
       const splitQuery = query.split(" ").map((q: string) => q?.toLowerCase());
       const lastQueryWord = splitQuery[splitQuery.length - 2]?.toLowerCase();
       const lastScndQryWord = splitQuery[splitQuery.length - 3]?.toLowerCase();
 
-      // console.log("lastword", lastQueryWord);
-      // console.log("last2ndword", lastScndQryWord);
-      // console.log("query", query, splitQuery, word);
-      // console.log("regex", query.match(regexAfterJoin));
-      // console.log("regex", query.match(regexBeforeJoin), lineContent?.includes("join"));
+      // console.log("selectedQuery", selectedLineContent);
+      // console.log("query", splitQuery);
 
-      // console.log(splitQuery, query);
+      // console.log(lastScndQryWord, lastQueryWord);
       try {
         let items: any[];
-        if (lineContent?.includes("join")) {
-          const beforeJoinVarArr = lineContent
-            .trim()
-            .match(/(?<=from\s).*(?=\sjoin)/gi)[0]
-            .replace("'", "")
-            .split(" ");
-          const afterJoinVarArr = lineContent
-            .trim()
-            .match(/(?<=join\s).*(?=\son)/gi)[0]
-            .replace("'", "")
-            .split(" ");
-
-          const regexBeforeJoin = new RegExp(beforeJoinVarArr[1], "g");
-          const regexAfterJoin = new RegExp(afterJoinVarArr[1], "g");
-          if (query.match(regexAfterJoin)?.length) {
-            items = [
-              ...getFilterTableCols(colsNames, afterJoinVarArr[0]).map((c) => {
-                return {
-                  label: c.colName,
-                  kind: monaco.languages.CompletionItemKind.Value,
-                  detail: c.detail,
-                  range: range,
-                  insertText: c.colName,
-                };
-              }),
-            ];
-          } else if (query.match(regexBeforeJoin)?.length) {
-            items = [
-              ...getFilterTableCols(colsNames, beforeJoinVarArr[0]).map((c) => {
-                return {
-                  label: c.colName,
-                  kind: monaco.languages.CompletionItemKind.Value,
-                  detail: c.detail,
-                  range: range,
-                  insertText: c.colName,
-                };
-              }),
-            ];
-          }
-        } else if (splitQuery[splitQuery.length - 1]) {
-          items = [
-            ...getFilterTableColsWithDot(colsNames, splitQuery[splitQuery.length - 1]).map((c) => {
-              return {
-                label: c.colName,
-                kind: monaco.languages.CompletionItemKind.Value,
-                detail: c.detail,
-                range: range,
-                insertText: c.colName,
-              };
-            }),
-          ];
-        } else if (lastQueryWord === "select" || lastQueryWord?.slice(-1) === ",") {
-          items = selectQuery(colsNames, tblNames, monaco, range);
-        } else if (
-          lastQueryWord === "from" ||
-          lastQueryWord === "describe" ||
-          lastQueryWord === "table" ||
-          lastQueryWord === "join" ||
-          lastQueryWord === "update"
-        ) {
-          items = renderTablesNames(tblNames, monaco, range);
-        } else if (splitQuery.includes("set") || (lastQueryWord === "where" && !!checkIfTablePres(tblNames, splitQuery))) {
-          let newCols = colsNames.filter(
-            (c) => c.tblName === lastScndQryWord || c.tblName === checkIfTablePres(tblNames, splitQuery).tblName
-          );
-          items = renderCols(newCols, monaco, range);
-        } else if (splitQuery.includes("insert") && splitQuery.includes("into")) {
-          let newCols = colsNames.filter((c) => c.tblName === lastQueryWord);
-          items = insertQuery(newCols, tblNames, splitQuery, monaco, range);
+        if (splitQuery[0] === "select") {
+          items = selectQuery(tblNames, colsNames, splitQuery, selectedLineContent, query, lastQueryWord, lastScndQryWord, monaco, range);
+        } else if (splitQuery[0] === "create") {
+          items = createQuery(tblNames, splitQuery, monaco, range);
+        } else if (splitQuery[0] === "insert") {
+          items = insertQuery(colsNames, tblNames, splitQuery, monaco, range);
+        } else if (splitQuery[0] === "update") {
+          items = updateQuery(tblNames, colsNames, splitQuery, monaco, range);
+        } else if (splitQuery[0] === "delete" && splitQuery[1] === "from") {
+          items = deleteQuery(tblNames, colsNames, splitQuery, monaco, range);
+        } else if (splitQuery[0] === "alter") {
+          items = alterTable(tblNames, colsNames, splitQuery, monaco, range);
+        } else if (splitQuery[0] === "drop") {
+          items = dropTable(tblNames, splitQuery, monaco, range);
         } else if (range.startColumn === 1 && range.endColumn === 1) {
           items = langSnippet(pgsqlSnippet, monaco, range);
         } else {
@@ -194,15 +113,200 @@ export const getPgsqlCompletionProvider = (monaco: any, editorLang: EditorLang, 
   });
 };
 
-export const renderTablesNames = (tblNames: Tables[], monaco: any, range: any) => {
-  return [
-    ...tblNames.map((t) => {
-      return {
-        label: t.tblName,
+export const selectQuery = (
+  tblNames: Tables[],
+  colsNames: Columns[],
+  splitQuery: string[],
+  selectedLineContent: string,
+  query: string,
+  lastQueryWord: string,
+  lastScndQryWord: string,
+  monaco: any,
+  range: any
+) => {
+  console.log("select");
+  if (selectedLineContent.includes("join")) {
+    console.log("join");
+    let items;
+    const beforeJoinVarArr = selectedLineContent
+      .trim()
+      .match(/(?<=from\s).*(?=\sjoin)/gi)[0]
+      .replace("'", "")
+      .split(" ");
+    const afterJoinVarArr = selectedLineContent
+      .trim()
+      .match(/(?<=join\s).*(?=\son)/gi)[0]
+      .replace("'", "")
+      .split(" ");
+
+    const regexBeforeJoin = new RegExp(beforeJoinVarArr[1], "g");
+    const regexAfterJoin = new RegExp(afterJoinVarArr[1], "g");
+    console.log("after", query.match(regexAfterJoin));
+    console.log("before", query.match(regexBeforeJoin));
+    console.log("var", query);
+
+    if (query.match(regexAfterJoin)?.length) {
+      items = [
+        ...getFilterTableCols(colsNames, afterJoinVarArr[0]).map((c) => {
+          return {
+            label: c.colName,
+            kind: monaco.languages.CompletionItemKind.Value,
+            detail: c.detail,
+            range: range,
+            insertText: c.colName,
+          };
+        }),
+      ];
+    } else if (query.match(regexBeforeJoin)?.length) {
+      items = [
+        ...getFilterTableCols(colsNames, beforeJoinVarArr[0]).map((c) => {
+          return {
+            label: c.colName,
+            kind: monaco.languages.CompletionItemKind.Value,
+            detail: c.detail,
+            range: range,
+            insertText: c.colName,
+          };
+        }),
+      ];
+    }
+    return items;
+  } else if (!splitQuery[1] || lastQueryWord?.slice(-1) === ",") {
+    return [
+      {
+        label: "*",
         kind: monaco.languages.CompletionItemKind.Field,
+        detail: "Select all fields",
         range: range,
-        detail: t.detail,
-        insertText: t.tblName,
+        insertText: "*",
+      },
+      ...renderCols(colsNames, monaco, range),
+      ...renderTablesNames(tblNames, monaco, range),
+    ];
+  } else if (splitQuery[splitQuery.length - 1]) {
+    return renderCols(getFilterTableColsWithDot(colsNames, splitQuery[splitQuery.length - 1]), monaco, range);
+  } else if (lastQueryWord === "from") {
+    return renderTablesNames(tblNames, monaco, range);
+  } else {
+    return [
+      ...keyWords(pgsqlKeywords, monaco, range),
+      ...dataTypes(pgsqlDataTypes, monaco, range),
+      ...operatores(pgsql_operators, monaco, range),
+    ];
+  }
+};
+
+export const createQuery = (tblNames: Tables[], splitQuery: string[], monaco: any, range: any) => {
+  if (splitQuery[1] === "table" && !splitQuery[2]) {
+    return renderTablesNames(tblNames, monaco, range);
+  } else {
+    return [
+      ...keyWords(pgsqlKeywords, monaco, range),
+      ...dataTypes(pgsqlDataTypes, monaco, range),
+      ...operatores(pgsql_operators, monaco, range),
+    ];
+  }
+};
+
+export const insertQuery = (colsNames: Columns[], tblNames: Tables[], splitQuery: string[], monaco: any, range: any) => {
+  if (splitQuery[2] && splitQuery[3] === "(") {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return renderCols(newCols, monaco, range);
+  } else if (splitQuery[3]?.includes(",")) {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return renderCols(newCols, monaco, range);
+  } else if (splitQuery[1] === "into" && !splitQuery[2]) {
+    return renderTablesNames(tblNames, monaco, range);
+  }
+};
+
+export const updateQuery = (tblNames: Tables[], colsNames: Columns[], splitQuery: string[], monaco: any, range: any) => {
+  if (!splitQuery[1]) {
+    return renderTablesNames(tblNames, monaco, range);
+  } else if (splitQuery[1] && splitQuery[2] === "set" && !splitQuery.includes("where")) {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[1]);
+    return renderCols(newCols, monaco, range);
+  } else if (splitQuery.includes("where")) {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[1]);
+    return [...renderCols(newCols, monaco, range), ...operatores(pgsql_operators, monaco, range)];
+  } else {
+    return [
+      ...keyWords(pgsqlKeywords, monaco, range),
+      ...dataTypes(pgsqlDataTypes, monaco, range),
+      ...operatores(pgsql_operators, monaco, range),
+    ];
+  }
+};
+export const deleteQuery = (tblNames: Tables[], colsNames: Columns[], splitQuery: string[], monaco: any, range: any) => {
+  if (!splitQuery[2]) {
+    return renderTablesNames(tblNames, monaco, range);
+  } else if (splitQuery.includes("where")) {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return [...renderCols(newCols, monaco, range), ...operatores(pgsql_operators, monaco, range)];
+  } else {
+    return [
+      ...keyWords(pgsqlKeywords, monaco, range),
+      ...dataTypes(pgsqlDataTypes, monaco, range),
+      ...operatores(pgsql_operators, monaco, range),
+    ];
+  }
+};
+export const alterTable = (tblNames: Tables[], colsNames: Columns[], splitQuery: string[], monaco: any, range: any) => {
+  if (splitQuery[1] === "table" && !splitQuery[2]) {
+    return renderTablesNames(tblNames, monaco, range);
+  } else if (splitQuery[2] && splitQuery[3] === "add" && splitQuery[4] !== "constraint") {
+    return [...dataTypes(pgsqlDataTypes, monaco, range)];
+  } else if (splitQuery[2] && splitQuery[3] === "add" && splitQuery[4] === "constraint") {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return [...dataTypes(pgsqlDataTypes, monaco, range), ...renderCols(newCols, monaco, range)];
+  } else if (splitQuery[2] && splitQuery[3] === "drop") {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return [...renderCols(newCols, monaco, range), ...keyWords(pgsqlKeywords, monaco, range)];
+  } else if (splitQuery[2] && splitQuery[3] === "alter") {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return [...renderCols(newCols, monaco, range), ...keyWords(pgsqlKeywords, monaco, range), ...dataTypes(pgsqlDataTypes, monaco, range)];
+  } else if (splitQuery[2] && splitQuery[3] === "modify") {
+    let newCols = colsNames.filter((c) => c.tblName.toLowerCase() === splitQuery[2]);
+    return [...renderCols(newCols, monaco, range), ...keyWords(pgsqlKeywords, monaco, range), ...dataTypes(pgsqlDataTypes, monaco, range)];
+  } else {
+    return [
+      ...keyWords(pgsqlKeywords, monaco, range),
+      ...dataTypes(pgsqlDataTypes, monaco, range),
+      ...operatores(pgsql_operators, monaco, range),
+    ];
+  }
+};
+
+export const dropTable = (tblNames: Tables[], splitQuery: string[], monaco: any, range: any) => {
+  return renderTablesNames(tblNames, monaco, range);
+};
+
+// +++++++++++ reusable functions +++++++++++++++++++++++++++++++++++++++++
+export const defaultAutoCompletion = (
+  pgsqlKeywords: completionInterface[],
+  pgsql_operators: string[],
+  pgsqlFunction: completionInterface[],
+  monaco: any,
+  range: any
+) => {
+  return [
+    ...langSnippet(pgsqlSnippet, monaco, range),
+    ...keyWords(pgsqlKeywords, monaco, range),
+    ...operatores(pgsql_operators, monaco, range),
+    ...langFunctions(pgsqlFunction, monaco, range),
+    ...dataTypes(pgsqlDataTypes, monaco, range),
+  ];
+};
+
+export const langSnippet = (snippet: completionInterface[], monaco: any, range: any) => {
+  return [
+    ...snippet.map((d) => {
+      return {
+        label: d.key,
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        detail: d.detail,
+        range: range,
+        insertText: d.insertText,
       };
     }),
   ];
@@ -222,16 +326,8 @@ export const renderCols = (colsNames: Columns[], monaco: any, range: any) => {
   ];
 };
 
-export const selectQuery = (colsNames: Columns[], tblNames: Tables[], monaco: any, range: any) => {
+export const renderTablesNames = (tblNames: Tables[], monaco: any, range: any) => {
   return [
-    {
-      label: "*",
-      kind: monaco.languages.CompletionItemKind.Field,
-      detail: "Select all fields",
-      range: range,
-      insertText: "*",
-    },
-    ...renderCols(colsNames, monaco, range),
     ...tblNames.map((t) => {
       return {
         label: t.tblName,
@@ -244,66 +340,22 @@ export const selectQuery = (colsNames: Columns[], tblNames: Tables[], monaco: an
   ];
 };
 
-export const insertQuery = (newCols: Columns[], tblNames: Tables[], splitQuery: string[], monaco: any, range: any) => {
-  if (!!checkIfTablePres(tblNames, splitQuery)) {
-    return [
-      ...newCols.map((c) => {
-        return {
-          label: c.colName,
-          kind: monaco.languages.CompletionItemKind.Value,
-          detail: c.detail,
-          range: range,
-          insertText: c.colName,
-        };
-      }),
-    ];
-  } else {
-    return [
-      ...tblNames.map((t) => {
-        return {
-          label: t.tblName,
-          kind: monaco.languages.CompletionItemKind.Field,
-          range: range,
-          detail: t.detail,
-          insertText: t.tblName,
-        };
-      }),
-    ];
-  }
-};
-
-export const langSnippet = (snippet: LangSnippet[], monaco: any, range: any) => {
+export const dataTypes = (dataType: completionInterface[], monaco: any, range: any) => {
   return [
-    ...snippet.map((d) => {
+    ...dataType.map((d) => {
       return {
         label: d.key,
-        kind: monaco.languages.CompletionItemKind.Snippet,
+        kind: monaco.languages.CompletionItemKind.Keyword,
         detail: d.detail,
         range: range,
-        insertText: d.insertText,
+        insertText: d.key,
       };
     }),
   ];
 };
-
-const defaultAutoCompletion = (
-  pgsqlKeywords: PGSQLKeywords[],
-  pgsql_operators: string[],
-  pgsqlFunction: PGSQLFunction[],
-  monaco: any,
-  range: any
-) => {
+export const keyWords = (keyWords: completionInterface[], monaco: any, range: any) => {
   return [
-    ...pgsqlSnippet.map((d) => {
-      return {
-        label: d.key,
-        kind: monaco.languages.CompletionItemKind.Snippet,
-        detail: d.detail,
-        range: range,
-        insertText: d.insertText,
-      };
-    }),
-    ...pgsqlKeywords.map((k) => {
+    ...keyWords.map((k) => {
       return {
         label: k.key,
         kind: monaco.languages.CompletionItemKind.Keyword,
@@ -312,7 +364,12 @@ const defaultAutoCompletion = (
         insertText: k.key,
       };
     }),
-    ...pgsql_operators.map((o) => {
+  ];
+};
+
+export const operatores = (operatores: string[], monaco: any, range: any) => {
+  return [
+    ...operatores.map((o) => {
       return {
         label: o,
         kind: monaco.languages.CompletionItemKind.Operator,
@@ -321,7 +378,12 @@ const defaultAutoCompletion = (
         insertText: o,
       };
     }),
-    ...pgsqlFunction.map((f) => {
+  ];
+};
+
+export const langFunctions = (functions: completionInterface[], monaco: any, range: any) => {
+  return [
+    ...functions.map((f) => {
       return {
         label: f.key,
         kind: monaco.languages.CompletionItemKind.Operator,
