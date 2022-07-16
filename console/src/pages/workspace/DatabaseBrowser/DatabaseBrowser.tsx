@@ -43,16 +43,16 @@ interface DBPane {
   objectType: ObjType;
 }
 
-const  getTableNameIn = (editorLang:EditorLang,schema:string)=>{
+const getTableNameIn = (editorLang: EditorLang) => {
   switch (editorLang) {
     case "cql":
-      return "Keyspace"
+      return "Keyspace";
     case "pgsql":
-      return schema
+      return "Schema";
     default:
       break;
   }
-}
+};
 const DBBrowserHeader: FC<{
   connectionId: number;
   name: string;
@@ -402,6 +402,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     if (selectedKeys.length > 0) {
       const splitKey = selectedKeys[0]?.split("--");
       const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
+      setDBState({ ...dbState, selectedSchema: splitKey[0] });
       if (isOpenTab?.length === 0 && splitKey?.length === 3 && splitKey?.includes("table")) {
         addToPane(info.node.key, info?.node?.title, "table");
       } else if (splitKey.length === 3 && splitKey.includes("table")) {
@@ -645,7 +646,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               let tblNames: Tables[] = [];
               let colsNames: Columns[] = [];
               Object.entries(res).map(([tableName, value]) => {
-                tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang,schema)} : ${schema}` });
+                tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang)} : ${schema}` });
                 value.columns.map((col: ColumnDetails) => {
                   colsNames.push({
                     colName: col.name,
