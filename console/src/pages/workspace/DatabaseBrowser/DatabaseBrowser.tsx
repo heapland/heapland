@@ -727,7 +727,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 <TabPane tab='Database Objects' key='database-object'>
                   <Skeleton title={false} active avatar={false} paragraph={{ rows: 4, width: "100%" }} loading={dbState.loading}>
                     <div style={{ padding: "0 10px" }}>
-                      <Space size={4}>
+                      <Space size={4} style={{margin: "10px 0"}}>
                         <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
                           <FaDatabase />
                         </i>
