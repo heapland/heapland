@@ -94,12 +94,12 @@ const QueryPane: FC<{
     setQueryView({ ...queryView, saveAsModal: true });
   };
 
-  const runQuery = (q: string) => {
+  const runQuery = (q: string, editorText?: string) => {
     const queries = q
       .split(";")
       .map((q) => q.trim())
       .filter((q) => q !== "");
-    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true, currentState: q, savedQuery: q });
+    setQueryView({ ...queryView, queryResults: [], isQueryExecuting: true, currentState: editorText ?? q, savedQuery: editorText ?? q });
     const results = queries.map((q) => Connections.executeQuery(connectionId, q));
     Promise.all(results).then((values) => {
       const allResults: QueryResult[] = values.map((v) => {
@@ -111,7 +111,13 @@ const QueryPane: FC<{
           }
         }
       });
-      setQueryView({ ...queryView, queryResults: allResults, isQueryExecuting: false, currentState: q, savedQuery: q });
+      setQueryView({
+        ...queryView,
+        queryResults: allResults,
+        isQueryExecuting: false,
+        currentState: editorText ?? q,
+        savedQuery: editorText ?? q,
+      });
     });
   };
 
@@ -135,7 +141,7 @@ const QueryPane: FC<{
         // console.log(editor.getValue());
         const selectedText = editor.getModel().getValueInRange(editor.getSelection());
         if (selectedText != "") {
-          runQuery(selectedText);
+          runQuery(selectedText, editor.getValue());
         } else {
           runQuery(editor.getValue());
         }
