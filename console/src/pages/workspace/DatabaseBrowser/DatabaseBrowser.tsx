@@ -29,6 +29,7 @@ import { UserContext } from "../../../store/User";
 import { history } from "../../../configureStore";
 import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
 import { Columns, getPgsqlCompletionProvider, Tables } from "./PgSQLCompletionProvider";
+import { useWindowDimensions } from "../../../components/utils/utils";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -109,6 +110,7 @@ interface DBObject {
 const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: number }> = ({ orgSlugId, workspaceId, databaseId }) => {
   const context = React.useContext(UserContext);
   const monacoIns = useMonaco();
+  const { height, width } = useWindowDimensions();
   const [dbState, setDBState] = useState<{
     loading: boolean;
     connectionName: string;
@@ -427,7 +429,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               key: `${key}--${keyName}`,
               icon: (
                 <i className={`side-nav-icon`}>
-                  <MdFolder />,
+                  <MdFolder />
                 </i>
               ),
               children: value.map((r: any) => {
@@ -450,7 +452,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   key: `${key}--${keyName}--${r?.name}`,
                   icon: (
                     <i className={`side-nav-icon`}>
-                      <FaTable />,
+                      <FaTable />
                     </i>
                   ),
                 };
@@ -507,7 +509,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         key: `${key}--routine`,
         icon: (
           <i className={`side-nav-icon`}>
-            <MdFolder />,
+            <MdFolder />
           </i>
         ),
         children: objs.routines.map((r) => {
@@ -516,7 +518,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
             key: `${key}--routine--${r}`,
             icon: (
               <i className={`side-nav-icon`}>
-                <MdOutlineFunctions />,
+                <MdOutlineFunctions />
               </i>
             ),
             isLeaf: true,
@@ -530,7 +532,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         key: `${key}--table`,
         icon: (
           <i className={`side-nav-icon`}>
-            <MdFolder />,
+            <MdFolder />
           </i>
         ),
         children: objs.tables.map((r) => {
@@ -539,7 +541,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
             key: `${key}--table--${r}`,
             icon: (
               <i className={`side-nav-icon`}>
-                <FaTable />,
+                <FaTable />
               </i>
             ),
           };
@@ -552,7 +554,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         key: `${key}--view`,
         icon: (
           <i className={`side-nav-icon`}>
-            <MdFolder />,
+            <MdFolder />
           </i>
         ),
         children: objs.views.map((r) => {
@@ -561,7 +563,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
             key: `${key}--view--${r}`,
             icon: (
               <i className={`side-nav-icon`}>
-                <MdOutlineViewSidebar />,
+                <MdOutlineViewSidebar />
               </i>
             ),
             isLeaf: true,
@@ -741,7 +743,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                         loadData={loadTables}
                         treeData={dbState.dbObjects}
                         onSelect={onSelectTreeNode}
-                        height={600}
+                        height={height - 130}
                         selectedKeys={[dbTabs.selectedTreeNode]}
                       />
                     </div>
