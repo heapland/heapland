@@ -194,6 +194,9 @@
       color: var(--default-green);
       background-color: var(--background-selected);
     }
+    .ant-tree-list-scrollbar-thumb {
+      background: var(--secondary-color) !important;
+    }
   }
   .db-browser-header {
     border-bottom: 1px solid var(--border-color);
