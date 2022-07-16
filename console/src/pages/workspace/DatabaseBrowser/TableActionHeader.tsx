@@ -62,7 +62,7 @@ const TableActionHeader: FC<{
             </Tooltip>
           </div>
           <div className='action-btn-group'>
-            <Button size='small' className='label' onClick={openDDL}>
+            <Button size='small' onClick={openDDL}>
               DDL
             </Button>
           </div>
