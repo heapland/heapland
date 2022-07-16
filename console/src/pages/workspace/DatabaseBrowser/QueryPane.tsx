@@ -1,4 +1,4 @@
-import Editor, { Monaco, useMonaco } from "@monaco-editor/react";
+import Editor, { Monaco, useMonaco, loader } from "@monaco-editor/react";
 import { useHotkeys } from "react-hotkeys-hook";
 import { Alert, Button, Dropdown, Form, Input, Menu, message, Modal, Select, Spin, Space, Table, Tabs, Tooltip } from "antd";
 import Column from "antd/lib/table/Column";
@@ -8,7 +8,7 @@ import { TabPane } from "rc-tabs";
 import React, { FC, ReactNode, useEffect, useRef, useState } from "react";
 import { MdCreateNewFolder, MdPlayCircle, MdSave, MdSync } from "react-icons/md";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
-import Connections from "../../../services/Connections";
+import Connections, { TableMeta } from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { Resizable } from "re-resizable";
 import { truncateString, getLangDefinition } from "../../../components/utils/utils";
@@ -205,10 +205,11 @@ const QueryPane: FC<{
           <div
             style={{
               width: "100%",
-              height: "calc(100vh - 100)",
+              height: "calc(100vh - 90px)",
               display: "flex",
               flexDirection: "column",
-              overflow: "hidden",
+              overflowY: "scroll",
+              overflowX: "hidden",
             }}>
             <Resizable
               defaultSize={{

@@ -1,6 +1,7 @@
 import { message } from "antd";
 import { DBQuery, DBSummary, QueryExecutionResult } from "../models/DatabaseBrowser";
 import { FailedFileListing, FileListing, FileSummary } from "../models/FileBrowser";
+import { Columns, Tables } from "../pages/workspace/DatabaseBrowser/PgSQLCompletionProvider";
 import { PubKeyResponse } from "./AuthService";
 import { IErrorHandler } from "./IErrorHander";
 import { BadConnection, InternalServerError } from "./SparkService";
@@ -12,7 +13,7 @@ interface OpResult {
   success: boolean;
 }
 
-interface SchemaObjects {
+export interface SchemaObjects {
   views: string[];
   tables: string[];
   routines: string[];
@@ -64,6 +65,14 @@ export interface TableObjects {
   primaryKey: PrimaryKey[];
   foreignKeys: ForeignKeys[];
   indexes: TableIndex[];
+}
+export interface TableMeta {
+  [key: string]: {
+    columns: ColumnDetails[];
+    primaryKey: PrimaryKey[];
+    foreignKeys: ForeignKeys[];
+    indexes: TableIndex[];
+  };
 }
 
 class ConnectionService extends IErrorHandler {
@@ -335,10 +344,32 @@ class ConnectionService extends IErrorHandler {
     } catch (e) {}
   };
 
-  listTables = async (dbId: number, schema: string, onSuccess: (tables: string[]) => void) => {
+  listTablesMeta = async (dbId: number, schema: string, onSuccess: (tables: TableMeta) => void) => {
     try {
-      const response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables`);
+      const response = this.webAPI.get<TableMeta | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables-meta`);
 
+      const r = await response;
+      if (r.status === 200 && r.parsedBody) {
+        const result = r.parsedBody as TableMeta;
+        onSuccess(result);
+      } else if (r.parsedBody) {
+        const body = r.parsedBody as InternalServerError;
+        this.showError(body.message);
+      } else {
+        const err = this.getDefaultError("Fetching the tables meta");
+        this.showError(err.message);
+      }
+    } catch (e) {}
+  };
+
+  listTables = async (dbId: number, schema: string, productName: string, onSuccess: (tables: string[]) => void) => {
+    try {
+      let response;
+      if (productName.toLowerCase() === "mysql") {
+        response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/default/tables`);
+      } else {
+        response = this.webAPI.get<string[] | InternalServerError>(`/web/v1/rdbms/${dbId}/schemas/${schema}/tables`);
+      }
       const r = await response;
       if (r.status === 200 && r.parsedBody) {
         const result = r.parsedBody as string[];

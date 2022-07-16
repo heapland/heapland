@@ -16,7 +16,7 @@
 .label {
   display: block;
   margin-bottom: 0px;
-  color: $lt-font-dull-color;
+  color: var(--label-color);
 }
 
 .error-container {
