@@ -197,7 +197,8 @@ class ConnectionService extends IErrorHandler {
         onSuccess(result);
       } else if (r.parsedBody) {
         const body = r.parsedBody as InternalServerError;
-        this.showError(body.message);
+        // this.showError(body.message);
+        message.error(body.message);
       } else {
         const err = this.getDefaultError("Fetching the table data");
         this.showError(err.message);

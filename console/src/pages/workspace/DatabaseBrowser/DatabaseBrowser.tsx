@@ -402,6 +402,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     if (selectedKeys.length > 0) {
       const splitKey = selectedKeys[0]?.split("--");
       const isOpenTab = dbTabs.panes.filter((t) => t.name === info.node.title);
+      setDBState({ ...dbState, selectedSchema: splitKey[0] });
       if (isOpenTab?.length === 0 && splitKey?.length === 3 && splitKey?.includes("table")) {
         addToPane(info.node.key, info?.node?.title, "table");
       } else if (splitKey.length === 3 && splitKey.includes("table")) {

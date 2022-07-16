@@ -61,12 +61,12 @@ export default class WebService {
           return res.json() as Promise<T>;
         })
         .then((body) => {
-          if (response.status !== 500) {
-            response.parsedBody = body;
-            resolve(response);
-          } else {
-            reject(response);
-          }
+          // if (response.status === 500) {
+          response.parsedBody = body;
+          resolve(response);
+          // } else {
+          // reject(response);
+          // }
         })
         .catch((err) => {
           console.log(err);
