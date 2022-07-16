@@ -43,16 +43,16 @@ interface DBPane {
   objectType: ObjType;
 }
 
-const  getTableNameIn = (editorLang:EditorLang,schema:string)=>{
+const getTableNameIn = (editorLang: EditorLang) => {
   switch (editorLang) {
     case "cql":
-      return "Keyspace"
+      return "Keyspace";
     case "pgsql":
-      return schema
+      return "Schema";
     default:
       break;
   }
-}
+};
 const DBBrowserHeader: FC<{
   connectionId: number;
   name: string;
@@ -645,7 +645,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               let tblNames: Tables[] = [];
               let colsNames: Columns[] = [];
               Object.entries(res).map(([tableName, value]) => {
-                tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang,schema)} : ${schema}` });
+                tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang)} : ${schema}` });
                 value.columns.map((col: ColumnDetails) => {
                   colsNames.push({
                     colName: col.name,
