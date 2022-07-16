@@ -42,6 +42,17 @@ interface DBPane {
   id: number | string;
   objectType: ObjType;
 }
+
+const  getTableNameIn = (editorLang:EditorLang,schema:string)=>{
+  switch (editorLang) {
+    case "cql":
+      return "Keyspace"
+    case "pgsql":
+      return schema
+    default:
+      break;
+  }
+}
 const DBBrowserHeader: FC<{
   connectionId: number;
   name: string;
@@ -123,7 +134,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     hasError: false,
     schemas: [],
     catalogs: [],
-    editorLang: "cql",
+    editorLang: "pgsql",
   });
 
   const [dbQueries, setDBQueries] = useState<{ loading: boolean; queries: DBQuery[] }>({
@@ -634,7 +645,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               let tblNames: Tables[] = [];
               let colsNames: Columns[] = [];
               Object.entries(res).map(([tableName, value]) => {
-                tblNames.push({ tblName: tableName, detail: `Table in Keyspace : ${schema}` });
+                tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang,schema)} : ${schema}` });
                 value.columns.map((col: ColumnDetails) => {
                   colsNames.push({
                     colName: col.name,
