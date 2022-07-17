@@ -62,6 +62,7 @@ html[data-theme="light"] {
   --btn-hover-color: #fff;
   --theme-btn-shadow: 0px 0px 6px 6px rgb(151 151 151 / 12%);
   --label-color: #a5aec0;
+  --label-color-light: #a5aec0d3;
 }
 
 html[data-size="small"] {
@@ -77,7 +78,7 @@ html[data-theme="dark"] {
   --border-color: #47526d;
   --primary-color: #fff;
   --secondary-color: #b3bfd7;
-  --label-color: "";
+  --label-color: #a5aec0;
   --hover-bg: #eee;
   --title-color: #eee;
   --title-hover-color: #3b4a73;
@@ -119,7 +120,7 @@ html[data-theme="dark"] {
   --tab-active-color: var(--light-bg);
   --btn-border: var(--default-btn-color);
   --btn-hover-color: var(--primary-color);
-  --label-color: #a5aec085;
+  --label-color-light: #a5aec085;
   --theme-btn-shadow: 0px 0px 6px 6px rgb(151 151 151 / 12%);
 }
 

@@ -30,6 +30,7 @@ import { history } from "../../../configureStore";
 import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
 import { Columns, getPgsqlCompletionProvider, Tables } from "./PgSQLCompletionProvider";
 import { useWindowDimensions } from "../../../components/utils/utils";
+import ColumnIcon from "../../../components/Icons/ColumnIcon";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -451,8 +452,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   isLeaf: true,
                   key: `${key}--${keyName}--${r?.name}`,
                   icon: (
-                    <i className={`side-nav-icon`}>
-                      <FaTable />
+                    <i className={`column-icon`}>
+                      <ColumnIcon dataType={r?.dataType} />
                     </i>
                   ),
                 };
