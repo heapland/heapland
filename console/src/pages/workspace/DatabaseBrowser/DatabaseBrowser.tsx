@@ -453,7 +453,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   key: `${key}--${keyName}--${r?.name}`,
                   icon: (
                     <i className={`column-icon`}>
-                      <ColumnIcon dataType={r?.dataType} />
+                      <ColumnIcon dataType={r?.dataType ?? r.name} />
                     </i>
                   ),
                 };

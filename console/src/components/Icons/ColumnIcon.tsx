@@ -1,5 +1,6 @@
 import * as React from "react";
 import { FaHashtag } from "react-icons/fa";
+import { GoKey } from "react-icons/go";
 import { MdOutlineAccessTimeFilled } from "react-icons/md";
 import BinaryDataIcon from "./BinaryDataIcon";
 import BooleanIcon from "./BooleanIcon";
@@ -9,7 +10,11 @@ import JsonIcon from "./JsonIcon";
 import TextIcon from "./TextIcon";
 
 const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
-  switch (dataType.toLowerCase()) {
+  // console.log(dataType);
+  if (dataType.includes("_pkey")) {
+    return <GoKey />;
+  }
+  switch (dataType?.toLowerCase()) {
     case "varchar":
     case "text":
     case "char":
@@ -47,6 +52,8 @@ const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
     case "box":
     case "path":
     case "polygon":
+    case "circle":
+      return <GeometryIcon />;
     case "circle":
       return <GeometryIcon />;
     default:

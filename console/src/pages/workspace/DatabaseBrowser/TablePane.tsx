@@ -6,13 +6,14 @@ import Connections from "../../../services/Connections";
 import TableActionHeader from "./TableActionHeader";
 import "./DatabaseBrowser.scss";
 import DownloadModal from "./DownloadModal";
-import { copyTextToClipboard, createSQLInsert, createSQLUpdate, truncateString } from "../../../components/utils/utils";
+import { copyTextToClipboard, createSQLInsert, createSQLUpdate, isNumberDataType, truncateString } from "../../../components/utils/utils";
 import { InternalServerError } from "../../../services/SparkService";
 import { Controlled as Codemirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
 
 const makeTableRowId = (c: [key: string]) => btoa(Object.values(c).join("-"));
+
 const editorOptions = {
   mode: "shell",
   theme: "material",
@@ -23,19 +24,23 @@ interface EditableCellProps extends React.HTMLAttributes<HTMLElement> {
   editing: boolean;
   dataIndex: string;
   title: any;
-  inputType: "number" | "text";
+  isNumber: boolean;
   record: any;
   index: number;
   children: React.ReactNode;
 }
 
-const EditableCell: React.FC<EditableCellProps> = ({ editing, dataIndex, title, inputType, record, index, children, ...restProps }) => {
-  const inputNode = inputType === "number" ? <InputNumber /> : <Input style={{ minWidth: "50px" }} />;
-
+const EditableCell: React.FC<EditableCellProps> = ({ editing, dataIndex, title, isNumber, record, index, children, ...restProps }) => {
+  const inputNode = isNumber ? (
+    <InputNumber placeholder={title} />
+  ) : (
+    <Input placeholder={title?.toLowerCase()} style={{ minWidth: "50px" }} />
+  );
   return (
     <td {...restProps}>
       {editing ? (
         <Form.Item
+          preserve={false}
           name={dataIndex}
           style={{ margin: 0 }}
           rules={[
@@ -71,6 +76,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState<any>("");
+  const [isNewRow, setIsNewRow] = useState<any>(false);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<any[]>([]);
 
@@ -110,30 +116,39 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     setEditingKey(makeTableRowId(record));
   };
 
-  const cancel = () => {
+  const cancelToAddEditRow = () => {
     setEditingKey("");
+    if (isNewRow) {
+      const restData = tableData.result.result.filter((r, i) => makeTableRowId(r) !== makeTableRowId(selectedRows[0]));
+      setTableData({ ...tableData, result: { ...tableData.result, result: restData } });
+      setIsNewRow(false);
+    }
   };
 
   const addRow = () => {
+    if (editingKey) return;
+    setIsNewRow(true);
     let newData: any = {};
     tableData.result.columns.map((c, i) => {
       if (c.name === "id") {
         newData[c.name] = `${tableData.result.result.length + 1}`;
+      } else if (isNumberDataType(c.dataType)) {
+        newData[c.name] = tableData.result.result.length + 1;
       } else {
-        newData[c.name] = "";
+        newData[c.name] = `new_${c.name}_${tableData.result.result.length + 1}`;
       }
     });
-    setEditingKey(`${newData.id}`);
-    setSelectedRowKeys([newData.id]);
-    setSelectedRows([...selectedRows, newData]);
+    setEditingKey(`${makeTableRowId(newData)}`);
+    setSelectedRowKeys([makeTableRowId(newData)]);
+    setSelectedRows([newData]);
     setTableData({ ...tableData, result: { ...tableData.result, result: [...tableData.result.result, newData] } });
   };
 
-  const save = async (id: React.Key) => {
+  const save = async (selectedrow: any) => {
     try {
       const row = (await form.validateFields()) as any;
       const newData = [...tableData.result.result];
-      const index = isNewData.result.findIndex((item) => id === item.id);
+      const index = isNewData.result.findIndex((item) => makeTableRowId(item) === makeTableRowId(selectedrow));
       if (index > -1) {
         const item = newData[index];
         newData.splice(index, 1, {
@@ -143,7 +158,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         let queryData = { result: [row], columns: tableData.result.columns };
         const res = await Connections.executeQuery(
           connectionId,
-          createSQLUpdate(queryData as QueryExecutionResult, schema, name, editingKey)
+          createSQLUpdate(queryData as QueryExecutionResult, schema, name, selectedrow)
         );
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
@@ -155,6 +170,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         }
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
+        setSelectedRows([]);
       } else {
         newData.push(row);
         let queryData = { result: [row], columns: tableData.result.columns };
@@ -169,6 +185,8 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         }
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
+        setSelectedRows([]);
+        setIsNewRow(false);
       }
     } catch (errInfo) {
       console.log("Validate Failed:", errInfo);
@@ -195,7 +213,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       ...col,
       onCell: (record: any) => ({
         record,
-        inputType: col.dataType === "int8" ? "number" : "text",
+        isNumber: isNumberDataType(col?.dataType),
         dataIndex: col.dataIndex,
         title: col.title,
         editing: isEditing(record),
@@ -206,7 +224,15 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   const onDeleteRow = async (rows: any[]) => {
     let delete_query = "";
     rows.map((r) => {
-      delete_query += `DELETE FROM ${schema}.${name} WHERE id = '${r.id}';`;
+      delete_query += `DELETE FROM ${schema}.${name} WHERE `;
+
+      Object.entries(r).map(([key, value], i) => {
+        if (Object.entries(r).length === i + 1) {
+          delete_query += `${key} =${typeof value === "number" ? value : `'${value}'`};`;
+        } else {
+          delete_query += `${key} = ${typeof value === "number" ? value : `'${value}'`} AND `;
+        }
+      });
     });
 
     let queryData = delete_query;
@@ -215,6 +241,8 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
       setRefres(!refres);
+      setSelectedRows([]);
+      setEditingKey("");
     } else if (res.status === 400 && res.parsedBody) {
       let err = res.parsedBody as InternalServerError;
       message.error(err.message);
@@ -241,9 +269,9 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
     <>
       <TableActionHeader
         onEditRow={() => edit(selectedRows[0])}
-        onSaveRow={() => save(editingKey)}
+        onSaveRow={() => save(selectedRows[0])}
         openDDL={() => setOpenDDL(true)}
-        onCancel={cancel}
+        onCancel={cancelToAddEditRow}
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}
         onRefres={() => setRefres(!refres)}
