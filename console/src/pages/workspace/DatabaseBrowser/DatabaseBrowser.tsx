@@ -638,16 +638,15 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
             });
           });
         });
-
         setTablesMeta({ tableNames: tblNames, columnNames: colsNames, loading: false });
       });
     } else if (dbState.editorLang === "pgsql" || dbState.editorLang === "cql") {
       Connections.listSchemas(databaseId, (schemas) => {
         if (schemas.length > 0) {
+          let tblNames: Tables[] = [];
+          let colsNames: Columns[] = [];
           schemas.map((schema) => {
             Connections.listTablesMeta(databaseId, schema, (res) => {
-              let tblNames: Tables[] = [];
-              let colsNames: Columns[] = [];
               Object.entries(res).map(([tableName, value]) => {
                 tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang)} : ${schema}` });
                 value.columns.map((col: ColumnDetails) => {
@@ -657,9 +656,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                     tblName: tableName,
                   });
                 });
+                setTablesMeta({ tableNames: tblNames, columnNames: colsNames, loading: false });
               });
-
-              setTablesMeta({ tableNames: tblNames, columnNames: colsNames, loading: false });
             });
           });
         }
