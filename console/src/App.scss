@@ -60,6 +60,13 @@
   .antd-img-crop-control button {
     color: var(--title-color);
   }
+
+  .ant-modal-confirm-title {
+    color: var(--title-color);
+  }
+  .ant-modal-confirm-content {
+    color: var(--secondary-color);
+  }
 }
 
 .ant-modal-footer {
