@@ -128,12 +128,16 @@ export const createSQLInsert = (
   if (insertQuery) {
     arrData.map((d) => {
       let sql_insert = "INSERT INTO " + schema + "." + tableName;
+      if (schema === "default") {
+        sql_insert = "INSERT INTO " + tableName;
+      }
+
       let keyName = ` (${keys}) `;
       sql_insert += keyName;
       let value: any[] = [];
 
       colsData.map((c) => {
-        if (c.dataType === "int8" || c.dataType === "int16") {
+        if (isNumberDataType(c.dataType)) {
           value.push(d[c.name]);
         } else {
           value.push(`'${d[c.name]}'`);
@@ -149,23 +153,32 @@ export const createSQLInsert = (
   return sql;
 };
 
-export const createSQLUpdate = (tableData: QueryExecutionResult, schema: string, tableName: string, oldKey: string = undefined) => {
+export const createSQLUpdate = (tableData: QueryExecutionResult, schema: string, tableName: string, oldColData?: any) => {
   let arrData = tableData.result;
   let colsData = tableData.columns;
   let sql = "";
 
   arrData.map((d) => {
     let sql_update = "UPDATE " + schema + "." + tableName + "\r\n" + "SET ";
+    let condition = "WHERE ";
 
     colsData.map((c) => {
-      if (c.dataType === "int8" || c.dataType === "int16") {
+      if (isNumberDataType(c.dataType)) {
         sql_update += `${c.name} = ${d[c.name]},`;
       } else {
         sql_update += ` ${c.name} = '${d[c.name]}',`;
       }
     });
+
+    Object.entries(oldColData ?? d).map(([key, value], i) => {
+      if (Object.entries(oldColData ?? d).length === i + 1) {
+        condition += `${key} =${typeof value === "number" ? value : `'${value}'`}`;
+      } else {
+        condition += `${key} = ${typeof value === "number" ? value : `'${value}'`} AND `;
+      }
+    });
     sql_update = sql_update.slice(0, -1);
-    sql_update += `\r\nWHERE id = '${oldKey || d["id"]}';\r\n\r\n`;
+    sql_update += `\r\n${condition};\r\n\r\n`;
     sql += sql_update;
   });
   return sql;
@@ -386,4 +399,22 @@ export const useWindowDimensions = () => {
   }, [hasWindow]);
 
   return windowDimensions;
+};
+
+export const isNumberDataType = (dataType: string) => {
+  return [
+    "serial",
+    "bigserial",
+    "bigint",
+    "int8",
+    "int",
+    "int4",
+    "smallint",
+    "integer",
+    "decimal",
+    "numeric",
+    "real",
+    "double precision",
+    "smallserial",
+  ].includes(dataType.toLowerCase());
 };
