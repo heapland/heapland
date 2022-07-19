@@ -12,6 +12,7 @@ import {
 export interface Tables {
   tblName: string;
   detail: string;
+  insertText: string;
 }
 export interface Columns {
   colName: string;
@@ -327,7 +328,7 @@ export const renderTablesNames = (tblNames: Tables[], monaco: any, range: any) =
         kind: monaco.languages.CompletionItemKind.Field,
         range: range,
         detail: t.detail,
-        insertText: t.tblName,
+        insertText: t.insertText,
       };
     }),
   ];
