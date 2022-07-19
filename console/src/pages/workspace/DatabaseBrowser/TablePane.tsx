@@ -11,6 +11,7 @@ import { InternalServerError } from "../../../services/SparkService";
 import { Controlled as Codemirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
+import DBOperations from "../../../components/DBOperation/DBOperation";
 
 const makeTableRowId = (c: [key: string]) => btoa(Object.values(c).join("-"));
 
@@ -58,12 +59,15 @@ const EditableCell: React.FC<EditableCellProps> = ({ editing, dataIndex, title, 
   );
 };
 
-const TablePane: React.FC<{ schema: string; name: string; connectionId: number; dbName: string }> = ({
+const TablePane: React.FC<{ schema: string; name: string; connectionId: number; dbName: string; productName: string }> = ({
   name,
   schema,
   connectionId,
   dbName,
+  productName,
 }) => {
+  const dbOps = new DBOperations(productName, connectionId, name, schema);
+
   const [tableData, setTableData] = useState<{ loading: boolean; result?: QueryExecutionResult }>({ loading: true });
   const [showTableData, setShowTableData] = useState<{ currentPage: number; pageSize: number }>({
     currentPage: 1,
@@ -155,11 +159,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
           ...item,
           ...row,
         });
-        let queryData = { result: [row], columns: tableData.result.columns };
-        const res = await Connections.executeQuery(
-          connectionId,
-          createSQLUpdate(queryData as QueryExecutionResult, schema, name, selectedrow)
-        );
+        const res = await dbOps.method([row], selectedRows, tableData.result.columns).updateQuery();
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
           setRefres(!refres);
@@ -173,8 +173,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         setSelectedRows([]);
       } else {
         newData.push(row);
-        let queryData = { result: [row], columns: tableData.result.columns };
-        const res = await Connections.executeQuery(connectionId, createSQLInsert(queryData as QueryExecutionResult, schema, name, false));
+        const res = await dbOps.method([row], selectedRows, tableData.result.columns).addQuery();
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
           setRefres(!refres);
@@ -200,6 +199,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       title: c.name.toUpperCase(),
       dataIndex: c.name,
       dataType: c.dataType,
+      // ellipsis: true,
       editable: true,
       className: "table-cell-light",
     });
@@ -222,21 +222,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   });
 
   const onDeleteRow = async (rows: any[]) => {
-    let delete_query = "";
-    rows.map((r) => {
-      delete_query += `DELETE FROM ${schema}.${name} WHERE `;
-
-      Object.entries(r).map(([key, value], i) => {
-        if (Object.entries(r).length === i + 1) {
-          delete_query += `${key} =${typeof value === "number" ? value : `'${value}'`};`;
-        } else {
-          delete_query += `${key} = ${typeof value === "number" ? value : `'${value}'`} AND `;
-        }
-      });
-    });
-
-    let queryData = delete_query;
-    const res = await Connections.executeQuery(connectionId, queryData);
+    const res = await dbOps.method(rows, selectedRows, tableData.result.columns).deleteQuery();
 
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
