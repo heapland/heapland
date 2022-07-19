@@ -17,6 +17,12 @@ import { EditorLang } from "./DatabaseBrowser";
 
 type QueryResult = { err?: string; result?: QueryExecutionResult };
 
+declare global {
+  interface Window {
+    editor: any; // 👈️ turn off type checking
+  }
+}
+
 const QueryPane: FC<{
   connectionId: number;
   queryId: number | string;
@@ -131,6 +137,7 @@ const QueryPane: FC<{
 
   const onEditorMount = (editor: any, monaco: Monaco) => {
     setQueryView({ ...queryView, editor: editor });
+    window.editor = editor;
     editor.addAction({
       id: "execute-run",
       label: "Run Query",
@@ -138,7 +145,6 @@ const QueryPane: FC<{
       contextMenuGroupId: "editor-cmds",
 
       run: (editor: any) => {
-        // console.log(editor.getValue());
         const selectedText = editor.getModel().getValueInRange(editor.getSelection());
         if (selectedText != "") {
           runQuery(selectedText, editor.getValue());
@@ -182,7 +188,14 @@ const QueryPane: FC<{
                 <Button
                   size='small'
                   type='primary'
-                  onClick={(e) => runQuery(queryView.currentState)}
+                  onClick={(e) => {
+                    const selectedText = window?.editor?.getModel().getValueInRange(window?.editor?.getSelection());
+                    if (selectedText != "") {
+                      runQuery(selectedText, window?.editor?.getValue());
+                    } else {
+                      runQuery(window?.editor?.getValue());
+                    }
+                  }}
                   className='control-btn'
                   loading={queryView.isQueryExecuting}
                   disabled={queryView.isQueryExecuting}
@@ -234,6 +247,7 @@ const QueryPane: FC<{
                 value={queryView.savedQuery}
                 onChange={(v, ev) => {
                   setQueryView({ ...queryView, currentState: v });
+                  console.log(v, ev);
                 }}
               />
             </Resizable>
