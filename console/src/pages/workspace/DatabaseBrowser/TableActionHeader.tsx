@@ -14,16 +14,17 @@ const TableActionHeader: FC<{
   openDDL: () => void;
   onPagiChange: (page: number, pageSize: number) => void;
   editingKey: string;
-  onDownloadDataModal: () => void;
+  openDwnDataModal: () => void;
   selectedRow: any[];
   totalRows: number;
   currentPage: number;
   pageSize: number;
+  loading: boolean;
 }> = ({
   onRefres,
   onAddRow,
   onDeleteRow,
-  onDownloadDataModal,
+  openDwnDataModal,
   onUploadData,
   onEditRow,
   onSaveRow,
@@ -35,6 +36,7 @@ const TableActionHeader: FC<{
   currentPage,
   pageSize,
   totalRows,
+  loading,
 }) => {
   return (
     <div className='table-action-header file-browser-controls'>
@@ -42,36 +44,36 @@ const TableActionHeader: FC<{
         <Space align='center'>
           <div className='action-btn-group'>
             <Tooltip title='Refresh Table'>
-              <Button size='small' icon={<MdSync />} onClick={onRefres} />
+              <Button size='small' disabled={loading} icon={<MdSync />} onClick={onRefres} />
             </Tooltip>
             <Tooltip title='Add Row'>
-              <Button size='small' icon={<HiPlus />} onClick={onAddRow} />
+              <Button size='small' disabled={loading} icon={<HiPlus />} onClick={onAddRow} />
             </Tooltip>
             {selectedRow.length > 0 && (
               <Tooltip title='Remove Row'>
-                <Button size='small' icon={<HiMinus />} onClick={onDeleteRow} />
+                <Button size='small' disabled={loading} icon={<HiMinus />} onClick={onDeleteRow} />
               </Tooltip>
             )}
             {selectedRow.length === 1 && (
               <Tooltip title='Edit Row'>
-                <Button size='small' icon={<MdEdit />} onClick={onEditRow} />
+                <Button size='small' disabled={loading} icon={<MdEdit />} onClick={onEditRow} />
               </Tooltip>
             )}
             <Tooltip title='More Action'>
-              <Button size='small' icon={<HiOutlineDotsHorizontal />} />
+              <Button size='small' disabled={loading} icon={<HiOutlineDotsHorizontal />} />
             </Tooltip>
           </div>
           <div className='action-btn-group'>
-            <Button size='small' onClick={openDDL}>
+            <Button size='small' disabled={loading} onClick={openDDL}>
               DDL
             </Button>
           </div>
           <div className='action-btn-group'>
             <Tooltip title='Download Data'>
-              <Button size='small' icon={<HiDownload />} onClick={onDownloadDataModal} />
+              <Button size='small' disabled={totalRows === 0 || loading} icon={<HiDownload />} onClick={openDwnDataModal} />
             </Tooltip>
             <Tooltip title='Upload Data'>
-              <Button size='small' icon={<HiUpload />} onClick={onUploadData} />
+              <Button size='small' disabled={loading} icon={<HiUpload />} onClick={onUploadData} />
             </Tooltip>
           </div>
         </Space>

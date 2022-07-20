@@ -2,16 +2,17 @@ import { Select, Skeleton, Table, Tabs, Form, Input, InputNumber, Popconfirm, Ty
 import Column from "antd/lib/table/Column";
 import React, { useEffect, useState } from "react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
-import Connections from "../../../services/Connections";
+import Connections, { PrimaryKey, TableMeta } from "../../../services/Connections";
 import TableActionHeader from "./TableActionHeader";
 import "./DatabaseBrowser.scss";
 import DownloadModal from "./DownloadModal";
-import { copyTextToClipboard, createSQLInsert, createSQLUpdate, isNumberDataType, truncateString } from "../../../components/utils/utils";
+import { copyTextToClipboard, extractPkeyfromTable, isNumberDataType, truncateString } from "../../../components/utils/utils";
 import { InternalServerError } from "../../../services/SparkService";
 import { Controlled as Codemirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
 import DBOperations from "../../../components/DBOperation/DBOperation";
+import { EditorLang } from "./DatabaseBrowser";
 
 const makeTableRowId = (c: [key: string]) => btoa(Object.values(c).join("-"));
 
@@ -46,7 +47,7 @@ const EditableCell: React.FC<EditableCellProps> = ({ editing, dataIndex, title, 
           style={{ margin: 0 }}
           rules={[
             {
-              required: true,
+              required: false,
               message: `Please Input ${title}!`,
             },
           ]}>
@@ -59,13 +60,15 @@ const EditableCell: React.FC<EditableCellProps> = ({ editing, dataIndex, title, 
   );
 };
 
-const TablePane: React.FC<{ schema: string; name: string; connectionId: number; dbName: string; productName: string }> = ({
-  name,
-  schema,
-  connectionId,
-  dbName,
-  productName,
-}) => {
+const TablePane: React.FC<{
+  schema: string;
+  name: string;
+  connectionId: number;
+  dbName: string;
+  productName: string;
+  allTables: TableMeta;
+  editorLang: EditorLang;
+}> = ({ name, schema, connectionId, dbName, productName, allTables, editorLang }) => {
   const dbOps = new DBOperations(productName, connectionId, name, schema);
 
   const [tableData, setTableData] = useState<{ loading: boolean; result?: QueryExecutionResult }>({ loading: true });
@@ -83,6 +86,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   const [isNewRow, setIsNewRow] = useState<any>(false);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<any[]>([]);
+  const [primaryKeys, setPrimarykeys] = useState<PrimaryKey[]>([]);
 
   useEffect(() => {
     setTableData({ loading: true });
@@ -91,11 +95,12 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       const indexOfFirstRow = indexOfLastRow - showTableData.pageSize;
       const tableRowData = data.result.slice(indexOfFirstRow, indexOfLastRow);
       setTableData({ ...tableData, loading: false, result: { ...data, result: tableRowData } });
+      setPrimarykeys(extractPkeyfromTable(allTables, name));
       setNewData(data);
     });
   }, [name, refres]);
 
-  const onDownloadDataModal = () => {
+  const openDwnDataModal = () => {
     setDownloadModal(true);
   };
 
@@ -159,7 +164,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
           ...item,
           ...row,
         });
-        const res = await dbOps.method([row], selectedRows, tableData.result.columns).updateQuery();
+        const res = await dbOps.method([row], tableData.result.columns).updateQuery(selectedRows, primaryKeys);
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
           setRefres(!refres);
@@ -173,7 +178,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         setSelectedRows([]);
       } else {
         newData.push(row);
-        const res = await dbOps.method([row], selectedRows, tableData.result.columns).addQuery();
+        const res = await dbOps.method([row], tableData.result.columns).addQuery();
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
           setRefres(!refres);
@@ -222,7 +227,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
   });
 
   const onDeleteRow = async (rows: any[]) => {
-    const res = await dbOps.method(rows, selectedRows, tableData.result.columns).deleteQuery();
+    const res = await dbOps.method(rows, tableData.result.columns).deleteQuery(primaryKeys);
 
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
@@ -261,7 +266,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}
         onRefres={() => setRefres(!refres)}
-        onDownloadDataModal={onDownloadDataModal}
+        openDwnDataModal={openDwnDataModal}
         onUploadData={() => {}}
         selectedRow={selectedRows}
         editingKey={editingKey}
@@ -269,6 +274,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
         currentPage={showTableData.currentPage}
         pageSize={showTableData.pageSize}
         totalRows={isNewData?.result?.length}
+        loading={tableData.loading}
       />
       <Skeleton loading={tableData.loading} title={false} active paragraph={{ rows: 4, width: "100%" }}>
         <Form form={form} component={false}>
@@ -303,6 +309,9 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
           isDownloadModal={isDownloadModal}
           closeDownloadModal={closeDownloadModal}
           tableData={tableData.result}
+          primaryKeys={primaryKeys}
+          dbLang={editorLang}
+          dbOps={dbOps}
         />
       )}
       {openDDL && (
@@ -319,7 +328,11 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
               </Button>
               <Button
                 type='primary'
-                onClick={() => copyTextToClipboard(createSQLInsert(tableData.result, schema, name, true, false), message)}>
+                onClick={() =>
+                  copyTextToClipboard(
+                    dbOps.method(tableData.result.result, tableData.result.columns).createInsertQry(primaryKeys, false, true)
+                  )
+                }>
                 Copy to Clipboard
               </Button>
             </Space>
@@ -328,7 +341,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
           <Codemirror
             className=''
             autoCursor={true}
-            value={createSQLInsert(tableData.result, schema, name, true, false)}
+            value={dbOps.method(tableData.result.result, tableData.result.columns).createInsertQry(primaryKeys, false, true)}
             options={editorOptions}
             onBeforeChange={(editor, data, value: string) => {}}
             onChange={(editor, data, value) => {}}
