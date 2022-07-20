@@ -383,13 +383,13 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
-  useEffect(() => {
-    if (dbState.selectedSchema) {
-      Connections.listTables(databaseId, dbState.selectedSchema, dbState.productName, (tables) => {
-        setDBTables({ ...dbTables, tables: tables, loading: false });
-      });
-    }
-  }, [dbState.selectedSchema, databaseId]);
+  // useEffect(() => {
+  //   if (dbState.selectedSchema) {
+  //     Connections.listTables(databaseId, dbState.selectedSchema, dbState.productName, (tables) => {
+  //       setDBTables({ ...dbTables, tables: tables, loading: false });
+  //     });
+  //   }
+  // }, [dbState.selectedSchema, databaseId]);
 
   const handleDeleteConnection = () => {
     Connections.deleteConnection(databaseId, (r) => {

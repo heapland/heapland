@@ -200,6 +200,7 @@ const TablePane: React.FC<{ schema: string; name: string; connectionId: number; 
       title: c.name.toUpperCase(),
       dataIndex: c.name,
       dataType: c.dataType,
+      ellipsis: true,
       editable: true,
       className: "table-cell-light",
     });

@@ -22,7 +22,7 @@
   <p>
 <p>
 
-[![Scala build](https://github.com/GigahexHQ/gigahex/actions/workflows/scala.yml/badge.svg)](https://github.com/heapland/heapland/actions/workflows/scala.yml)
+[![Scala build](https://github.com/heapland/heapland/actions/workflows/scala.yml/badge.svg)](https://github.com/heapland/heapland/actions/workflows/scala.yml)
 [![Github All Releases](https://img.shields.io/github/downloads/heapland/heapland/total.svg)]()
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/heapland/heapland)
 [![Twitter Follow](https://img.shields.io/twitter/follow/HeaplandHQ?style=social)](https://twitter.com/HeaplandHQ)
@@ -68,7 +68,7 @@
  Run the following docker run command to get started
  
  ```bash
-docker run -p 9080:9080 -v gxdb:/var heapland/heapland:0.2.0
+docker run -p 9080:9080 -v gxdb:/var heapland/heapland:0.3.0
 ```
 
 You will get the following output
@@ -93,5 +93,7 @@ You will get the following output
 > Visit http://localhost:9080 to get started!
 ```
 
-Use the credentials above to login to the heapland
+**Make sure to save the credentials generated.**
+
+Use the credentials above to login to the heapland console.
 
