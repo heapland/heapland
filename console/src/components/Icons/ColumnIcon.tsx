@@ -1,7 +1,7 @@
 import * as React from "react";
 import { FaHashtag } from "react-icons/fa";
 import { GoKey } from "react-icons/go";
-import { MdOutlineAccessTimeFilled } from "react-icons/md";
+import { Md24Mp, MdOutlineAccessTimeFilled } from "react-icons/md";
 import BinaryDataIcon from "./BinaryDataIcon";
 import BooleanIcon from "./BooleanIcon";
 import DollarIcon from "./DollarIcon";
@@ -10,11 +10,12 @@ import JsonIcon from "./JsonIcon";
 import TextIcon from "./TextIcon";
 
 const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
-  // console.log(dataType);
+  console.log(dataType);
   switch (dataType?.toLowerCase()) {
     case "varchar":
     case "text":
     case "char":
+    case "list<text>":
       return <TextIcon />;
     case "uuid":
     case "serial":
@@ -30,6 +31,7 @@ const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
     case "real":
     case "double precision":
     case "smallserial":
+    case "double":
       return <FaHashtag />;
     case "timestamp":
     case "time":
@@ -57,7 +59,7 @@ const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
     case "keyicon":
       return <GoKey />;
     default:
-      return <></>;
+      return <Md24Mp />;
   }
 };
 
