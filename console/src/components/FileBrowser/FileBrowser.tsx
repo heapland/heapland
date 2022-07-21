@@ -262,11 +262,11 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
         <div className='file-browser-controls '>
           <Space>
             <Tooltip title='Refresh'>
-              <Button size='small' icon={<MdSync />} onClick={(e) => updateCWD(cwd)}></Button>
+              <Button size='small' className='refres-btn' icon={<MdSync />} onClick={(e) => updateCWD(cwd)}></Button>
             </Tooltip>
 
             <Tooltip title='New Directory'>
-              <Button size='small' icon={<MdCreateNewFolder />} onClick={(e) => createDirectory()}></Button>
+              <Button size='small' className='new-dir-btn' icon={<MdCreateNewFolder />} onClick={(e) => createDirectory()}></Button>
             </Tooltip>
 
             <Tooltip title='Upload file'>
@@ -277,7 +277,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
                 name='file'
                 accept='*/*'
                 onChange={onUpload}>
-                <Button size='small' icon={<MdFileUpload />}></Button>
+                <Button size='small' className='upload-btn' icon={<MdFileUpload />}></Button>
               </Upload>
             </Tooltip>
           </Space>

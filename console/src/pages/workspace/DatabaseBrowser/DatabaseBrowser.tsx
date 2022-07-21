@@ -63,8 +63,9 @@ const DBBrowserHeader: FC<{
   schemas: string[];
   onEdit: () => void;
   onNewQuery: () => void;
+  onRefresDB: () => void;
   deleteWarning: (name: string) => void;
-}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning }) => {
+}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning, onRefresDB }) => {
   const editDatabase = () => {};
   const databaseMenu = (
     <Menu>
@@ -74,7 +75,10 @@ const DBBrowserHeader: FC<{
       <Menu.Item key='1' onClick={(e) => deleteWarning(name)}>
         Delete connection
       </Menu.Item>
-      <Menu.Divider />
+      <Menu.Item key='2' onClick={onRefresDB}>
+        Refres
+      </Menu.Item>
+      <Menu.Divider style={{ height: ".5px" }} />
       <Menu.Item key='3' onClick={(e) => onNewQuery()}>
         Add Query
       </Menu.Item>
@@ -155,6 +159,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     loading: true,
   });
   const [allTables, setAllTables] = useState<TableMeta>({});
+  const [refresDB, setRefresDB] = useState<boolean>(false);
 
   const enableEditMode = () => {
     setDBState({ ...dbState, editMode: true });
@@ -291,18 +296,17 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
       }
     );
   };
+  const [dbTabs, setDBTabs] = useState<{ selectedPane?: DBPane; activeKey?: string; panes: DBPane[]; selectedTreeNode?: number | string }>({
+    panes: [],
+  });
 
   useEffect(() => {
     setDBState({ ...dbState, loading: true });
     setDBTables({ ...dbTables, tables: [], loading: true });
     setDBQueries({ ...dbQueries, queries: [], loading: true });
-    setDBTabs({ ...dbTabs, panes: [], selectedPane: undefined, activeKey: undefined });
+    setDBTabs({ ...dbTabs, panes: [], selectedPane: undefined, activeKey: undefined, selectedTreeNode: null });
     fetchDBState();
-  }, [databaseId]);
-
-  const [dbTabs, setDBTabs] = useState<{ selectedPane?: DBPane; activeKey?: string; panes: DBPane[]; selectedTreeNode?: number | string }>({
-    panes: [],
-  });
+  }, [databaseId, refresDB]);
 
   const onTabChange = (key: string) => {
     let selectedTabObj = "query";
@@ -691,6 +695,10 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
   }, [monacoIns, tablesMeta.columnNames]);
 
+  const onRefresDB = () => {
+    setRefresDB(!refresDB);
+  };
+
   return (
     <Layout className='database-browser-wrapper ant-layout-has-sider'>
       <Content
@@ -733,6 +741,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   onEdit={enableEditMode}
                   onNewQuery={onNewQuery}
                   deleteWarning={deleteWarning}
+                  onRefresDB={onRefresDB}
                 />
               </Skeleton>
 
