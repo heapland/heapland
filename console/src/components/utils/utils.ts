@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { MessageApi } from "antd/lib/message";
+import message, { MessageApi } from "antd/lib/message";
 import { QueryExecutionResult } from "../../models/DatabaseBrowser";
 import { EditorLang } from "../../pages/workspace/DatabaseBrowser/DatabaseBrowser";
 import { Extractor } from "../../pages/workspace/DatabaseBrowser/DownloadModal";
 import { pgsql_operators, pgsql_builtinVariables, pgsql_typeKeywords, pgsqlFunction, pgsqlKeywords } from "../DatabasesKeywords/PgSQL";
+import { PrimaryKey, TableMeta } from "../../services/Connections";
 
 export const truncateString = (str: string, num: number) => {
   if (str.length > num) {
@@ -100,90 +101,6 @@ export const readTSVData = (tableData: QueryExecutionResult, showLabel: boolean,
   return TSV;
 };
 
-export const createSQLInsert = (
-  tableData: QueryExecutionResult,
-  schema: string,
-  tableName: string,
-  tableDefinition: boolean,
-  insertQuery: boolean = true
-) => {
-  let arrData = tableData.result;
-  let colsData = tableData.columns;
-  let keys = colsData.map((k) => k.name).join(",");
-  let sql = "";
-  let create_table = `CREATE TABLE ${tableName}(\r\n`;
-
-  if (tableDefinition) {
-    let row = "";
-    for (let i = 0; i < colsData.length; i++) {
-      row += `${colsData[i].name}  \t  ${colsData[i].dataType},\r\n`;
-    }
-
-    create_table += row + ");";
-    sql += `${create_table} \r\n\r\n`;
-  }
-
-  //1st loop is to extract each row
-
-  if (insertQuery) {
-    arrData.map((d) => {
-      let sql_insert = "INSERT INTO " + schema + "." + tableName;
-      if (schema === "default") {
-        sql_insert = "INSERT INTO " + tableName;
-      }
-
-      let keyName = ` (${keys}) `;
-      sql_insert += keyName;
-      let value: any[] = [];
-
-      colsData.map((c) => {
-        if (isNumberDataType(c.dataType)) {
-          value.push(d[c.name]);
-        } else {
-          value.push(`'${d[c.name]}'`);
-        }
-      });
-      let joinValue = value.join(",");
-
-      sql_insert += `VALUES(${joinValue});\r\n`;
-      sql += sql_insert;
-    });
-  }
-
-  return sql;
-};
-
-export const createSQLUpdate = (tableData: QueryExecutionResult, schema: string, tableName: string, oldColData?: any) => {
-  let arrData = tableData.result;
-  let colsData = tableData.columns;
-  let sql = "";
-
-  arrData.map((d) => {
-    let sql_update = "UPDATE " + schema + "." + tableName + "\r\n" + "SET ";
-    let condition = "WHERE ";
-
-    colsData.map((c) => {
-      if (isNumberDataType(c.dataType)) {
-        sql_update += `${c.name} = ${d[c.name]},`;
-      } else {
-        sql_update += ` ${c.name} = '${d[c.name]}',`;
-      }
-    });
-
-    Object.entries(oldColData ?? d).map(([key, value], i) => {
-      if (Object.entries(oldColData ?? d).length === i + 1) {
-        condition += `${key} =${typeof value === "number" ? value : `'${value}'`}`;
-      } else {
-        condition += `${key} = ${typeof value === "number" ? value : `'${value}'`} AND `;
-      }
-    });
-    sql_update = sql_update.slice(0, -1);
-    sql_update += `\r\n${condition};\r\n\r\n`;
-    sql += sql_update;
-  });
-  return sql;
-};
-
 const fallbackCopyTextToClipboard = (text: string, message: MessageApi) => {
   var textArea = document.createElement("textarea");
   textArea.value = text;
@@ -208,7 +125,7 @@ const fallbackCopyTextToClipboard = (text: string, message: MessageApi) => {
   document.body.removeChild(textArea);
 };
 
-export const copyTextToClipboard = (text: string, message: MessageApi) => {
+export const copyTextToClipboard = (text: string) => {
   if (!navigator.clipboard) {
     fallbackCopyTextToClipboard(text, message);
     return;
@@ -416,5 +333,16 @@ export const isNumberDataType = (dataType: string) => {
     "real",
     "double precision",
     "smallserial",
-  ].includes(dataType.toLowerCase());
+  ].includes(dataType?.toLowerCase());
+};
+
+export const extractPkeyfromTable = (allTables: TableMeta, tblName: string): PrimaryKey[] => {
+  let pkeys: PrimaryKey[] = [];
+  Object.entries(allTables).map(([tableName, value]) => {
+    if (tableName === tblName) {
+      pkeys = value?.primaryKeys ? value.primaryKeys : [];
+    }
+  });
+
+  return pkeys;
 };

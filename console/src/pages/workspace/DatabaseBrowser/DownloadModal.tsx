@@ -4,17 +4,13 @@ import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
 import { Button, Input, Modal, Select, Space, Checkbox, message } from "antd";
 import { SwitcherTwoTone } from "@ant-design/icons";
 import { Controlled as Codemirror } from "react-codemirror2";
-import {
-  createSQLInsert,
-  readCSVData,
-  readTSVData,
-  createSQLUpdate,
-  donwloadFile,
-  copyTextToClipboard,
-} from "../../../components/utils/utils";
+import { readCSVData, readTSVData, donwloadFile, copyTextToClipboard } from "../../../components/utils/utils";
 import type { CheckboxChangeEvent } from "antd/es/checkbox";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
+import { PrimaryKey } from "../../../services/Connections";
+import DBOperations from "../../../components/DBOperation/DBOperation";
+import { EditorLang } from "./DatabaseBrowser";
 const { Option } = Select;
 
 export type Extractor = "sql_insert" | "csv" | "tsv" | "json" | "sql_update";
@@ -23,6 +19,44 @@ const editorOptions = {
   mode: "shell",
   theme: "material",
   lineNumbers: true,
+};
+
+const getExtracterOpt = (dbLang: EditorLang) => {
+  switch (dbLang) {
+    case "pgsql":
+      return [
+        {
+          label: "PGSQL Insert",
+          value: "sql_insert",
+        },
+        {
+          label: "PGSQL Update",
+          value: "sql_update",
+        },
+      ];
+    case "cql":
+      return [
+        {
+          label: "CQL Insert",
+          value: "sql_insert",
+        },
+        {
+          label: "CQL Update",
+          value: "sql_update",
+        },
+      ];
+    case "mysql":
+      return [
+        {
+          label: "MySQL Insert",
+          value: "sql_insert",
+        },
+        {
+          label: "MySQL Update",
+          value: "sql_update",
+        },
+      ];
+  }
 };
 
 interface DownloadInfo {
@@ -42,7 +76,9 @@ const DownloadModal: FC<{
   connectionId: number;
   dbName: string;
   tableData: QueryExecutionResult;
-}> = ({ isDownloadModal, closeDownloadModal, schema, tableName, dbName, tableData }) => {
+  dbOps: DBOperations;
+  dbLang: EditorLang;
+}> = ({ isDownloadModal, closeDownloadModal, schema, tableName, dbName, tableData, dbOps, dbLang }) => {
   const [downloadInfo, setDownloadInfo] = useState<DownloadInfo>({
     extractor: "sql_insert",
     editorLang: "sql",
@@ -58,7 +94,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: createSQLInsert(tableData, schema, tableName, false),
+        downContent: dbOps.method(tableData.result, tableData.columns).createInsertQry(),
         isTableDefinition: false,
       });
     } else if (value === "sql_update") {
@@ -66,7 +102,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: createSQLUpdate(tableData, schema, tableName),
+        downContent: dbOps.method(tableData.result, tableData.columns).createUpdateQry(null),
       });
     } else if (value === "json") {
       setDownloadInfo({
@@ -104,7 +140,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: "sql_insert",
         editorLang: "sql",
-        downContent: createSQLInsert(tableData, schema, tableName, false),
+        downContent: dbOps.method(tableData.result, tableData.columns).createInsertQry(),
         isTableDefinition: false,
       });
     }
@@ -135,7 +171,7 @@ const DownloadModal: FC<{
       setDownloadInfo({
         ...downloadInfo,
         isTableDefinition: checked,
-        downContent: createSQLInsert(tableData, schema, tableName, checked),
+        downContent: dbOps.method(tableData.result, tableData.columns).createInsertQry(true, checked),
       });
     }
   };
@@ -152,7 +188,7 @@ const DownloadModal: FC<{
           <Button onClick={closeDownloadModal} className='cancel-modal-btn'>
             Cancel
           </Button>
-          <Button className='copy-text-btn' onClick={() => copyTextToClipboard(downloadInfo.downContent, message)}>
+          <Button className='copy-text-btn' onClick={() => copyTextToClipboard(downloadInfo.downContent)}>
             Copy to Clipboard
           </Button>
           <Button type='primary' onClick={onDownloadData}>
@@ -180,8 +216,13 @@ const DownloadModal: FC<{
               filterOption={(input: any, option: any) =>
                 (option!.children as unknown as string).toLowerCase().includes(input.toLowerCase())
               }>
-              <Option value='sql_insert'>SQL Insert</Option>
-              <Option value='sql_update'>SQL Update</Option>
+              {getExtracterOpt(dbLang).map((o, i) => {
+                return (
+                  <Option key={i} value={o.value}>
+                    {o.label}
+                  </Option>
+                );
+              })}
               <Option value='csv'>CSV</Option>
               <Option value='tsv'>TSV</Option>
               <Option value='json'>JSON</Option>

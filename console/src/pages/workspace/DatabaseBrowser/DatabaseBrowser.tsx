@@ -154,6 +154,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     columnNames: [],
     loading: true,
   });
+  const [allTables, setAllTables] = useState<TableMeta>({});
 
   const enableEditMode = () => {
     setDBState({ ...dbState, editMode: true });
@@ -199,8 +200,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
       (s) => {
         if (s.productName.toLowerCase() === "mysql") {
           Connections.listSchemaObjects(databaseId, "default", (objs) => {
-            setDBState({
-              ...dbState,
+            setDBState((prv) => ({
+              ...prv,
               loading: false,
               productName: s.productName,
               dbName: s.dbName,
@@ -212,7 +213,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               schemas: [],
               selectedSchema: "default",
               editorLang: "mysql",
-            });
+            }));
           });
         } else {
           Connections.listSchemas(databaseId, (schemas) => {
@@ -630,6 +631,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   React.useEffect(() => {
     if (dbState.editorLang === "mysql") {
       Connections.listTablesMeta(databaseId, "default", (res) => {
+        setAllTables(res);
         let tblNames: Tables[] = [];
         let colsNames: Columns[] = [];
         Object.entries(res).map(([tableName, value]) => {
@@ -651,6 +653,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           let colsNames: Columns[] = [];
           schemas.map((schema) => {
             Connections.listTablesMeta(databaseId, schema, (res) => {
+              setAllTables((prv) => ({ ...prv, ...res }));
               Object.entries(res).map(([tableName, value]) => {
                 tblNames.push({
                   tblName: tableName,
@@ -671,7 +674,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         }
       });
     }
-  }, []);
+  }, [dbState.editorLang]);
 
   React.useEffect(() => {
     if (monacoIns && tablesMeta.columnNames.length > 0) {
@@ -794,13 +797,17 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`t-${pane.id}`}>
-                          <TablePane
-                            productName={dbState.productName}
-                            connectionId={databaseId}
-                            schema={dbState.selectedSchema}
-                            dbName={dbState.dbName}
-                            name={pane.name}
-                          />
+                          {Object.entries(allTables).length > 0 && (
+                            <TablePane
+                              productName={dbState.productName}
+                              connectionId={databaseId}
+                              schema={dbState.selectedSchema}
+                              dbName={dbState.dbName}
+                              name={pane.name}
+                              allTables={allTables}
+                              editorLang={dbState.editorLang}
+                            />
+                          )}
                         </TabPane>
                       )}
                       {pane.objectType === "query" && (

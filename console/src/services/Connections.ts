@@ -69,7 +69,7 @@ export interface TableObjects {
 export interface TableMeta {
   [key: string]: {
     columns: ColumnDetails[];
-    primaryKey: PrimaryKey[];
+    primaryKeys: PrimaryKey[];
     foreignKeys: ForeignKeys[];
     indexes: TableIndex[];
   };

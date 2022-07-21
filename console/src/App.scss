@@ -259,3 +259,9 @@
 .ant-tree-switcher {
   width: 15px;
 }
+
+// ========== global menu style ================
+
+.ant-menu-item:active {
+  background: transparent;
+}
