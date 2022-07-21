@@ -19,18 +19,18 @@ export class CQlOperation {
     return this.executeQuery(query);
   }
 
-  updateQuery(selectedRows: any[], primaryKeys: PrimaryKey[]) {
-    const query = this.createUpdateQry(selectedRows[0], primaryKeys);
+  updateQuery(selectedRows: any[]) {
+    const query = this.createUpdateQry(selectedRows[0]);
     return this.executeQuery(query);
   }
 
-  deleteQuery(primaryKeys: PrimaryKey[]): any {
+  deleteQuery(): any {
     let delete_query = "";
     this.rowsData.map((r) => {
       delete_query += `DELETE FROM ${this.dbInfo.selectedSchema}.${this.dbInfo.tableName} WHERE `;
 
       Object.entries(r).map(([key, value], i) => {
-        if (!!primaryKeys.find((p) => p.colName === key)) {
+        if (!!this.dbInfo.primaryKeys.find((p) => p.colName === key)) {
           delete_query += `${key} =${typeof value === "number" ? value : `'${value}'`}; \n`;
         }
       });
@@ -45,30 +45,26 @@ export class CQlOperation {
     return Connections.executeQuery(this.connectionId, query);
   }
 
-  createInsertQry(primaryKeys: PrimaryKey[] = [], insertQuery: boolean = true, tableDefinition: boolean = false) {
+  createInsertQry(insertQuery: boolean = true, tableDefinition: boolean = false) {
     let arrData = this.rowsData;
     let colsData = this.colsNames;
     let keys = colsData.map((k) => k.name).join(",");
     let cql = "";
-    let create_table = `CREATE TABLE ${this.dbInfo.tableName}(\r\n`;
+    let create_table = `CREATE TABLE ${this.dbInfo.selectedSchema}.${this.dbInfo.tableName}(\r\n`;
 
     if (tableDefinition) {
       let row = "";
       for (let i = 0; i < colsData.length; i++) {
-        if (colsData.length === i + 1 && primaryKeys.length === 0) {
-          row += `${colsData[i].name}  \t  ${colsData[i].dataType}${
-            primaryKeys.find((p) => p.colName === colsData[i].name) ? " PRIMARYKEY" : ""
-          }\r\n`;
+        if (colsData.length === i + 1 && this.dbInfo.primaryKeys.length === 0) {
+          row += `${colsData[i].name}  \t  ${colsData[i].dataType}\r\n`;
         } else {
-          row += `${colsData[i].name}  \t  ${colsData[i].dataType}${
-            primaryKeys.find((p) => p.colName === colsData[i].name) ? " PRIMARYKEY" : ""
-          },\r\n`;
+          row += `${colsData[i].name}  \t  ${colsData[i].dataType},\r\n`;
         }
       }
 
-      if (primaryKeys.length > 0) {
+      if (this.dbInfo.primaryKeys.length > 0) {
         let pkeys: any[] = [];
-        primaryKeys.map((p) => {
+        this.dbInfo.primaryKeys.map((p) => {
           pkeys.push(p.colName);
         });
         let joinPkeys = pkeys.join(",");
@@ -105,7 +101,7 @@ export class CQlOperation {
     return cql;
   }
 
-  createUpdateQry(oldColData: any[] = null, primaryKeys: PrimaryKey[] = []) {
+  createUpdateQry(oldColData: any[] = null) {
     let arrData = this.rowsData;
     let colsData = this.colsNames;
     let cql = "";
@@ -125,7 +121,7 @@ export class CQlOperation {
       });
 
       Object.entries(oldColData ?? d).map(([key, value], i) => {
-        if (!!primaryKeys.find((p) => p.colName === key)) {
+        if (!!this.dbInfo.primaryKeys.find((p) => p.colName === key)) {
           condition += `${key} =${typeof value === "number" ? value : `'${value}'`}`;
         }
       });

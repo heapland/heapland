@@ -69,9 +69,11 @@ const TablePane: React.FC<{
   allTables: TableMeta;
   editorLang: EditorLang;
 }> = ({ name, schema, connectionId, dbName, productName, allTables, editorLang }) => {
-  const dbOps = new DBOperations(productName, connectionId, name, schema);
+  const [primaryKeys, setPrimarykeys] = useState<PrimaryKey[]>([]);
 
+  const dbOps = new DBOperations(productName, connectionId, name, schema, primaryKeys);
   const [tableData, setTableData] = useState<{ loading: boolean; result?: QueryExecutionResult }>({ loading: true });
+
   const [showTableData, setShowTableData] = useState<{ currentPage: number; pageSize: number }>({
     currentPage: 1,
     pageSize: 50,
@@ -86,7 +88,6 @@ const TablePane: React.FC<{
   const [isNewRow, setIsNewRow] = useState<any>(false);
   const [selectedRows, setSelectedRows] = useState<any[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<any[]>([]);
-  const [primaryKeys, setPrimarykeys] = useState<PrimaryKey[]>([]);
 
   useEffect(() => {
     setTableData({ loading: true });
@@ -164,7 +165,7 @@ const TablePane: React.FC<{
           ...item,
           ...row,
         });
-        const res = await dbOps.method([row], tableData.result.columns).updateQuery(selectedRows, primaryKeys);
+        const res = await dbOps.method([row], tableData.result.columns).updateQuery(selectedRows);
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
           setRefres(!refres);
@@ -176,6 +177,7 @@ const TablePane: React.FC<{
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
         setSelectedRows([]);
+        setSelectedRowKeys([]);
       } else {
         newData.push(row);
         const res = await dbOps.method([row], tableData.result.columns).addQuery();
@@ -190,6 +192,7 @@ const TablePane: React.FC<{
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
         setSelectedRows([]);
+        setSelectedRowKeys([]);
         setIsNewRow(false);
       }
     } catch (errInfo) {
@@ -227,7 +230,7 @@ const TablePane: React.FC<{
   });
 
   const onDeleteRow = async (rows: any[]) => {
-    const res = await dbOps.method(rows, tableData.result.columns).deleteQuery(primaryKeys);
+    const res = await dbOps.method(rows, tableData.result.columns).deleteQuery();
 
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
@@ -309,7 +312,6 @@ const TablePane: React.FC<{
           isDownloadModal={isDownloadModal}
           closeDownloadModal={closeDownloadModal}
           tableData={tableData.result}
-          primaryKeys={primaryKeys}
           dbLang={editorLang}
           dbOps={dbOps}
         />
@@ -329,9 +331,7 @@ const TablePane: React.FC<{
               <Button
                 type='primary'
                 onClick={() =>
-                  copyTextToClipboard(
-                    dbOps.method(tableData.result.result, tableData.result.columns).createInsertQry(primaryKeys, false, true)
-                  )
+                  copyTextToClipboard(dbOps.method(tableData.result.result, tableData.result.columns).createInsertQry(false, true))
                 }>
                 Copy to Clipboard
               </Button>
@@ -341,7 +341,7 @@ const TablePane: React.FC<{
           <Codemirror
             className=''
             autoCursor={true}
-            value={dbOps.method(tableData.result.result, tableData.result.columns).createInsertQry(primaryKeys, false, true)}
+            value={dbOps.method(tableData.result.result, tableData.result.columns).createInsertQry(false, true)}
             options={editorOptions}
             onBeforeChange={(editor, data, value: string) => {}}
             onChange={(editor, data, value) => {}}

@@ -46,7 +46,7 @@ class PGSQlOperation {
     return Connections.executeQuery(this.connectionId, query);
   }
 
-  createInsertQry(primaryKeys: PrimaryKey[] = [], insertQuery: boolean = true, tableDefinition: boolean = false) {
+  createInsertQry(insertQuery: boolean = true, tableDefinition: boolean = false) {
     let arrData = this.rowsData;
     let colsData = this.colsNames;
     let keys = colsData.map((k) => k.name).join(",");
@@ -56,16 +56,16 @@ class PGSQlOperation {
     if (tableDefinition) {
       let row = "";
       for (let i = 0; i < colsData.length; i++) {
-        if (colsData.length === i + 1 && primaryKeys.length === 0) {
+        if (colsData.length === i + 1 && this.dbInfo.primaryKeys.length === 0) {
           row += `${colsData[i].name}  \t  ${colsData[i].dataType}\r\n`;
         } else {
           row += `${colsData[i].name}  \t  ${colsData[i].dataType},\r\n`;
         }
       }
 
-      if (primaryKeys.length > 0) {
+      if (this.dbInfo.primaryKeys.length > 0) {
         let pkeys: any[] = [];
-        primaryKeys.map((p) => {
+        this.dbInfo.primaryKeys.map((p) => {
           pkeys.push(p.colName);
         });
         let joinPkeys = pkeys.join(",");

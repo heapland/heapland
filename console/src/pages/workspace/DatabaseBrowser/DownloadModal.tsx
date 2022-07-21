@@ -76,10 +76,9 @@ const DownloadModal: FC<{
   connectionId: number;
   dbName: string;
   tableData: QueryExecutionResult;
-  primaryKeys: PrimaryKey[];
   dbOps: DBOperations;
   dbLang: EditorLang;
-}> = ({ isDownloadModal, closeDownloadModal, schema, tableName, dbName, tableData, primaryKeys, dbOps, dbLang }) => {
+}> = ({ isDownloadModal, closeDownloadModal, schema, tableName, dbName, tableData, dbOps, dbLang }) => {
   const [downloadInfo, setDownloadInfo] = useState<DownloadInfo>({
     extractor: "sql_insert",
     editorLang: "sql",
@@ -103,7 +102,7 @@ const DownloadModal: FC<{
         ...downloadInfo,
         extractor: value,
         editorLang: "sql",
-        downContent: dbOps.method(tableData.result, tableData.columns).createUpdateQry(null, primaryKeys),
+        downContent: dbOps.method(tableData.result, tableData.columns).createUpdateQry(null),
       });
     } else if (value === "json") {
       setDownloadInfo({
@@ -172,7 +171,7 @@ const DownloadModal: FC<{
       setDownloadInfo({
         ...downloadInfo,
         isTableDefinition: checked,
-        downContent: dbOps.method(tableData.result, tableData.columns).createInsertQry(primaryKeys, true, checked),
+        downContent: dbOps.method(tableData.result, tableData.columns).createInsertQry(true, checked),
       });
     }
   };
