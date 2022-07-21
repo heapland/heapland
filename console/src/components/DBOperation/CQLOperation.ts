@@ -111,8 +111,7 @@ export class CQlOperation {
       let condition = "WHERE ";
 
       colsData.map((c, i) => {
-        console.log(!!Object.entries(oldColData).find(([key, value]) => value === d[c.name]));
-        if (!!Object.entries(oldColData).find(([key, value]) => value === d[c.name])) return;
+        if (!!this.dbInfo.primaryKeys.find((p) => p.colName === c.name)) return;
         if (isNumberDataType(c.dataType)) {
           cql_update += `${c.name} = ${d[c.name]},`;
         } else {
