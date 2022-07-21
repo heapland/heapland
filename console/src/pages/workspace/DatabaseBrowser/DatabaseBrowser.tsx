@@ -383,13 +383,13 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     });
   };
 
-  useEffect(() => {
-    if (dbState.selectedSchema) {
-      Connections.listTables(databaseId, dbState.selectedSchema, dbState.productName, (tables) => {
-        setDBTables({ ...dbTables, tables: tables, loading: false });
-      });
-    }
-  }, [dbState.selectedSchema, databaseId]);
+  // useEffect(() => {
+  //   if (dbState.selectedSchema) {
+  //     Connections.listTables(databaseId, dbState.selectedSchema, dbState.productName, (tables) => {
+  //       setDBTables({ ...dbTables, tables: tables, loading: false });
+  //     });
+  //   }
+  // }, [dbState.selectedSchema, databaseId]);
 
   const handleDeleteConnection = () => {
     Connections.deleteConnection(databaseId, (r) => {
@@ -737,7 +737,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 <TabPane tab='Database Objects' key='database-object'>
                   <Skeleton title={false} active avatar={false} paragraph={{ rows: 4, width: "100%" }} loading={dbState.loading}>
                     <div style={{ padding: "0 10px" }}>
-                      <Space size={4}>
+                      <Space size={4} style={{margin: "10px 0"}}>
                         <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
                           <FaDatabase />
                         </i>

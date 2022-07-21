@@ -1,5 +1,7 @@
 package web.controllers
 
+import java.sql.Timestamp
+
 import akka.actor.ActorSystem
 import akka.stream.Materializer
 import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
@@ -14,7 +16,7 @@ import web.services.{DatabaseServiceManager, MemberService, SecretStore, Workspa
 import play.api.cache.SyncCacheApi
 import play.api.i18n.I18nSupport
 import play.api.mvc._
-import play.api.libs.json.{JsError, Json, Reads}
+import play.api.libs.json._
 import play.api.mvc.{ControllerComponents, InjectedController}
 import play.cache.NamedCache
 import utils.auth.DefaultEnv
@@ -184,6 +186,23 @@ class DatabasesController @Inject()(
     }
   }
 
+  def listTablesMetadata(connectionId: Long, schema: String) = silhouette.UserAwareAction.async { implicit request =>
+    handleMemberRequest(request, memberService) { (roles, profile) =>
+      if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
+        usingDBConnection(profile.workspaceId, connectionId, request.path) { (_, dbm) =>
+          dbm
+            .listTablesDetail(schema)
+            .fold(
+              err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
+              res => Ok(Json.toJson(res))
+            )
+        }
+      } else {
+        Future.successful(Forbidden)
+      }
+    }
+  }
+
   def executeQuery(connectionId: Long) = silhouette.UserAwareAction.async(validateJson[RequestQueryExecution]) { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
@@ -205,6 +224,8 @@ class DatabasesController @Inject()(
     }
   }
 
+
+
   def getTableData(connectionId: Long, schema: String, table: String) = silhouette.UserAwareAction.async { implicit request =>
     handleMemberRequest(request, memberService) { (roles, profile) =>
       if (hasWorkspaceViewPermission(profile, roles, profile.orgId, profile.workspaceId)) {
@@ -214,9 +235,11 @@ class DatabasesController @Inject()(
             .fold(
               err => InternalServerError(Json.toJson(InternalServerErrorResponse(request.path, err.getMessage))),
               res => {
-
-                val str = mapper.writeValueAsString(res)
-                Ok(Json.parse(str))
+//                val parsedJson = Json.toJson(res.result)
+//                val parsedStr = parsedJson.toString()
+//
+//                val str = mapper.writeValueAsString(res)
+                Ok(Json.toJson(res))
 
               }
             )

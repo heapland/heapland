@@ -4,11 +4,10 @@ import java.net.InetSocketAddress
 import java.util.concurrent.ConcurrentHashMap
 
 import com.datastax.oss.driver.api.core.{CqlIdentifier, CqlSession}
-import com.datastax.oss.driver.api.core.cql.{ResultSet, Row}
-import com.heapland.services.{CassandraConnection, ColumnMeta, DatabaseServer, DatabaseServiceProvider, QueryExecutionResult, SchemaObjects, TableKey, TableMeta}
+import com.datastax.oss.driver.api.core.cql.Row
+import com.heapland.services.{CassandraConnection, ColumnDetail, ColumnMeta, DatabaseServer, DatabaseServiceProvider, PrimaryKey, QueryExecutionResult, SchemaObjects, TableIndex, TableKey, TableMeta}
 
 import scala.collection.mutable
-import scala.collection.mutable.ArrayBuffer
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
@@ -85,12 +84,31 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
 
   }
 
-  override def listSchemaObjects(schema: String, config: CassandraConnection): Try[SchemaObjects] = ???
+  override def listSchemaObjects(schema: String, config: CassandraConnection): Try[SchemaObjects] = {
+    listTables(schema, config).map(tables => SchemaObjects(views = Seq.empty[String], tables = tables, routines = Seq.empty))
+  }
 
-  override def describeTable(schema: String, table: String, config: CassandraConnection): Try[TableMeta] = ???
+  override def listTablesWithMeta(schema: String, config: CassandraConnection): Try[Map[String, TableMeta]] = listTables(schema, config).flatMap(tables => {
+    Try(tables.map(t => describeTable(schema, t, config).map(tm  => t -> tm)).map(_.get).toMap)
+  })
+
+  override def describeTable(schema: String, table: String, config: CassandraConnection): Try[TableMeta] = usingSession(config){ session =>
+  val ps = session.prepare("SELECT column_name, kind, type FROM system_schema.columns WHERE keyspace_name = ? and table_name = ?")
+    val bs = ps.bind(schema, table)
+    val rs = session.execute(bs)
+    val columns = rs.asScala.map(r =>
+      ColumnDetail(name = r.getString("column_name"),
+      dataType = r.getString("type"),
+      isPrimaryKey = r.getString("kind").equalsIgnoreCase("partition_key"), false))
+      val partitionKeys = columns.filter(c => c.isPrimaryKey).map(c => PrimaryKey(colName = c.name, name = ""))
+    val indexPS = session.prepare("SELECT index_name, options FROM system_schema.indexes WHERE keyspace_name =? and table_name = ?").bind(schema, table)
+    val indexRS = session.execute(indexPS)
+    val indexes = indexRS.asScala.map(r => TableIndex(name = r.getString("index_name"), col = r.getObject("options").toString))
+    TableMeta(columns = columns.toSeq, primaryKeys = partitionKeys.toSeq, Seq.empty, indexes.toSeq)
+  }
 
   override def tableDataView(schema: String, table: String, config: CassandraConnection): Try[QueryExecutionResult] =
-    executeQuery(s"SELECT * FROM ${schema}.${table} LIMIT 10", config)
+    executeQuery(s"SELECT * FROM ${schema}.${table} LIMIT 100", config)
 
   override def executeQuery(q: String, config: CassandraConnection): Try[QueryExecutionResult] = usingSession(config) { session =>
     val rs          = session.execute(q)
@@ -107,7 +125,5 @@ object CassandraService extends DatabaseServiceProvider[CassandraConnection] {
   }
 
   override def executeUpdate(q: String, config: CassandraConnection): Try[Int] = executeQuery(q, config).map(_.result.size)
-
-  override def getTableKeys(catalog: String, schema: String, table: String, config: CassandraConnection): Try[Seq[TableKey]] = ???
 
 }
