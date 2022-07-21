@@ -30,16 +30,14 @@ import "./FileBrowser.scss";
 import { bytesToSize, getReadableTime } from "../../services/Utils";
 import { FaFile, FaFileCsv, FaFileImage, FaFilePdf } from "react-icons/fa";
 import VirtualList from "rc-virtual-list";
-import ContentLoader from "react-content-loader";
 import Connections from "../../services/Connections";
 import ServiceConnectionBuilder from "../../pages/workspace/Connections/ServiceConnectionBuilder";
-import { cwd } from "process";
 import WebService from "../../services/WebService";
 import { UploadChangeParam } from "antd/lib/upload";
 import { UploadFile } from "antd/lib/upload/interface";
-import { string } from "prop-types";
 import moment from "moment";
 import { UserContext } from "../../store/User";
+import "./FileBrowser.scss";
 
 const FileIcon: React.FC<{ isDirectory: boolean; fileType: string }> = ({ isDirectory, fileType }) => {
   if (isDirectory) {
@@ -243,7 +241,7 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             <img style={{ marginRight: 4 }} src={S3Img} />
             <div>{name}</div>
           </div>
-          <div>&gt;</div>
+          <div className='right-carret'>&gt;</div>
           <Breadcrumb separator='>'>
             {cwd.map((d, i) => (
               <Breadcrumb.Item key={i}>
@@ -254,14 +252,14 @@ export const FileBrowser: React.FC<FileBrowserProps> = ({
             ))}
           </Breadcrumb>
         </Space>
-        <div>
+        <div className='connection-edit-btn'>
           <Dropdown.Button overlay={menu} onClick={showEditDrawer} placement='bottomLeft' trigger={["click"]} icon={<MdOutlineMoreHoriz />}>
             Edit
           </Dropdown.Button>
         </div>
       </div>
       {!hasError && (
-        <div className='file-browser-controls'>
+        <div className='file-browser-controls '>
           <Space>
             <Tooltip title='Refresh'>
               <Button size='small' icon={<MdSync />} onClick={(e) => updateCWD(cwd)}></Button>
