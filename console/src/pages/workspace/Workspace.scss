@@ -38,7 +38,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: $lt-card-bg;
+      background: var(--background-color);
       border-bottom: 1px solid var(--border-color);
 
       .btn-breadcrumb {
@@ -50,14 +50,33 @@
         padding: 4px 8px;
         cursor: pointer;
         border-radius: 4px;
+        color: var(--secondary-color);
 
         &:hover {
           background-color: var(--hover-bg);
         }
       }
+      .right-carret,
+      .ant-breadcrumb-separator {
+        color: var(--secondary-color);
+      }
 
       img {
         height: 20px;
+      }
+
+      .connection-edit-btn {
+        .ant-dropdown-button .ant-btn {
+          &:last-child {
+            border-left-color: var(--border-color);
+          }
+          color: var(--primary-color);
+          border-color: var(--btn-border);
+          background-color: var(--default-btn-color);
+          &:hover {
+            border-right-color: var(--border-color);
+          }
+        }
       }
     }
   }

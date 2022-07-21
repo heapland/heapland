@@ -51,7 +51,7 @@ class PGSQlOperation {
     let colsData = this.colsNames;
     let keys = colsData.map((k) => k.name).join(",");
     let pgsql = "";
-    let create_table = `CREATE TABLE ${this.dbInfo.tableName}(\r\n`;
+    let create_table = `CREATE TABLE ${this.dbInfo.selectedSchema}.${this.dbInfo.tableName}(\r\n`;
 
     if (tableDefinition) {
       let row = "";

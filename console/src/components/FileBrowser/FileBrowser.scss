@@ -7,11 +7,13 @@ div.file-meta {
 div.file-info-drawer {
   .ant-statistic-title {
     font-size: 12px;
+    color: var(--label-color);
   }
   .ant-statistic-content {
     font-size: 12px;
     font-weight: bold;
     margin-bottom: 10px;
+    color: var(--secondary-color);
   }
 }
 
@@ -80,7 +82,6 @@ div.file-info-drawer {
     align-items: center;
     border: none;
     justify-content: center;
-
     span {
       margin-left: 4px;
     }
@@ -91,6 +92,12 @@ div.file-info-drawer {
     svg {
       font-size: 13px;
     }
+  }
+
+  .refres-btn,
+  .new-dir-btn,
+  .upload-btn {
+    background: var(--default-btn-color);
   }
 
   button.ant-btn-icon-only {
@@ -107,23 +114,20 @@ div.file-info-drawer {
 
 .file-list {
   .file-item {
-    background: $lt-bg;
+    background: var(--background-color);
     padding: 8px 20px;
-    background-color: $lt-card-bg;
-    transition: all 0.2s ease-in-out;
+    transition: hover 0.2s ease-in-out;
+    border-bottom-color: var(--border-color);
     cursor: pointer;
+    &:first-child {
+      border-top: 1px solid var(--border-color);
+    }
 
     &:hover {
-      background-color: $lt-row-hover;
+      background-color: var(--hover-bg);
 
       ul.ant-list-item-action {
         display: block;
-      }
-
-      div.ant-list-item-meta-avatar {
-        & > i {
-          color: $lt-console;
-        }
       }
     }
   }
@@ -131,10 +135,12 @@ div.file-info-drawer {
     display: none;
     li {
       padding: 0 2px;
-
       button.ant-btn-icon-only {
         width: 24px;
         height: 24px;
+      }
+      .ant-list-item-action-split {
+        display: none;
       }
 
       & > button {
@@ -142,7 +148,7 @@ div.file-info-drawer {
         align-items: center;
         border: none;
         justify-content: center;
-
+        background: var(--default-btn-color);
         svg {
           color: $lt-font-dull-color;
           transition: all 0.5s;
@@ -161,12 +167,12 @@ div.file-info-drawer {
     }
   }
   h4.ant-list-item-meta-title {
-    color: $lt-font-color;
+    color: var(--secondary-color);
     font-size: 13px;
     line-height: 0.7;
   }
   .ant-list-item-meta-description {
-    color: $lt-font-dull-color;
+    color: var(--secondary-color);
     font-size: 10px;
     line-height: 1;
   }
