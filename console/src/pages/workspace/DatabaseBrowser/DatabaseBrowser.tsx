@@ -452,8 +452,12 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   isLeaf: true,
                   key: `${key}--${keyName}--${r?.name}`,
                   icon: (
-                    <i className={`column-icon`}>
-                      <ColumnIcon dataType={r?.dataType ?? r.name} />
+                    <i className='column-icon'>
+                      {["primaryKeys", "indexes", "foreignKeys"].includes(keyName) ? (
+                        <ColumnIcon dataType='keyIcon' />
+                      ) : (
+                        <ColumnIcon dataType={r?.dataType} />
+                      )}
                     </i>
                   ),
                 };
@@ -629,7 +633,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         let tblNames: Tables[] = [];
         let colsNames: Columns[] = [];
         Object.entries(res).map(([tableName, value]) => {
-          tblNames.push({ tblName: tableName, detail: `` });
+          tblNames.push({ tblName: tableName, detail: ``, insertText: tableName });
           value.columns.map((col: ColumnDetails) => {
             colsNames.push({
               colName: col.name,
@@ -648,7 +652,11 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           schemas.map((schema) => {
             Connections.listTablesMeta(databaseId, schema, (res) => {
               Object.entries(res).map(([tableName, value]) => {
-                tblNames.push({ tblName: tableName, detail: `Table in ${getTableNameIn(dbState.editorLang)} : ${schema}` });
+                tblNames.push({
+                  tblName: tableName,
+                  detail: `Table in ${getTableNameIn(dbState.editorLang)} : ${schema}`,
+                  insertText: `${schema}.${tableName}`,
+                });
                 value.columns.map((col: ColumnDetails) => {
                   colsNames.push({
                     colName: col.name,
@@ -786,7 +794,13 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`t-${pane.id}`}>
-                          <TablePane connectionId={databaseId} schema={dbState.selectedSchema} dbName={dbState.dbName} name={pane.name} />
+                          <TablePane
+                            productName={dbState.productName}
+                            connectionId={databaseId}
+                            schema={dbState.selectedSchema}
+                            dbName={dbState.dbName}
+                            name={pane.name}
+                          />
                         </TabPane>
                       )}
                       {pane.objectType === "query" && (

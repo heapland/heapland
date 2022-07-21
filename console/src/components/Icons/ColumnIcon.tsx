@@ -11,14 +11,12 @@ import TextIcon from "./TextIcon";
 
 const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
   // console.log(dataType);
-  if (dataType.includes("_pkey")) {
-    return <GoKey />;
-  }
   switch (dataType?.toLowerCase()) {
     case "varchar":
     case "text":
     case "char":
       return <TextIcon />;
+    case "uuid":
     case "serial":
     case "bigserial":
     case "bigint":
@@ -56,6 +54,8 @@ const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
       return <GeometryIcon />;
     case "circle":
       return <GeometryIcon />;
+    case "keyicon":
+      return <GoKey />;
     default:
       return <></>;
   }
