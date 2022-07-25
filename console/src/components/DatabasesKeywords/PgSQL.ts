@@ -1,4 +1,4 @@
-export interface completionInterface {
+export interface CompletionInterface {
   key: string;
   detail: string;
   insertText?: string;
@@ -109,7 +109,7 @@ export const pgsql_typeKeywords: string[] = [
   "void",
 ];
 
-export const pgsqlFunction: completionInterface[] = [
+export const pgsqlFunction: CompletionInterface[] = [
   {
     key: "AVG",
     detail: "Returns the average value",
@@ -182,7 +182,7 @@ export const pgsqlFunction: completionInterface[] = [
   },
 ];
 
-export const pgsqlKeywords: completionInterface[] = [
+export const pgsqlKeywords: CompletionInterface[] = [
   {
     key: "ADD",
     detail: "Adds a column in an existing table",
@@ -393,7 +393,7 @@ export const pgsqlKeywords: completionInterface[] = [
   },
 ];
 
-export const pgsqlSnippet: completionInterface[] = [
+export const pgsqlSnippet: CompletionInterface[] = [
   {
     key: "col",
     detail: "new column definitioin",
@@ -453,7 +453,7 @@ from ;
   },
 ];
 
-export const pgsqlDataTypes: completionInterface[] = [
+export const pgsqlDataTypes: CompletionInterface[] = [
   {
     key: "Boolean",
     detail:

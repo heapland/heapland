@@ -1,3 +1,5 @@
+import { CompletionInterface } from "./PgSQL";
+
 interface PGSQLKeywords {
   key: string;
   detail: string;
@@ -14,7 +16,7 @@ interface PGSQLSnippet {
   insertText: string;
 }
 
-export const operators: string[] = [
+export const cql_operators: string[] = [
   // Logical
   "ALL",
   "AND",
@@ -51,7 +53,7 @@ export const operators: string[] = [
   "MATCHED",
 ];
 
-export const builtinVariables: string[] = [
+export const cql_builtinVariables: string[] = [
   // Configuration
   "@@DATEFIRST",
   "@@DBTS",
@@ -94,7 +96,7 @@ export const builtinVariables: string[] = [
   "@@TOTAL_WRITE",
 ];
 
-export const typeKeywords: string[] = [
+export const cql_typeKeywords: string[] = [
   "bool",
   "byte",
   "ubyte",
@@ -119,7 +121,7 @@ export const typeKeywords: string[] = [
   "void",
 ];
 
-export const pgsqlFun: PGSQLFunction[] = [
+export const cqlFunction: CompletionInterface[] = [
   {
     key: "AVG",
     detail: "Returns the average value",
@@ -192,7 +194,11 @@ export const pgsqlFun: PGSQLFunction[] = [
   },
 ];
 
-export const pgsqlKeywords: PGSQLKeywords[] = [
+export const cqlKeywords: CompletionInterface[] = [
+  {
+    key: "KEYSPACE",
+    detail: "Adds a column in an existing table",
+  },
   {
     key: "ADD",
     detail: "Adds a column in an existing table",
@@ -203,7 +209,7 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
   },
   {
     key: "ALL",
-    detail: "	Returns true if all of the subquery values meet the condition",
+    detail: "Returns true if all of the subquery values meet the condition",
   },
   {
     key: "ALTER",
@@ -211,7 +217,7 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
   },
   {
     key: "AND",
-    detail: "	Only includes rows where both conditions is true",
+    detail: "Only includes rows where both conditions is true",
   },
   {
     key: "BACKUP DATABASE",
@@ -223,7 +229,7 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
   },
   {
     key: "CASE",
-    detail: "	Creates different outputs based on conditions",
+    detail: "Creates different outputs based on conditions",
   },
   {
     key: "CHECK",
@@ -231,7 +237,7 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
   },
   {
     key: "COLUMN",
-    detail: "	Changes the data type of a column or deletes a column in a table",
+    detail: "Changes the data type of a column or deletes a column in a table",
   },
   {
     key: "CONSTRAINT",
@@ -389,9 +395,17 @@ export const pgsqlKeywords: PGSQLKeywords[] = [
     key: "JOIN",
     detail: "	Joins tables",
   },
+  {
+    key: "PRIMARYKEY",
+    detail: "Make a primary key",
+  },
+  {
+    key: "PRIMARY KEY",
+    detail: "Make a primary key",
+  },
 ];
 
-export const pgsqlSnippet: PGSQLSnippet[] = [
+export const cqlSnippet: CompletionInterface[] = [
   {
     key: "col",
     detail: "new column definitioin",
@@ -431,9 +445,12 @@ export const pgsqlSnippet: PGSQLSnippet[] = [
     key: "tab",
     detail: "new table definition",
     insertText: `create table new_table
-  (    
-    col int not null
-  );
+(    
+  col int not null
+  ...,
+  ...,
+  PRIMARY KEY (col,...) 
+);
   `,
   },
   {
@@ -448,5 +465,78 @@ export const pgsqlSnippet: PGSQLSnippet[] = [
   select * 
   from ;
       `,
+  },
+];
+
+export const cqlDataTypes: CompletionInterface[] = [
+  {
+    key: "ascii",
+    detail: "Represents ASCII character string",
+    insertText: "ascii",
+  },
+  {
+    key: "bigint",
+    detail: "Represents 64-bit signed long",
+    insertText: "bigint",
+  },
+  {
+    key: "blob",
+    detail: "Represents arbitrary bytes",
+    insertText: "blob ",
+  },
+  {
+    key: "Boolean",
+    detail: `Represents true or false`,
+    insertText: "Boolean ",
+  },
+  {
+    key: "counter",
+    detail: "Represents counter column",
+    insertText: "counter",
+  },
+  {
+    key: "decimal",
+    detail: "Represents variable-precision decimal",
+    insertText: "decimal",
+  },
+  {
+    key: "float",
+    detail: "Represents 64-bit IEEE-754 floating point.",
+    insertText: "float",
+  },
+  {
+    key: "inet ",
+    detail: "Represents an IP address, IPv4 or IPv6",
+    insertText: "inet ",
+  },
+  {
+    key: "int ",
+    detail: "Represents 32-bit signed int",
+    insertText: "int ",
+  },
+  {
+    key: "text",
+    detail: "Represents UTF8 encoded string",
+    insertText: "text",
+  },
+  {
+    key: "timestamp",
+    detail: "Represents a timestamp",
+    insertText: "timestamp",
+  },
+  {
+    key: "timeuuid",
+    detail: "Represents type 1 UUID",
+    insertText: "timeuuid",
+  },
+  {
+    key: "uuid",
+    detail: "Represents type 1 or type 4",
+    insertText: "uuid",
+  },
+  {
+    key: "varchar",
+    detail: "Represents uTF8 encoded string",
+    insertText: "varchar",
   },
 ];

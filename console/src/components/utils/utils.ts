@@ -4,6 +4,7 @@ import { QueryExecutionResult } from "../../models/DatabaseBrowser";
 import { EditorLang } from "../../pages/workspace/DatabaseBrowser/DatabaseBrowser";
 import { Extractor } from "../../pages/workspace/DatabaseBrowser/DownloadModal";
 import { pgsql_operators, pgsql_builtinVariables, pgsql_typeKeywords, pgsqlFunction, pgsqlKeywords } from "../DatabasesKeywords/PgSQL";
+import { cql_operators, cql_builtinVariables, cql_typeKeywords, cqlFunction, cqlKeywords } from "../DatabasesKeywords/CQL";
 import { PrimaryKey, TableMeta } from "../../services/Connections";
 
 export const truncateString = (str: string, num: number) => {
@@ -152,6 +153,11 @@ export const getLangDefinition = (editorLang: EditorLang) => {
       keywords = [...pgsqlKeywords.map((k) => k.key), ...pgsqlFunction.map((f) => f.key)];
       operators = [...pgsql_operators];
       typeKeywords = [...pgsql_typeKeywords, ...pgsql_builtinVariables];
+      break;
+    case "cql":
+      keywords = [...cqlKeywords.map((k) => k.key), ...cqlFunction.map((f) => f.key)];
+      operators = [...cql_operators];
+      typeKeywords = [...cql_typeKeywords, ...cql_builtinVariables];
       break;
     default:
       break;

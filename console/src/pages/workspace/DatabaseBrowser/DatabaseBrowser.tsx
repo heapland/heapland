@@ -63,9 +63,9 @@ const DBBrowserHeader: FC<{
   schemas: string[];
   onEdit: () => void;
   onNewQuery: () => void;
-  onRefresDB: () => void;
+  onrefreshDB: () => void;
   deleteWarning: (name: string) => void;
-}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning, onRefresDB }) => {
+}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning, onrefreshDB }) => {
   const editDatabase = () => {};
   const databaseMenu = (
     <Menu>
@@ -75,8 +75,8 @@ const DBBrowserHeader: FC<{
       <Menu.Item key='1' onClick={(e) => deleteWarning(name)}>
         Delete connection
       </Menu.Item>
-      <Menu.Item key='2' onClick={onRefresDB}>
-        Refres
+      <Menu.Item key='2' onClick={onrefreshDB}>
+        Refresh
       </Menu.Item>
       <Menu.Divider style={{ height: ".5px" }} />
       <Menu.Item key='3' onClick={(e) => onNewQuery()}>
@@ -159,7 +159,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     loading: true,
   });
   const [allTables, setAllTables] = useState<TableMeta>({});
-  const [refresDB, setRefresDB] = useState<boolean>(false);
+  const [refreshDB, setrefreshDB] = useState<boolean>(false);
 
   const enableEditMode = () => {
     setDBState({ ...dbState, editMode: true });
@@ -306,7 +306,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     setDBQueries({ ...dbQueries, queries: [], loading: true });
     setDBTabs({ ...dbTabs, panes: [], selectedPane: undefined, activeKey: undefined, selectedTreeNode: null });
     fetchDBState();
-  }, [databaseId, refresDB]);
+  }, [databaseId, refreshDB]);
 
   const onTabChange = (key: string) => {
     let selectedTabObj = "query";
@@ -686,8 +686,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         monacoIns,
         tablesMeta.tableNames,
         tablesMeta.columnNames,
-        dbState.editorLang,
-        databaseId
+        dbState.editorLang
       );
       return () => {
         pgsqlCompleteProvider?.dispose();
@@ -695,8 +694,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
   }, [monacoIns, tablesMeta.columnNames]);
 
-  const onRefresDB = () => {
-    setRefresDB(!refresDB);
+  const onrefreshDB = () => {
+    setrefreshDB(!refreshDB);
   };
 
   return (
@@ -741,7 +740,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   onEdit={enableEditMode}
                   onNewQuery={onNewQuery}
                   deleteWarning={deleteWarning}
-                  onRefresDB={onRefresDB}
+                  onrefreshDB={onrefreshDB}
                 />
               </Skeleton>
 
