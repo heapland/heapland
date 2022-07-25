@@ -75,7 +75,7 @@ export const getPgsqlCompletionProvider = (monaco: any, tblNames: Tables[], cols
         } else if (splitQuery[0] === "update") {
           items = autoComp.updateQuery();
         } else if (splitQuery[0] === "delete" && splitQuery[1] === "from") {
-          items = autoComp.deleteQuery();
+          items = autoComp.deleteQuery(lastQueryWord);
         } else if (splitQuery[0] === "alter") {
           items = autoComp.alterTable();
         } else if (splitQuery[0] === "drop") {

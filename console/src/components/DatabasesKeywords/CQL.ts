@@ -200,6 +200,14 @@ export const cqlKeywords: CompletionInterface[] = [
     detail: "Adds a column in an existing table",
   },
   {
+    key: "KEYSPACES",
+    detail: "View all keyspaces",
+  },
+  {
+    key: "DESCRIBE",
+    detail: "",
+  },
+  {
     key: "ADD",
     detail: "Adds a column in an existing table",
   },
@@ -402,6 +410,10 @@ export const cqlKeywords: CompletionInterface[] = [
   {
     key: "PRIMARY KEY",
     detail: "Make a primary key",
+  },
+  {
+    key: "TABLE",
+    detail: "",
   },
 ];
 

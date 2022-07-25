@@ -26,8 +26,8 @@ class CQLCompletion {
     splitQuery: string[],
     monaco: any,
     range: any,
-    defaultAutoCompletion: () => ICompletionItem[],
     langkeyWords: () => ICompletionItem[],
+    defaultAutoCompletion: () => ICompletionItem[],
     langSnippet: () => ICompletionItem[],
     renderColumns: (col?: Columns[]) => ICompletionItem[],
     renderTables: () => ICompletionItem[],
@@ -40,14 +40,17 @@ class CQLCompletion {
     this.splitQuery = splitQuery;
     this.monaco = monaco;
     this.range = range;
-    this.defaultAutoCompletion = defaultAutoCompletion;
     this.langkeyWords = langkeyWords;
+    this.defaultAutoCompletion = defaultAutoCompletion;
     this.langSnippet = langSnippet;
     this.renderColumns = renderColumns;
     this.renderTables = renderTables;
     this.dataTypes = dataTypes;
     this.operatores = operatores;
     this.langFunctions = langFunctions;
+
+    // console.log("render", splitQuery);
+    // console.log(this.langkeyWords());
   }
 
   selectQuery(selectedLineContent: string, query: string, lastQueryWord: string, lastScndQryWord: string) {
@@ -147,12 +150,12 @@ class CQLCompletion {
     }
   }
 
-  deleteQuery() {
+  deleteQuery(lastQueryWord?: string) {
     if (!this.splitQuery[2]) {
       return this.renderTables();
-    } else if (this.splitQuery.includes("where")) {
-      let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]);
-      return [...this.renderColumns(newCols), ...this.operatores()];
+    } else if (lastQueryWord === "where") {
+      let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2].split(".")[1].toLowerCase());
+      return this.renderColumns(newCols);
     } else {
       return [...this.langkeyWords(), ...this.dataTypes(), ...this.operatores()];
     }
@@ -183,7 +186,8 @@ class CQLCompletion {
   }
 
   dropTable() {
-    return this.renderTables();
+    // return this.renderTables();
+    return [...this.renderTables(), ...this.langkeyWords()];
   }
 }
 
