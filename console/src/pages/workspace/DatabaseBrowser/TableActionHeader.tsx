@@ -4,7 +4,7 @@ import { MdEdit, MdSync } from "react-icons/md";
 import { HiPlus, HiMinus, HiOutlineDotsHorizontal, HiDownload, HiUpload } from "react-icons/hi";
 
 const TableActionHeader: FC<{
-  onRefres: () => void;
+  onRefresh: () => void;
   onAddRow: () => void;
   onDeleteRow: () => void;
   onUploadData: () => void;
@@ -21,7 +21,7 @@ const TableActionHeader: FC<{
   pageSize: number;
   loading: boolean;
 }> = ({
-  onRefres,
+  onRefresh,
   onAddRow,
   onDeleteRow,
   openDwnDataModal,
@@ -44,7 +44,7 @@ const TableActionHeader: FC<{
         <Space align='center'>
           <div className='action-btn-group'>
             <Tooltip title='Refresh Table'>
-              <Button size='small' disabled={loading} icon={<MdSync />} onClick={onRefres} />
+              <Button size='small' disabled={loading} icon={<MdSync />} onClick={onRefresh} />
             </Tooltip>
             <Tooltip title='Add Row'>
               <Button size='small' disabled={loading} icon={<HiPlus />} onClick={onAddRow} />

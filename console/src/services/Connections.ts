@@ -78,7 +78,7 @@ export interface TableMeta {
 class ConnectionService extends IErrorHandler {
   private webAPI: WebService = new WebService();
 
-  testDBConnection = async (name: string, provider: string, props_str: string, schemaVersion: number) => {
+  testDBConnection = async (name: string, provider: string, props_str: string, schemaVersion: number, cb: () => void) => {
     await _sodium.ready;
     const sodium = _sodium;
 
@@ -98,8 +98,10 @@ class ConnectionService extends IErrorHandler {
 
       if (savedResponse.status === 200 && savedResponse.parsedBody) {
         message.success("Connection test successful");
+        cb();
       } else {
         message.error(`Connection test failed with error: ${(savedResponse.parsedBody as BadConnection).error}`);
+        cb();
       }
     }
   };

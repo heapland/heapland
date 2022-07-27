@@ -1,4 +1,21 @@
-import { Button, Menu, message, Dropdown, Space, Table, Tree, Layout, Select, Tabs, Alert, Skeleton, Modal, List, Empty } from "antd";
+import {
+  Button,
+  Menu,
+  message,
+  Dropdown,
+  Space,
+  Table,
+  Tree,
+  Layout,
+  Select,
+  Tabs,
+  Alert,
+  Skeleton,
+  Modal,
+  List,
+  Empty,
+  Tooltip,
+} from "antd";
 import React, { FC, ReactNode, useEffect, useState, useRef } from "react";
 import { FaDatabase, FaNetworkWired, FaTable } from "react-icons/fa";
 import Editor, { Monaco, useMonaco, loader } from "@monaco-editor/react";
@@ -11,6 +28,7 @@ import {
   MdOutlineFunctions,
   MdOutlineViewSidebar,
   MdPlayArrow,
+  MdSync,
   MdTableRows,
   MdViewColumn,
 } from "react-icons/md";
@@ -29,8 +47,9 @@ import { UserContext } from "../../../store/User";
 import { history } from "../../../configureStore";
 import { getLocalStorage, setLocalStorage } from "../../../services/Utils";
 import { Columns, getPgsqlCompletionProvider, Tables } from "./PgSQLCompletionProvider";
-import { useWindowDimensions } from "../../../components/utils/utils";
+import { truncateString, useWindowDimensions } from "../../../components/utils/utils";
 import ColumnIcon from "../../../components/Icons/ColumnIcon";
+import { HiOutlineDotsHorizontal, HiPlus } from "react-icons/hi";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -63,9 +82,8 @@ const DBBrowserHeader: FC<{
   schemas: string[];
   onEdit: () => void;
   onNewQuery: () => void;
-  onRefresDB: () => void;
   deleteWarning: (name: string) => void;
-}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning, onRefresDB }) => {
+}> = ({ name, productName, version, onEdit, onNewQuery, deleteWarning }) => {
   const editDatabase = () => {};
   const databaseMenu = (
     <Menu>
@@ -74,9 +92,6 @@ const DBBrowserHeader: FC<{
       </Menu.Item>
       <Menu.Item key='1' onClick={(e) => deleteWarning(name)}>
         Delete connection
-      </Menu.Item>
-      <Menu.Item key='2' onClick={onRefresDB}>
-        Refres
       </Menu.Item>
       <Menu.Divider style={{ height: ".5px" }} />
       <Menu.Item key='3' onClick={(e) => onNewQuery()}>
@@ -159,7 +174,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     loading: true,
   });
   const [allTables, setAllTables] = useState<TableMeta>({});
-  const [refresDB, setRefresDB] = useState<boolean>(false);
+  const [refreshDB, setRefreshDB] = useState<boolean>(false);
 
   const enableEditMode = () => {
     setDBState({ ...dbState, editMode: true });
@@ -306,7 +321,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     setDBQueries({ ...dbQueries, queries: [], loading: true });
     setDBTabs({ ...dbTabs, panes: [], selectedPane: undefined, activeKey: undefined, selectedTreeNode: null });
     fetchDBState();
-  }, [databaseId, refresDB]);
+  }, [databaseId, refreshDB]);
 
   const onTabChange = (key: string) => {
     let selectedTabObj = "query";
@@ -686,8 +701,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         monacoIns,
         tablesMeta.tableNames,
         tablesMeta.columnNames,
-        dbState.editorLang,
-        databaseId
+        dbState.editorLang
       );
       return () => {
         pgsqlCompleteProvider?.dispose();
@@ -695,8 +709,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     }
   }, [monacoIns, tablesMeta.columnNames]);
 
-  const onRefresDB = () => {
-    setRefresDB(!refresDB);
+  const onrefreshDB = () => {
+    setRefreshDB(!refreshDB);
   };
 
   return (
@@ -741,20 +755,37 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                   onEdit={enableEditMode}
                   onNewQuery={onNewQuery}
                   deleteWarning={deleteWarning}
-                  onRefresDB={onRefresDB}
                 />
               </Skeleton>
 
               <Tabs className='db-query-tabs' defaultActiveKey='database-object' onChange={() => {}}>
                 <TabPane tab='Database Objects' key='database-object'>
                   <Skeleton title={false} active avatar={false} paragraph={{ rows: 4, width: "100%" }} loading={dbState.loading}>
-                    <div style={{ padding: "0 10px" }}>
-                      <Space size={4} style={{margin: "10px 0"}}>
-                        <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
-                          <FaDatabase />
-                        </i>
-                        <span>{dbState?.dbName}</span>
-                      </Space>
+                    <div>
+                      <div className='db-object-header'>
+                        <Space size={4}>
+                          <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
+                            <FaDatabase />
+                          </i>
+                          <Tooltip title={dbState?.dbName}>
+                            <span>{truncateString(dbState?.dbName, 15)}</span>
+                          </Tooltip>
+                        </Space>
+                        <div className='db-action-btns'>
+                          <Space align='center' size={1}>
+                            <Tooltip title='Refresh Table'>
+                              <Button size='small' onClick={onrefreshDB} icon={<MdSync />} />
+                            </Tooltip>
+                            <Tooltip title='Add Row'>
+                              <Button size='small' icon={<HiPlus />} />
+                            </Tooltip>
+                            <Tooltip title='More Action'>
+                              <Button size='small' icon={<HiOutlineDotsHorizontal />} />
+                            </Tooltip>
+                          </Space>
+                        </div>
+                      </div>
+
                       <Tree
                         className='db-objects'
                         showIcon

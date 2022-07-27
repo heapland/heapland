@@ -247,7 +247,6 @@ const QueryPane: FC<{
                 value={queryView.savedQuery}
                 onChange={(v, ev) => {
                   setQueryView({ ...queryView, currentState: v });
-                  console.log(v, ev);
                 }}
               />
             </Resizable>

@@ -81,7 +81,7 @@ const TablePane: React.FC<{
 
   const [isNewData, setNewData] = useState<QueryExecutionResult>();
   const [openDDL, setOpenDDL] = useState(false);
-  const [refres, setRefres] = useState<boolean>(false);
+  const [refres, setRefresh] = useState<boolean>(false);
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState<any>("");
@@ -168,11 +168,11 @@ const TablePane: React.FC<{
         const res = await dbOps.method([row], tableData.result.columns).updateQuery(selectedRows);
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
-          setRefres(!refres);
+          setRefresh(!refres);
         } else if (res.status === 400 && res.parsedBody) {
           let err = res.parsedBody as InternalServerError;
           message.error(err.message);
-          setRefres(!refres);
+          setRefresh(!refres);
         }
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
@@ -183,11 +183,11 @@ const TablePane: React.FC<{
         const res = await dbOps.method([row], tableData.result.columns).addQuery();
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
-          setRefres(!refres);
+          setRefresh(!refres);
         } else if (res.status === 400 && res.parsedBody) {
           let err = res.parsedBody as InternalServerError;
           message.error(err.message);
-          setRefres(!refres);
+          setRefresh(!refres);
         }
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
@@ -234,13 +234,13 @@ const TablePane: React.FC<{
 
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
-      setRefres(!refres);
+      setRefresh(!refres);
       setSelectedRows([]);
       setEditingKey("");
     } else if (res.status === 400 && res.parsedBody) {
       let err = res.parsedBody as InternalServerError;
       message.error(err.message);
-      setRefres(!refres);
+      setRefresh(!refres);
     }
   };
   const onPagiChange = (currentPage: number, rowPerPage: number) => {
@@ -268,7 +268,7 @@ const TablePane: React.FC<{
         onCancel={cancelToAddEditRow}
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}
-        onRefres={() => setRefres(!refres)}
+        onRefresh={() => setRefresh(!refres)}
         openDwnDataModal={openDwnDataModal}
         onUploadData={() => {}}
         selectedRow={selectedRows}

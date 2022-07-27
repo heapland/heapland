@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Form, Drawer, Button, Space, message } from "antd";
 
 import { useForm } from "antd/lib/form/Form";
@@ -30,6 +30,7 @@ const ServiceConnectionBuilder: React.FC<{
   initialValues?: any;
 }> = ({ orgSlugId, workspaceId, service, isOpen, connectionId, editMode, onClose, initialValues }) => {
   const [builderForm] = useForm();
+  const [loading, setLoading] = useState<boolean>(false);
   const context = React.useContext(UserContext);
   const onFinish = (values: any) => {
     builderForm.getFieldsValue();
@@ -55,8 +56,11 @@ const ServiceConnectionBuilder: React.FC<{
   const testConnection = () => {
     builderForm.validateFields().then((v) => {
       if (dbConnections.includes(service.toLowerCase())) {
+        setLoading(true);
         v["_type"] = connectionRegistry[service.toLowerCase()];
-        Connections.testDBConnection(v["name"], service, JSON.stringify(v), 1);
+        Connections.testDBConnection(v["name"], service, JSON.stringify(v), 1, () => {
+          setLoading(false);
+        });
       }
     });
   };
@@ -79,7 +83,7 @@ const ServiceConnectionBuilder: React.FC<{
             {editMode ? "Update Connection" : "Save Connection"}
           </Button>
 
-          <Button className='test-connection-btn' type='default' onClick={(e) => testConnection()}>
+          <Button className='test-connection-btn' loading={loading} type='default' onClick={(e) => testConnection()}>
             Test Connection
           </Button>
         </Space>

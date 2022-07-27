@@ -8,7 +8,7 @@
 
 .db-query-tabs {
   .ant-tabs-nav {
-    margin-bottom: 5px;
+    margin-bottom: 0px;
     padding: 0 10px;
   }
   .ant-tabs-tab-btn {
@@ -26,6 +26,33 @@
     font-size: 12px;
     height: 32.5px;
     line-height: 32.5px;
+  }
+  .db-object-header {
+    display: flex;
+    justify-content: space-between;
+    background: var(--action-header-bg);
+    padding: 6px 10px;
+    margin-bottom: 8px;
+    border-bottom: 1px solid var(--card-border);
+    .db-action-btns {
+      .ant-btn {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-top: 0;
+        border-bottom: 0;
+        border-left: 0;
+        background: var(--default-btn-color);
+        color: var(--label-color);
+        &:hover {
+          color: var(--default-green);
+        }
+        &:last-child {
+          border-right: 0;
+        }
+        border-right: 1px solid var(--light-bg);
+      }
+    }
   }
 }
 
@@ -182,6 +209,7 @@
     }
   }
   .db-objects {
+    padding: 0 10px;
     span.ant-tree-node-content-wrapper {
       line-height: 20px;
       font-size: var(--text-size);
