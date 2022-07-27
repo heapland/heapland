@@ -96,6 +96,11 @@ object CockroachDBService extends DatabaseServiceProvider[CockroachDBConnection]
     SchemaObjects(views = listViews.toSeq, tables = listTables.toSeq, routines = listFunctions.toSeq)
   }
 
+  override def listTablesWithMeta(schema: String, config: CockroachDBConnection): Try[Map[String, TableMeta]] =
+    listTables(schema, config).flatMap(tables => {
+      Try(tables.map(t => describeTable(schema, t, config).map(tm  => t -> tm)).map(_.get).toMap)
+    })
+
   override def describeTable(schema: String, table: String, config: CockroachDBConnection): Try[TableMeta] = ???
 
   private def buildMap(queryResult: ResultSet, colNames: Seq[String]): Option[Map[String, Object]] =
@@ -116,6 +121,4 @@ object CockroachDBService extends DatabaseServiceProvider[CockroachDBConnection]
   override def executeUpdate(q: String, config: CockroachDBConnection): Try[Int] = usingConfig(config) { conn =>
     conn.prepareStatement(q).executeUpdate()
   }
-
-  override def getTableKeys(catalog: String, schema: String, table: String, config: CockroachDBConnection): Try[Seq[TableKey]] = ???
 }

@@ -9,7 +9,7 @@ import play.api.http.HeaderNames
 import play.api.i18n.I18nSupport
 import play.api.libs.json._
 import play.api.mvc.{Action, ControllerComponents, InjectedController, RequestHeader}
-import play.filters.csrf.CSRF
+import play.filters.csrf.{CSRF, CSRFAddToken}
 import utils.auth.DefaultEnv
 import web.controllers.handlers.SecuredWebRequestHandler
 import web.models.requests.{CreateOrUpdateOrg, OrgRequestsJsonFormat}
@@ -27,6 +27,7 @@ class MemberController @Inject()(
                                   credentialsProvider: EmailCredentialsProvider,
                                   passwordHasherRegistry: PasswordHasherRegistry,
                                   orgService: OrgService,
+                                  addToken: CSRFAddToken,
                                   memberService: MemberService,
 
 )(
@@ -45,7 +46,8 @@ class MemberController @Inject()(
   )
 
 
-  def accountDetails = silhouette.UserAwareAction.async { implicit request =>
+  def accountDetails = addToken(silhouette.UserAwareAction.async { implicit request =>
+    CSRF.getToken.map(_.value)
     val result = request.identity match {
       case Some(m) if m.id.isDefined =>
         for {
@@ -63,7 +65,7 @@ class MemberController @Inject()(
       }
     }
     result.map(r => Ok(Json.toJson(r)))
-  }
+  })
 
   def updateTheme = silhouette.UserAwareAction.async(validateJson[ThemeRequest]) { implicit request =>
     request.identity match {

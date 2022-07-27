@@ -23,7 +23,6 @@ class TestPgConnection extends AnyFlatSpec with Matchers {
     val catalogs = PostgresDBService.getCatalogs(conn)
     val tables = PostgresDBService.listTables("public", conn)
     val qs = PostgresDBService.executeQuery("select * from clusters", conn)
-    val tableKeys = PostgresDBService.getTableKeys("localgiga", "public", "connections", conn)
     val objects = PostgresDBService.listSchemaObjects("public", conn)
     val tableDetail = PostgresDBService.describeTable( "public", "connections", conn)
 
@@ -54,7 +53,5 @@ class TestPgConnection extends AnyFlatSpec with Matchers {
     assert(schemas.isSuccess)
     assert(catalogs.isSuccess)
   }
-
-
 
 }

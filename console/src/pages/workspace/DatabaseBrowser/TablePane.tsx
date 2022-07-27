@@ -207,7 +207,7 @@ const TablePane: React.FC<{
       title: c.name.toUpperCase(),
       dataIndex: c.name,
       dataType: c.dataType,
-      // ellipsis: true,
+      ellipsis: true,
       editable: true,
       className: "table-cell-light",
     });

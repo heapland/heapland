@@ -71,7 +71,37 @@ object MariaDBService extends DatabaseServiceProvider[MariaDBConnection] {
   override def tableDataView(schema: String, table: String, config: MariaDBConnection): Try[QueryExecutionResult] =
     executeQuery(s"SELECT * FROM ${config.database}.${table} limit 100", config)
 
-  override def listSchemaObjects(schema: String, config: MariaDBConnection): Try[SchemaObjects] = ???
+  override def listSchemaObjects(schema: String, config: MariaDBConnection): Try[SchemaObjects] = usingConfig(config) { conn =>
+    val rsTables = conn.getMetaData.getTables(config.database, null, null, Array("TABLE"))
+    val rsViews = conn.getMetaData.getTables(config.database, null, null, Array("VIEW"))
+    val listTables = new ListBuffer[String]
+    val listViews = new ListBuffer[String]
+    val listFunctions = new ListBuffer[String]
+    while(rsTables.next()){
+      listTables.addOne(rsTables.getString("TABLE_NAME"))
+    }
+
+    while(rsViews.next()){
+      listViews.addOne(rsViews.getString("TABLE_NAME"))
+    }
+
+    val q =
+      s"""SELECT specific_name FROM `information_schema`.`ROUTINES` WHERE routine_schema = ?"""
+    val prepStatement = conn.prepareStatement(q)
+    prepStatement.setString(1, config.database)
+    val rs       = prepStatement.executeQuery()
+    while(rs.next()){
+      listFunctions.addOne(rs.getString("specific_name"))
+    }
+    SchemaObjects(views = listViews.toSeq, tables = listTables.toSeq, routines = listFunctions.toSeq)
+  }
+
+  override def listTablesWithMeta(schema: String, config: MariaDBConnection): Try[Map[String, TableMeta]] =
+    listTables(schema, config).flatMap(tables => {
+      Try(tables.map(t => describeTable(schema, t, config).map(tm  => t -> tm)).map(_.get).toMap)
+    })
+
+
 
   override def describeTable(schema: String, table: String, config: MariaDBConnection): Try[TableMeta] = ???
 
@@ -99,7 +129,5 @@ object MariaDBService extends DatabaseServiceProvider[MariaDBConnection] {
       conn.prepareStatement(q).executeUpdate()
     }
   }
-
-  override def getTableKeys(catalog: String, schema: String, table: String, config: MariaDBConnection): Try[Seq[TableKey]] = ???
 
 }

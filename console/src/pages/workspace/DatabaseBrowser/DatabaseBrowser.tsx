@@ -785,6 +785,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                           </Space>
                         </div>
                       </div>
+
                       <Tree
                         className='db-objects'
                         showIcon
