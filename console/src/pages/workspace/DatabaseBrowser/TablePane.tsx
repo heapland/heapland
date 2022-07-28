@@ -1,18 +1,44 @@
-import { Select, Skeleton, Table, Tabs, Form, Input, InputNumber, Popconfirm, Typography, message, Modal, Button, Space } from "antd";
+import {
+  Select,
+  Skeleton,
+  Table,
+  Tabs,
+  Form,
+  Input,
+  InputNumber,
+  Popconfirm,
+  Typography,
+  message,
+  Modal,
+  Button,
+  Space,
+  Row,
+  Col,
+  Checkbox,
+} from "antd";
 import Column from "antd/lib/table/Column";
 import React, { useEffect, useState } from "react";
 import { QueryExecutionResult } from "../../../models/DatabaseBrowser";
-import Connections, { PrimaryKey, TableMeta } from "../../../services/Connections";
+import Connections, { PrimaryKey, TableMeta, TableMetaWithSchema } from "../../../services/Connections";
 import TableActionHeader from "./TableActionHeader";
 import "./DatabaseBrowser.scss";
 import DownloadModal from "./DownloadModal";
-import { copyTextToClipboard, extractPkeyfromTable, isNumberDataType, truncateString } from "../../../components/utils/utils";
+import {
+  copyTextToClipboard,
+  extractPkeyfromTable,
+  isNumberDataType,
+  isVarCharType,
+  truncateString,
+} from "../../../components/utils/utils";
 import { InternalServerError } from "../../../services/SparkService";
 import { Controlled as Codemirror } from "react-codemirror2";
 import "codemirror/lib/codemirror.css";
 import "codemirror/theme/material.css";
-import DBOperations from "../../../components/DBOperation/DBOperation";
+import DBOperations, { getLangDefComp } from "../../../components/DBOperation/DBOperation";
 import { EditorLang } from "./DatabaseBrowser";
+import { MinusCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { INewColName } from "../../../components/DBOperation/PGSQLOperation";
+import AddNewColumn from "./AddNewColumn";
 
 const makeTableRowId = (c: [key: string]) => btoa(Object.values(c).join("-"));
 
@@ -66,9 +92,9 @@ const TablePane: React.FC<{
   connectionId: number;
   dbName: string;
   productName: string;
-  allTables: TableMeta;
+  allTablesWithCol: TableMetaWithSchema;
   editorLang: EditorLang;
-}> = ({ name, schema, connectionId, dbName, productName, allTables, editorLang }) => {
+}> = ({ name, schema, connectionId, dbName, productName, allTablesWithCol, editorLang }) => {
   const [primaryKeys, setPrimarykeys] = useState<PrimaryKey[]>([]);
 
   const dbOps = new DBOperations(productName, connectionId, name, schema, primaryKeys);
@@ -81,7 +107,8 @@ const TablePane: React.FC<{
 
   const [isNewData, setNewData] = useState<QueryExecutionResult>();
   const [openDDL, setOpenDDL] = useState(false);
-  const [refres, setRefresh] = useState<boolean>(false);
+  const [isAddColModal, setAddColModal] = useState(false);
+  const [refresh, setRefresh] = useState<boolean>(false);
   const [isDownloadModal, setDownloadModal] = useState<boolean>(false);
   const [form] = Form.useForm();
   const [editingKey, setEditingKey] = useState<any>("");
@@ -96,10 +123,10 @@ const TablePane: React.FC<{
       const indexOfFirstRow = indexOfLastRow - showTableData.pageSize;
       const tableRowData = data.result.slice(indexOfFirstRow, indexOfLastRow);
       setTableData({ ...tableData, loading: false, result: { ...data, result: tableRowData } });
-      setPrimarykeys(extractPkeyfromTable(allTables, name));
+      setPrimarykeys(extractPkeyfromTable(allTablesWithCol, name));
       setNewData(data);
     });
-  }, [name, refres]);
+  }, [name, refresh]);
 
   const openDwnDataModal = () => {
     setDownloadModal(true);
@@ -168,11 +195,11 @@ const TablePane: React.FC<{
         const res = await dbOps.method([row], tableData.result.columns).updateQuery(selectedRows);
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
-          setRefresh(!refres);
+          setRefresh(!refresh);
         } else if (res.status === 400 && res.parsedBody) {
           let err = res.parsedBody as InternalServerError;
           message.error(err.message);
-          setRefresh(!refres);
+          setRefresh(!refresh);
         }
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
@@ -183,11 +210,11 @@ const TablePane: React.FC<{
         const res = await dbOps.method([row], tableData.result.columns).addQuery();
         if (res.status === 200 && res.parsedBody) {
           message.success("Query execute successfully");
-          setRefresh(!refres);
+          setRefresh(!refresh);
         } else if (res.status === 400 && res.parsedBody) {
           let err = res.parsedBody as InternalServerError;
           message.error(err.message);
-          setRefresh(!refres);
+          setRefresh(!refresh);
         }
         setTableData({ ...tableData, result: { ...tableData.result, result: newData } });
         setEditingKey("");
@@ -234,13 +261,13 @@ const TablePane: React.FC<{
 
     if (res.status === 200 && res.parsedBody) {
       message.success("Query execute successfully");
-      setRefresh(!refres);
+      setRefresh(!refresh);
       setSelectedRows([]);
       setEditingKey("");
     } else if (res.status === 400 && res.parsedBody) {
       let err = res.parsedBody as InternalServerError;
       message.error(err.message);
-      setRefresh(!refres);
+      setRefresh(!refresh);
     }
   };
   const onPagiChange = (currentPage: number, rowPerPage: number) => {
@@ -259,16 +286,30 @@ const TablePane: React.FC<{
     setOpenDDL(false);
   };
 
+  const onAddCol = async (colInfo: { colsName: INewColName[] }) => {
+    const res = await dbOps.method(tableData.result.result, tableData.result.columns).addNewColumn(colInfo.colsName);
+    if (res.status === 200 && res.parsedBody) {
+      message.success("Column added successfully");
+      setRefresh(!refresh);
+      setAddColModal(false);
+    } else if (res.status === 400 && res.parsedBody) {
+      let err = res.parsedBody as InternalServerError;
+      message.error(err.message);
+      setRefresh(!refresh);
+    }
+  };
+
   return (
     <>
       <TableActionHeader
         onEditRow={() => edit(selectedRows[0])}
         onSaveRow={() => save(selectedRows[0])}
+        openAddColModal={() => setAddColModal(true)}
         openDDL={() => setOpenDDL(true)}
         onCancel={cancelToAddEditRow}
         onAddRow={addRow}
         onDeleteRow={() => onDeleteRow(selectedRows)}
-        onRefresh={() => setRefresh(!refres)}
+        onRefresh={() => setRefresh(!refresh)}
         openDwnDataModal={openDwnDataModal}
         onUploadData={() => {}}
         selectedRow={selectedRows}
@@ -347,6 +388,14 @@ const TablePane: React.FC<{
             onChange={(editor, data, value) => {}}
           />
         </Modal>
+      )}
+      {isAddColModal && (
+        <AddNewColumn
+          isAddColModal={isAddColModal}
+          onAddCol={onAddCol}
+          editorLang={editorLang}
+          onCloseModal={() => setAddColModal(false)}
+        />
       )}
     </>
   );

@@ -10,7 +10,7 @@ import JsonIcon from "./JsonIcon";
 import TextIcon from "./TextIcon";
 
 const ColumnIcon: React.FC<{ dataType: string }> = ({ dataType }) => {
-  console.log(dataType);
+  // console.log(dataType);
   switch (dataType?.toLowerCase()) {
     case "varchar":
     case "text":

@@ -94,6 +94,7 @@
 .ant-dropdown-open {
   background-color: var(--default-btn-color) !important;
 }
+
 // comman checkbox style end
 
 // comman input and select style
@@ -108,17 +109,42 @@
 //     color: var(--placeholder-color);
 //   }
 // }
+.ant-cascader-picker,
 .ant-input-affix-wrapper,
 .ant-input-number,
 .ant-input-number-input,
 .ant-input,
+.ant-select:not(.ant-select-customize-input) .ant-select-selector,
 .ant-select-selector {
   background-color: var(--background-color) !important;
   border-color: var(--input-border);
   color: var(--title-color);
   &::placeholder {
-    color: var(--placeholder-color);
+    color: var(--label-color-light);
   }
+}
+
+.ant-cascader-menus {
+  background-color: var(--background-color);
+  .ant-cascader-menu-item-expand-icon,
+  .ant-cascader-menu-item {
+    color: var(--secondary-color);
+    &:hover {
+      background: var(--background-selected);
+    }
+  }
+  .ant-cascader-menu-item-active {
+    background: var(--background-selected);
+  }
+}
+
+.ant-input:placeholder-shown,
+.ant-select-selection-placeholder {
+  color: var(--label-color-light);
+}
+.ant-cascader-picker-arrow,
+.ant-select-arrow {
+  color: var(--label-color-light);
 }
 .ant-input-number {
   background-color: var(--input-border);
@@ -155,6 +181,9 @@
   border-color: var(--input-border) !important;
 }
 
+.ant-checkbox + span {
+  color: var(--secondary-color);
+}
 // comman input and select style end
 
 // comman table
@@ -260,6 +289,18 @@
   width: 15px;
 }
 
+.modal-cancel-btn {
+  background-color: var(--default-btn-color);
+  color: var(--primary-color);
+  border-color: var(--border-color);
+  &:active,
+  &:focus,
+  &:hover {
+    background-color: var(--default-btn-color);
+    color: var(--primary-color);
+    border-color: var(--border-color);
+  }
+}
 // ========== global menu style ================
 
 .ant-menu-item:active {

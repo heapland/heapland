@@ -5,7 +5,7 @@ import { EditorLang } from "../../pages/workspace/DatabaseBrowser/DatabaseBrowse
 import { Extractor } from "../../pages/workspace/DatabaseBrowser/DownloadModal";
 import { pgsql_operators, pgsql_builtinVariables, pgsql_typeKeywords, pgsqlFunction, pgsqlKeywords } from "../DatabasesKeywords/PgSQL";
 import { cql_operators, cql_builtinVariables, cql_typeKeywords, cqlFunction, cqlKeywords } from "../DatabasesKeywords/CQL";
-import { PrimaryKey, TableMeta } from "../../services/Connections";
+import { PrimaryKey, TableMeta, TableMetaWithSchema } from "../../services/Connections";
 
 export const truncateString = (str: string, num: number) => {
   if (str.length > num) {
@@ -341,13 +341,19 @@ export const isNumberDataType = (dataType: string) => {
     "smallserial",
   ].includes(dataType?.toLowerCase());
 };
+export const isVarCharType = (dataType: string) => {
+  return ["character", "varchar"].includes(dataType?.toLowerCase());
+};
 
-export const extractPkeyfromTable = (allTables: TableMeta, tblName: string): PrimaryKey[] => {
+export const extractPkeyfromTable = (allTablesWithCol: TableMetaWithSchema, tblName: string): PrimaryKey[] => {
   let pkeys: PrimaryKey[] = [];
-  Object.entries(allTables).map(([tableName, value]) => {
-    if (tableName === tblName) {
-      pkeys = value?.primaryKeys ? value.primaryKeys : [];
-    }
+
+  Object.entries(allTablesWithCol).map(([schema, schemaTbl]) => {
+    Object.entries(schemaTbl).map(([tableName, value]) => {
+      if (tableName === tblName) {
+        pkeys = value?.primaryKeys ? value.primaryKeys : [];
+      }
+    });
   });
 
   return pkeys;
