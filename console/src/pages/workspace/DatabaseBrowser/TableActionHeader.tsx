@@ -39,7 +39,7 @@ const TableActionHeader: FC<{
   loading,
 }) => {
   return (
-    <div className='table-action-header file-browser-controls'>
+    <div className='table-action-header'>
       <div>
         <Space align='center'>
           <div className='action-btn-group'>
@@ -63,14 +63,14 @@ const TableActionHeader: FC<{
               <Button size='small' disabled={loading} icon={<HiOutlineDotsHorizontal />} />
             </Tooltip>
           </div>
-          <div className='action-btn-group'>
+          <div className='control-btn'>
             <Button size='small' disabled={loading} onClick={openDDL}>
               DDL
             </Button>
           </div>
           <div className='action-btn-group'>
             <Tooltip title='Download Data'>
-              <Button size='small' disabled={totalRows === 0 || loading} icon={<HiDownload />} onClick={openDwnDataModal} />
+              <Button size='small'  icon={<HiDownload />} onClick={openDwnDataModal} />
             </Tooltip>
             <Tooltip title='Upload Data'>
               <Button size='small' disabled={loading} icon={<HiUpload />} onClick={onUploadData} />

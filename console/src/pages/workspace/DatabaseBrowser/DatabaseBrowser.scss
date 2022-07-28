@@ -425,16 +425,34 @@
   display: flex;
   align-items: center;
   padding: 0 8px;
+  .control-btn {
+    button {
+      background: var(--default-btn-color);
+      color: var(--label-color);
+      border: none;
+    }
+  }
   .action-btn-group {
     .ant-btn {
       display: inline-flex;
+      justify-content: center;
+      align-items: center;
       border-top: 0;
       border-bottom: 0;
       border-left: 0;
       background: var(--default-btn-color);
       color: var(--label-color);
+      &:first-child {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
       &:last-child {
         border-right: 0;
+        border-bottom-left-radius: 0;
+        border-top-left-radius: 0;
+      }
+      &:not(:first-child):not(:last-child){
+        border-radius: 0;
       }
       border-right: 1px solid var(--light-bg);
     }

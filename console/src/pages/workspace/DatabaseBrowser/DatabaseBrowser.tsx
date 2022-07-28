@@ -762,7 +762,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                 <TabPane tab='Database Objects' key='database-object'>
                   <Skeleton title={false} active avatar={false} paragraph={{ rows: 4, width: "100%" }} loading={dbState.loading}>
                     <div>
-                      <div className='db-object-header'>
+                      <div className='db-object-header table-action-header'>
                         <Space size={4}>
                           <i className={`side-nav-icon`} style={{ marginRight: 2 }}>
                             <FaDatabase />
@@ -771,8 +771,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             <span>{truncateString(dbState?.dbName, 15)}</span>
                           </Tooltip>
                         </Space>
-                        <div className='db-action-btns'>
-                          <Space align='center' size={1}>
+                        <div className='action-btn-group '>
+                          
                             <Tooltip title='Refresh Table'>
                               <Button size='small' onClick={onrefreshDB} icon={<MdSync />} />
                             </Tooltip>
@@ -782,7 +782,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             <Tooltip title='More Action'>
                               <Button size='small' icon={<HiOutlineDotsHorizontal />} />
                             </Tooltip>
-                          </Space>
+                          
                         </div>
                       </div>
 
