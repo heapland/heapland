@@ -1,17 +1,9 @@
 import { EditorLang } from "../../pages/workspace/DatabaseBrowser/DatabaseBrowser";
 import { Columns, Tables } from "../../pages/workspace/DatabaseBrowser/PgSQLCompletionProvider";
-import {
-  pgsql_operators,
-  pgsqlFunction,
-  pgsqlKeywords,
-  CompletionInterface,
-  pgsqlSnippet,
-  pgsqlDataTypes,
-} from "../DatabasesKeywords/PgSQL";
-import { cql_operators, cqlFunction, cqlKeywords, cqlDataTypes, cqlSnippet } from "../DatabasesKeywords/CQL";
 import PGSQlCompletion from "./PGSQLCopletioin";
 import CQLCompletion from "./CQLCompletion";
 import MySQLCompletion from "./MySQLCompletion";
+import { getLangDefComp } from "../DBOperation/DBOperation";
 
 export interface ICompletionItem {
   label: string;
@@ -43,7 +35,7 @@ class AutoCompletion {
 
   langSnippet() {
     return [
-      ...this.getLangDefComp().langSnippet.map((d) => {
+      ...getLangDefComp(this.editorLang).langSnippet.map((d) => {
         return {
           label: d.key,
           kind: this.monaco.languages.CompletionItemKind.Snippet,
@@ -57,7 +49,7 @@ class AutoCompletion {
 
   langkeyWords() {
     return [
-      ...this.getLangDefComp().keyWords.map((k) => {
+      ...getLangDefComp(this.editorLang).keyWords.map((k) => {
         return {
           label: k.key,
           kind: this.monaco.languages.CompletionItemKind.Keyword,
@@ -112,7 +104,7 @@ class AutoCompletion {
 
   dataTypes() {
     return [
-      ...this.getLangDefComp().dataTypes.map((d) => {
+      ...getLangDefComp(this.editorLang).dataTypes.map((d) => {
         return {
           label: d.key,
           kind: this.monaco.languages.CompletionItemKind.Keyword,
@@ -126,7 +118,7 @@ class AutoCompletion {
 
   operatores() {
     return [
-      ...this.getLangDefComp().operatores.map((o) => {
+      ...getLangDefComp(this.editorLang).operatores.map((o) => {
         return {
           label: o,
           kind: this.monaco.languages.CompletionItemKind.Operator,
@@ -140,7 +132,7 @@ class AutoCompletion {
 
   langFunctions() {
     return [
-      ...this.getLangDefComp().functions.map((f) => {
+      ...getLangDefComp(this.editorLang).functions.map((f) => {
         return {
           label: f.key,
           kind: this.monaco.languages.CompletionItemKind.Operator,
@@ -151,38 +143,6 @@ class AutoCompletion {
       }),
     ];
   }
-
-  getLangDefComp() {
-    let langSnippet: CompletionInterface[];
-    let dataTypes: CompletionInterface[];
-    let keyWords: CompletionInterface[];
-    let functions: CompletionInterface[];
-    let operatores: string[];
-
-    switch (this.editorLang) {
-      case "pgsql":
-      case "mysql":
-        langSnippet = pgsqlSnippet;
-        dataTypes = pgsqlDataTypes;
-        keyWords = pgsqlKeywords;
-        functions = pgsqlFunction;
-        operatores = pgsql_operators;
-        break;
-      case "cql":
-        langSnippet = cqlSnippet;
-        dataTypes = cqlDataTypes;
-        keyWords = cqlKeywords;
-        functions = cqlFunction;
-        operatores = cql_operators;
-        break;
-      default:
-        break;
-    }
-
-    return { langSnippet, dataTypes, keyWords, functions, operatores };
-  }
-
-
 
   queryMethod() {
     switch (this.editorLang) {
@@ -225,8 +185,8 @@ class AutoCompletion {
           this.splitQuery,
           this.monaco,
           this.range,
-          this.defaultAutoCompletion,
           this.langkeyWords,
+          this.defaultAutoCompletion,
           this.langSnippet,
           this.renderColumns,
           this.renderTables,
