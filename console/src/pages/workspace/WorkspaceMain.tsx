@@ -8,7 +8,7 @@ import { User, UserContext } from "../../store/User";
 import { AppState } from "../../reducers";
 import { updateLogin } from "../../actions/auth";
 import { Dispatch } from "redux";
-import { MdDashboard } from "react-icons/md";
+import { MdChat, MdDashboard, MdPlaylistPlay, MdViewDay } from "react-icons/md";
 import { FaDatabase, FaStream, FaFileInvoice } from "react-icons/fa";
 import { BsPlusLg } from "react-icons/bs";
 import { Hexagon } from "../../components/Icons/NavIcons";
@@ -241,11 +241,11 @@ const WorkspaceMain: React.FC<IMainProps> = ({ index, content, subIndex, updateL
             {context.connections.length > 0 && context.connections.filter((ac) => ac.providerCategory === "messaging").length > 0 && (
               <SubMenu
                 icon={
-                  <i className={`side-nav-icon`}>
-                    <FaFileInvoice />
+                  <i className={`side-nav-icon`} style={{fontSize: "0.9rem"}}>
+                    <MdChat />
                   </i>
                 }
-                title='Messaging Systems'>
+                title='Streams'>
                 {context.connections
                   .filter((ac) => ac.providerCategory === "messaging")
                   .map((cp) => (

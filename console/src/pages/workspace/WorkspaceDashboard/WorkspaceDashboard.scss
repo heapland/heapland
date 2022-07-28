@@ -19,8 +19,17 @@
   .ant-tabs-tab {
     margin: 0 20px 0 0;
 
+    &:not(.ant-tabs-tab-active) {
+        
+      color: var(--secondary-color);
+    
+  }
+
     .ant-tabs-tab-btn {
       padding: 0 10px;
+
+      
+      // color: var(--primary-color);
     }
   }
   .xterm {
@@ -154,6 +163,11 @@
     .ant-tabs-nav {
       padding: 0 10px;
       margin-bottom: 0;
+      background-color: var(--secondary-bg);
+
+      &::before{
+        border-bottom: 1px solid var(--border-color);
+      }
     }
   }
   .tbl-applications {

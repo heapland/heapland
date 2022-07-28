@@ -3,11 +3,13 @@
 .topics-details-tabs {
   height: 100%;
   display: flex;
+  
   .topic-menu {
     width: 180px;
     .ant-menu {
       padding-top: 0;
       height: 100%;
+      background-color: var(--background-color);
     }
     .ant-menu-item {
       display: flex;

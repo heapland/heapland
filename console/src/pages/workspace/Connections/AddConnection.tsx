@@ -53,7 +53,7 @@ const AddDatasource: FC<{ orgSlugId: string; workspaceId: number }> = ({ orgSlug
           </Menu.Item>
           <Menu.Item key='messaging-system'>
             <a className='messaging-system' href='#messaging-system'>
-              Messaging System
+              Streams
             </a>
           </Menu.Item>
         </Menu>
