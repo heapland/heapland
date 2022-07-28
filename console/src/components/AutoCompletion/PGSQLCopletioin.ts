@@ -13,13 +13,13 @@ class PGSQlCompletion {
   private monaco: any;
   private range: any;
   private defaultAutoCompletion: () => ICompletionItem[];
-  private langkeyWords: () => ICompletionItem[];
-  private langSnippet: () => ICompletionItem[];
   private renderColumns: (col?: Columns[]) => ICompletionItem[];
   private renderTables: () => ICompletionItem[];
-  private dataTypes: () => ICompletionItem[];
-  private operatores: () => ICompletionItem[];
-  private langFunctions: () => ICompletionItem[];
+  private langFunctions: ICompletionItem[];
+  private dataTypes: ICompletionItem[];
+  private langkeyWords: ICompletionItem[];
+  private langSnippet: ICompletionItem[];
+  private operatores: ICompletionItem[];
   constructor(
     tblNames: Tables[],
     colsNames: Columns[],
@@ -27,13 +27,13 @@ class PGSQlCompletion {
     monaco: any,
     range: any,
     defaultAutoCompletion: () => ICompletionItem[],
-    langkeyWords: () => ICompletionItem[],
-    langSnippet: () => ICompletionItem[],
     renderColumns: (col?: Columns[]) => ICompletionItem[],
     renderTables: () => ICompletionItem[],
-    dataTypes: () => ICompletionItem[],
-    operatores: () => ICompletionItem[],
-    langFunctions: () => ICompletionItem[]
+    langFunctions: ICompletionItem[],
+    dataTypes: ICompletionItem[],
+    langkeyWords: ICompletionItem[],
+    langSnippet: ICompletionItem[],
+    operatores: ICompletionItem[]
   ) {
     this.tblNames = tblNames;
     this.colsNames = colsNames;
@@ -41,13 +41,13 @@ class PGSQlCompletion {
     this.monaco = monaco;
     this.range = range;
     this.defaultAutoCompletion = defaultAutoCompletion;
-    this.langkeyWords = langkeyWords;
-    this.langSnippet = langSnippet;
     this.renderColumns = renderColumns;
     this.renderTables = renderTables;
-    this.dataTypes = dataTypes;
-    this.operatores = operatores;
     this.langFunctions = langFunctions;
+    this.dataTypes = dataTypes;
+    this.langkeyWords = langkeyWords;
+    this.langSnippet = langSnippet;
+    this.operatores = operatores;
   }
 
   selectQuery(selectedLineContent: string, query: string, lastQueryWord: string, lastScndQryWord: string) {
@@ -66,9 +66,6 @@ class PGSQlCompletion {
 
       const regexBeforeJoin = new RegExp(beforeJoinVarArr[1], "g");
       const regexAfterJoin = new RegExp(afterJoinVarArr[1], "g");
-      //   console.log("after", query.match(regexAfterJoin));
-      //   console.log("before", query.match(regexBeforeJoin));
-      //   console.log("var", query);
 
       if (query.match(regexAfterJoin)?.length) {
         items = [
@@ -109,12 +106,11 @@ class PGSQlCompletion {
         ...this.renderTables(),
       ];
     } else if (this.splitQuery[this.splitQuery.length - 1]) {
-      console.log(this.splitQuery[this.splitQuery.length - 1].split(".")[1]);
       return this.renderColumns(getFilterTableCols(this.colsNames, this.splitQuery[this.splitQuery.length - 1].split(".")[1]));
     } else if (lastQueryWord === "from") {
-      return this.renderTables();
+      return [...this.renderTables()];
     } else {
-      return [...this.langkeyWords(), ...this.dataTypes(), ...this.operatores()];
+      return [...this.langkeyWords, ...this.dataTypes, ...this.operatores];
     }
   }
 
@@ -122,7 +118,7 @@ class PGSQlCompletion {
     if (this.splitQuery[1] === "table" && !this.splitQuery[2]) {
       return this.renderTables();
     } else {
-      return [...this.langkeyWords(), ...this.dataTypes(), ...this.operatores()];
+      return [...this.langkeyWords, ...this.dataTypes, ...this.operatores];
     }
   }
 
@@ -146,9 +142,9 @@ class PGSQlCompletion {
       return this.renderColumns(newCols);
     } else if (this.splitQuery.includes("where")) {
       let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[1]);
-      return [...this.renderColumns(newCols), ...this.operatores()];
+      return [...this.renderColumns(newCols), ...this.operatores];
     } else {
-      return [...this.langkeyWords(), ...this.dataTypes(), ...this.operatores()];
+      return [...this.langkeyWords, ...this.dataTypes, ...this.operatores];
     }
   }
 
@@ -156,10 +152,10 @@ class PGSQlCompletion {
     if (!this.splitQuery[2]) {
       return this.renderTables();
     } else if (this.splitQuery.includes("where")) {
-      let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]);
-      return [...this.renderColumns(newCols), ...this.operatores()];
+      let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]?.split(".")[1] ?? this.splitQuery[2]);
+      return [...this.renderColumns(newCols), ...this.operatores];
     } else {
-      return [...this.langkeyWords(), ...this.dataTypes(), ...this.operatores()];
+      return [...this.langkeyWords, ...this.dataTypes, ...this.operatores];
     }
   }
 
@@ -167,26 +163,31 @@ class PGSQlCompletion {
     if (this.splitQuery[1] === "table" && !this.splitQuery[2]) {
       return this.renderTables();
     } else if (this.splitQuery[2] && this.splitQuery[3] === "add" && this.splitQuery[4] !== "constraint") {
-      return [...this.dataTypes()];
+      return [...this.dataTypes];
     } else if (this.splitQuery[2] && this.splitQuery[3] === "add" && this.splitQuery[4] === "constraint") {
       let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]);
-      return [...this.dataTypes(), ...this.renderColumns(newCols)];
+      return [...this.dataTypes, ...this.renderColumns(newCols)];
     } else if (this.splitQuery[2] && this.splitQuery[3] === "drop") {
       let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]);
-      return [...this.renderColumns(newCols), ...this.langkeyWords()];
+      return [...this.renderColumns(newCols), ...this.langkeyWords];
     } else if (this.splitQuery[2] && this.splitQuery[3] === "alter") {
       let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]);
-      return [...this.renderColumns(newCols), ...this.langkeyWords(), ...this.dataTypes()];
+      return [...this.renderColumns(newCols), ...this.langkeyWords, ...this.dataTypes];
     } else if (this.splitQuery[2] && this.splitQuery[3] === "modify") {
       let newCols = this.colsNames.filter((c) => c.tblName.toLowerCase() === this.splitQuery[2]);
-      return [...this.renderColumns(newCols), ...this.langkeyWords(), ...this.dataTypes()];
+      return [...this.renderColumns(newCols), ...this.langkeyWords, ...this.dataTypes];
     } else {
-      return [...this.langkeyWords(), ...this.dataTypes(), ...this.operatores()];
+      return [...this.langkeyWords, ...this.dataTypes, ...this.operatores];
     }
   }
 
+
   dropTable() {
-    return this.renderTables();
+    if (this.splitQuery.includes("table")) {
+      return this.renderTables();
+    } else {
+      return [...this.langkeyWords];
+    }
   }
 }
 

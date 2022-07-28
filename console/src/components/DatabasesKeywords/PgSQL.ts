@@ -401,8 +401,8 @@ export const pgsqlSnippet: CompletionInterface[] = [
   },
   {
     key: "del",
-    detail: "delete rows forom a table",
-    insertText: "delete from  where;",
+    detail: "delete rows from a table",
+    insertText: "delete from [table_name] where [condition];",
   },
   {
     key: "ins",

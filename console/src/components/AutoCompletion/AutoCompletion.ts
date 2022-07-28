@@ -13,6 +13,76 @@ export interface ICompletionItem {
   insertText: string;
 }
 
+export const operatores = (editorLang: EditorLang, monaco: any, range: any) => {
+  return [
+    ...getLangDefComp(editorLang).operatores.map((o) => {
+      return {
+        label: o,
+        kind: monaco.languages.CompletionItemKind.Operator,
+        detail: o,
+        range: range,
+        insertText: o,
+      };
+    }),
+  ];
+};
+
+export const langSnippet = (editorLang: EditorLang, monaco: any, range: any) => {
+  return [
+    ...getLangDefComp(editorLang).langSnippet.map((d) => {
+      return {
+        label: d.key,
+        kind: monaco.languages.CompletionItemKind.Snippet,
+        detail: d.detail,
+        range: range,
+        insertText: d.insertText,
+      };
+    }),
+  ];
+};
+
+export const langkeyWords = (editorLang: EditorLang, monaco: any, range: any) => {
+  return [
+    ...getLangDefComp(editorLang).keyWords.map((k) => {
+      return {
+        label: k.key,
+        kind: monaco.languages.CompletionItemKind.Keyword,
+        detail: k.detail,
+        range: range,
+        insertText: k.key,
+      };
+    }),
+  ];
+};
+
+export const dataTypes = (editorLang: EditorLang, monaco: any, range: any) => {
+  return [
+    ...getLangDefComp(editorLang).dataTypes.map((d) => {
+      return {
+        label: d.key,
+        kind: monaco.languages.CompletionItemKind.Keyword,
+        detail: d.detail,
+        range: range,
+        insertText: d.key,
+      };
+    }),
+  ];
+};
+
+export const langFunctions = (editorLang: EditorLang, monaco: any, range: any) => {
+  return [
+    ...getLangDefComp(editorLang).functions.map((f) => {
+      return {
+        label: f.key,
+        kind: monaco.languages.CompletionItemKind.Operator,
+        detail: f.detail,
+        range: range,
+        insertText: f.insertText,
+      };
+    }),
+  ];
+};
+
 class AutoCompletion {
   private editorLang: EditorLang;
   private tblNames: Tables[];
@@ -30,34 +100,12 @@ class AutoCompletion {
   }
 
   defaultAutoCompletion() {
-    return [...this.langSnippet(), ...this.langkeyWords(), ...this.operatores(), ...this.langFunctions(), ...this.dataTypes()];
-  }
-
-  langSnippet() {
     return [
-      ...getLangDefComp(this.editorLang).langSnippet.map((d) => {
-        return {
-          label: d.key,
-          kind: this.monaco.languages.CompletionItemKind.Snippet,
-          detail: d.detail,
-          range: this.range,
-          insertText: d.insertText,
-        };
-      }),
-    ];
-  }
-
-  langkeyWords() {
-    return [
-      ...getLangDefComp(this.editorLang).keyWords.map((k) => {
-        return {
-          label: k.key,
-          kind: this.monaco.languages.CompletionItemKind.Keyword,
-          detail: k.detail,
-          range: this.range,
-          insertText: k.key,
-        };
-      }),
+      ...langSnippet(this.editorLang, this.monaco, this.range),
+      ...langkeyWords(this.editorLang, this.monaco, this.range),
+      ...operatores(this.editorLang, this.monaco, this.range),
+      ...langFunctions(this.editorLang, this.monaco, this.range),
+      ...dataTypes(this.editorLang, this.monaco, this.range),
     ];
   }
 
@@ -102,48 +150,6 @@ class AutoCompletion {
     ];
   }
 
-  dataTypes() {
-    return [
-      ...getLangDefComp(this.editorLang).dataTypes.map((d) => {
-        return {
-          label: d.key,
-          kind: this.monaco.languages.CompletionItemKind.Keyword,
-          detail: d.detail,
-          range: this.range,
-          insertText: d.key,
-        };
-      }),
-    ];
-  }
-
-  operatores() {
-    return [
-      ...getLangDefComp(this.editorLang).operatores.map((o) => {
-        return {
-          label: o,
-          kind: this.monaco.languages.CompletionItemKind.Operator,
-          detail: o,
-          range: this.range,
-          insertText: o,
-        };
-      }),
-    ];
-  }
-
-  langFunctions() {
-    return [
-      ...getLangDefComp(this.editorLang).functions.map((f) => {
-        return {
-          label: f.key,
-          kind: this.monaco.languages.CompletionItemKind.Operator,
-          detail: f.detail,
-          range: this.range,
-          insertText: f.insertText,
-        };
-      }),
-    ];
-  }
-
   queryMethod() {
     switch (this.editorLang) {
       case "mysql":
@@ -154,13 +160,13 @@ class AutoCompletion {
           this.monaco,
           this.range,
           this.defaultAutoCompletion,
-          this.langkeyWords,
-          this.langSnippet,
           this.renderColumns,
           this.renderTables,
-          this.dataTypes,
-          this.operatores,
-          this.langFunctions
+          langFunctions(this.editorLang, this.monaco, this.range),
+          dataTypes(this.editorLang, this.monaco, this.range),
+          langkeyWords(this.editorLang, this.monaco, this.range),
+          langSnippet(this.editorLang, this.monaco, this.range),
+          operatores(this.editorLang, this.monaco, this.range)
         );
       case "pgsql":
         return new PGSQlCompletion(
@@ -170,13 +176,13 @@ class AutoCompletion {
           this.monaco,
           this.range,
           this.defaultAutoCompletion,
-          this.langkeyWords,
-          this.langSnippet,
           this.renderColumns,
           this.renderTables,
-          this.dataTypes,
-          this.operatores,
-          this.langFunctions
+          langFunctions(this.editorLang, this.monaco, this.range),
+          dataTypes(this.editorLang, this.monaco, this.range),
+          langkeyWords(this.editorLang, this.monaco, this.range),
+          langSnippet(this.editorLang, this.monaco, this.range),
+          operatores(this.editorLang, this.monaco, this.range)
         );
       case "cql":
         return new CQLCompletion(
@@ -185,14 +191,14 @@ class AutoCompletion {
           this.splitQuery,
           this.monaco,
           this.range,
-          this.langkeyWords,
           this.defaultAutoCompletion,
-          this.langSnippet,
           this.renderColumns,
           this.renderTables,
-          this.dataTypes,
-          this.operatores,
-          this.langFunctions
+          langFunctions(this.editorLang, this.monaco, this.range),
+          dataTypes(this.editorLang, this.monaco, this.range),
+          langkeyWords(this.editorLang, this.monaco, this.range),
+          langSnippet(this.editorLang, this.monaco, this.range),
+          operatores(this.editorLang, this.monaco, this.range)
         );
       default:
         break;

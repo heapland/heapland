@@ -1,5 +1,5 @@
 import { EditorLang } from "./DatabaseBrowser";
-import AutoCompletion from "../../../components/AutoCompletion/AutoCompletion";
+import AutoCompletion, { langSnippet } from "../../../components/AutoCompletion/AutoCompletion";
 
 export interface Tables {
   tblName: string;
@@ -45,7 +45,7 @@ export const getFilterTableCols = (colsNames: Columns[], table: string): Columns
 export const getPgsqlCompletionProvider = (monaco: any, tblNames: Tables[], colsNames: Columns[], editorLang: EditorLang) => {
   // console.log(editorLang);
   return monaco.languages.registerCompletionItemProvider(editorLang, {
-    triggerCharacters: [".", '"'],
+    triggerCharacters: ["."],
     provideCompletionItems: (model: any, position: any, context: any) => {
       const word = model.getWordUntilPosition(position);
 
@@ -83,7 +83,7 @@ export const getPgsqlCompletionProvider = (monaco: any, tblNames: Tables[], cols
         } else if (splitQuery[0] === "keyspace") {
           items = newAutoComp.defaultAutoCompletion();
         } else if (range.startColumn === 1 && range.endColumn === 1) {
-          items = newAutoComp.langSnippet();
+          items = langSnippet(editorLang, monaco, range);
         } else {
           items = newAutoComp.defaultAutoCompletion();
         }
