@@ -35,7 +35,7 @@ import {
 import "./DatabaseBrowser.scss";
 import { DownOutlined, MailOutlined } from "@ant-design/icons";
 import CustomScroll from "react-custom-scroll";
-import Connections, { ColumnDetails, SchemaObjects, TableMeta } from "../../../services/Connections";
+import Connections, { ColumnDetails, SchemaObjects, TableMeta, TableMetaWithSchema } from "../../../services/Connections";
 import { ConnectionIcon } from "../../../components/Cards/DatasourceCard";
 import Sider from "antd/lib/layout/Sider";
 import { Content, Header } from "antd/lib/layout/layout";
@@ -50,6 +50,7 @@ import { Columns, getPgsqlCompletionProvider, Tables } from "./PgSQLCompletionPr
 import { truncateString, useWindowDimensions } from "../../../components/utils/utils";
 import ColumnIcon from "../../../components/Icons/ColumnIcon";
 import { HiOutlineDotsHorizontal, HiPlus } from "react-icons/hi";
+import AddNewTable from "./AddNewTable";
 const { Option } = Select;
 const { Column } = Table;
 const { SubMenu } = Menu;
@@ -173,8 +174,9 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
     columnNames: [],
     loading: true,
   });
-  const [allTables, setAllTables] = useState<TableMeta>({});
+  const [allTablesWithCol, setAllTablesWithCol] = useState<TableMetaWithSchema>({});
   const [refreshDB, setRefreshDB] = useState<boolean>(false);
+  const [isAddTableModal, setAddTableModal] = useState(false);
 
   const enableEditMode = () => {
     setDBState({ ...dbState, editMode: true });
@@ -219,19 +221,19 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
       databaseId,
       (s) => {
         if (s.productName.toLowerCase() === "mysql") {
-          Connections.listSchemaObjects(databaseId, "default", (objs) => {
+          Connections.listSchemaObjects(databaseId, s.dbName, (objs) => {
             setDBState((prv) => ({
               ...prv,
               loading: false,
               productName: s.productName,
               dbName: s.dbName,
-              dbObjects: makeTreeNodefromObj("default", objs),
+              dbObjects: makeTreeNodefromObj(s.dbName, objs),
               connectionName: s.connectionName,
               hasError: false,
               editMode: false,
               version: `${s.majorVersion}.${s.minorVersion}`,
               schemas: [],
-              selectedSchema: "default",
+              selectedSchema: s.dbName,
               editorLang: "mysql",
             }));
           });
@@ -650,7 +652,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
   React.useEffect(() => {
     if (dbState.editorLang === "mysql") {
       Connections.listTablesMeta(databaseId, "default", (res) => {
-        setAllTables(res);
+        setAllTablesWithCol({ [dbState.selectedSchema]: res });
         let tblNames: Tables[] = [];
         let colsNames: Columns[] = [];
         Object.entries(res).map(([tableName, value]) => {
@@ -672,7 +674,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
           let colsNames: Columns[] = [];
           schemas.map((schema) => {
             Connections.listTablesMeta(databaseId, schema, (res) => {
-              setAllTables((prv) => ({ ...prv, ...res }));
+              setAllTablesWithCol((prv) => ({ ...prv, [schema]: { ...res } }));
               Object.entries(res).map(([tableName, value]) => {
                 tblNames.push({
                   tblName: tableName,
@@ -776,8 +778,8 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             <Tooltip title='Refresh Table'>
                               <Button size='small' onClick={onrefreshDB} icon={<MdSync />} />
                             </Tooltip>
-                            <Tooltip title='Add Row'>
-                              <Button size='small' icon={<HiPlus />} />
+                            <Tooltip title='Add Table'>
+                              <Button size='small' onClick={() => setAddTableModal(true)} icon={<HiPlus />} />
                             </Tooltip>
                             <Tooltip title='More Action'>
                               <Button size='small' icon={<HiOutlineDotsHorizontal />} />
@@ -837,14 +839,14 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                             </div>
                           }
                           key={`t-${pane.id}`}>
-                          {Object.entries(allTables).length > 0 && (
+                          {Object.entries(allTablesWithCol).length > 0 && (
                             <TablePane
                               productName={dbState.productName}
                               connectionId={databaseId}
                               schema={dbState.selectedSchema}
                               dbName={dbState.dbName}
                               name={pane.name}
-                              allTables={allTables}
+                              allTablesWithCol={allTablesWithCol}
                               editorLang={dbState.editorLang}
                             />
                           )}
@@ -892,6 +894,18 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
         available={true}
         initialValues={{ name: dbState.connectionName }}
       />
+      {isAddTableModal && (
+        <AddNewTable
+          onCloseModal={() => setAddTableModal(false)}
+          isAddTableModal={isAddTableModal}
+          editorLang={dbState.editorLang}
+          productName={dbState.productName}
+          connectionId={databaseId}
+          schemas={dbState.schemas}
+          dbName={dbState.dbName}
+          allTablesWithCol={allTablesWithCol}
+        />
+      )}
     </Layout>
   );
 };

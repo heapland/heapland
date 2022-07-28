@@ -1,4 +1,13 @@
 import { PrimaryKey } from "../../services/Connections";
+import { cqlSnippet, cqlDataTypes, cqlKeywords, cqlFunction, cql_operators } from "../DatabasesKeywords/CQL";
+import {
+  CompletionInterface,
+  pgsqlDataTypes,
+  pgsqlFunction,
+  pgsqlKeywords,
+  pgsqlSnippet,
+  pgsql_operators,
+} from "../DatabasesKeywords/PgSQL";
 import { CQlOperation } from "./CQLOperation";
 import { MySQlOperation } from "./MySQLOperation";
 import PGSQlOperation from "./PGSQLOperation";
@@ -8,6 +17,34 @@ export interface DBInfo {
   selectedSchema: string;
   primaryKeys: PrimaryKey[];
 }
+
+export const getLangDefComp = (editorLang: string) => {
+  let langSnippet: CompletionInterface[];
+  let dataTypes: CompletionInterface[];
+  let keyWords: CompletionInterface[];
+  let functions: CompletionInterface[];
+  let operatores: string[];
+  switch (editorLang) {
+    case "pgsql":
+    case "mysql":
+      langSnippet = pgsqlSnippet;
+      dataTypes = pgsqlDataTypes;
+      keyWords = pgsqlKeywords;
+      functions = pgsqlFunction;
+      operatores = pgsql_operators;
+      break;
+    case "cql":
+      langSnippet = cqlSnippet;
+      dataTypes = cqlDataTypes;
+      keyWords = cqlKeywords;
+      functions = cqlFunction;
+      operatores = cql_operators;
+      break;
+    default:
+      break;
+  }
+  return { langSnippet, dataTypes, keyWords, functions, operatores };
+};
 
 class DBOperations {
   private productName: string;

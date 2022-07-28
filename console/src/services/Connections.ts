@@ -75,6 +75,10 @@ export interface TableMeta {
   };
 }
 
+export interface TableMetaWithSchema {
+  [key: string]: TableMeta;
+}
+
 class ConnectionService extends IErrorHandler {
   private webAPI: WebService = new WebService();
 

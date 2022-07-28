@@ -1,6 +1,7 @@
 import Connections, { PrimaryKey } from "../../services/Connections";
-import { isNumberDataType } from "../utils/utils";
+import { isNumberDataType, isVarCharType } from "../utils/utils";
 import { DBInfo } from "./DBOperation";
+import { INewColName } from "./PGSQLOperation";
 
 export class CQlOperation {
   rowsData: any[];
@@ -129,5 +130,59 @@ export class CQlOperation {
       cql += cql_update;
     });
     return cql;
+  }
+
+  addNewColumn(allColsName: INewColName[]) {
+    let cqlQuery = `ALTER TABLE ${this.dbInfo.selectedSchema}.${this.dbInfo.tableName}\r\n`;
+    let primary_keys: string[] = [];
+
+    allColsName.map((c, i) => {
+      if (c.primary_key) {
+        primary_keys.push(c.colName);
+      }
+      if (allColsName.length === i + 1 && !c.primary_key) {
+        if (isVarCharType(c.datatype)) {
+          return (cqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype}(${c.charNumber});`);
+        }
+        return (cqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype};`);
+      } else {
+        if (isVarCharType(c.datatype)) {
+          return (cqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype}(${c.charNumber}),\r\n`);
+        }
+        return (cqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype},\r\n`);
+      }
+    });
+    if (primary_keys.length) {
+      cqlQuery += `ADD CONSTRAINT ${this.dbInfo.tableName}_pkys PRIMARY KEY (${primary_keys.join(",")});`;
+    }
+    return this.executeQuery(cqlQuery);
+  }
+
+  addNewTable(allColsName: INewColName[], schemaName: string, tableName: string) {
+    let cqlQuery = `CREATE TABLE ${schemaName}.${tableName}(\r\n`;
+    let primary_keys: string[] = [];
+
+    allColsName.map((c, i) => {
+      if (c.primary_key) {
+        primary_keys.push(c.colName);
+      }
+      if (allColsName.length === i + 1 && !c.primary_key) {
+        if (isVarCharType(c.datatype)) {
+          return (cqlQuery += `${c.colName}  ${c.datatype}(${c.charNumber})\r\n);`);
+        }
+        return (cqlQuery += `${c.colName}  ${c.datatype}\r\n);`);
+      } else {
+        if (isVarCharType(c.datatype)) {
+          return (cqlQuery += `${c.colName}  ${c.datatype}(${c.charNumber}),\r\n`);
+        }
+        return (cqlQuery += `${c.colName}  ${c.datatype},\r\n`);
+      }
+    });
+
+    if (primary_keys.length) {
+      cqlQuery += `PRIMARY KEY (${primary_keys.join(",")})\r\n);`;
+    }
+
+    return this.executeQuery(cqlQuery);
   }
 }

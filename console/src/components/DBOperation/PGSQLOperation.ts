@@ -1,6 +1,15 @@
 import Connections, { PrimaryKey } from "../../services/Connections";
-import { isNumberDataType } from "../utils/utils";
+import { isNumberDataType, isVarCharType } from "../utils/utils";
 import { DBInfo } from "./DBOperation";
+
+export interface INewColName {
+  colName: string;
+  datatype: string;
+  charNumber?: number;
+  is_not_null: boolean;
+  primary_key: boolean;
+  foreign_key: string[];
+}
 
 class PGSQlOperation {
   private rowsData: any[];
@@ -131,6 +140,73 @@ class PGSQlOperation {
       pgsql += pgql_update;
     });
     return pgsql;
+  }
+
+  addNewColumn(allColsName: INewColName[]) {
+    let pgsqlQuery = `ALTER TABLE ${this.dbInfo.selectedSchema}.${this.dbInfo.tableName}\r\n`;
+    let primary_keys: string[] = [];
+
+    allColsName.map((c, i) => {
+      if (c.primary_key) {
+        primary_keys.push(c.colName);
+      }
+      if (allColsName.length === i + 1 && !c.primary_key) {
+        if (isVarCharType(c.datatype)) {
+          return (pgsqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"};`);
+        }
+        return (pgsqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"};`);
+      } else {
+        if (isVarCharType(c.datatype)) {
+          return (pgsqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+        }
+        return (pgsqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+      }
+    });
+    if (primary_keys.length) {
+      pgsqlQuery += `ADD CONSTRAINT ${this.dbInfo.tableName}_pkys PRIMARY KEY (${primary_keys.join(",")});`;
+    }
+
+    // console.log(pgsqlQuery);
+    return this.executeQuery(pgsqlQuery);
+  }
+
+  addNewTable(allColsName: INewColName[], schemaName: string, tableName: string) {
+    let pgsqlQuery = `CREATE TABLE ${schemaName}.${tableName}(\r\n`;
+    let primary_keys: string[] = [];
+    let foreign_key = "";
+
+    allColsName.map((c, i) => {
+      if (c.primary_key) {
+        primary_keys.push(c.colName);
+      }
+      if (c.foreign_key.length) {
+        foreign_key += `CONSTRAINT ${c.foreign_key[0]}_${i}_fkey\r\n`;
+        foreign_key += `FOREIGN KEY(${c.colName})\r\n`;
+        foreign_key += `REFERENCES ${schemaName}.${c.foreign_key[0]}(${c.foreign_key[1]})\r\n`;
+      }
+      if (allColsName.length === i + 1 && !c.primary_key) {
+        if (isVarCharType(c.datatype)) {
+          return (pgsqlQuery += `${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"}\r\n`);
+        }
+        return (pgsqlQuery += `${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"}\r\n`);
+      } else {
+        if (isVarCharType(c.datatype)) {
+          return (pgsqlQuery += `${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+        }
+        return (pgsqlQuery += `${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+      }
+    });
+
+    if (primary_keys.length) {
+      pgsqlQuery += `PRIMARY KEY (${primary_keys.join(",")}),\r\n`;
+    }
+
+    if (foreign_key) {
+      pgsqlQuery += foreign_key;
+    }
+    // console.log(`${pgsqlQuery});`);
+
+    return this.executeQuery(`${pgsqlQuery});`);
   }
 }
 

@@ -560,6 +560,24 @@
     border-color: var(--light-bg);
   }
 }
+.add-table-modal,
+.add-column-modal {
+  .remove-col-icon {
+    color: var(--primary-color);
+    float: right;
+    &:hover {
+      color: red;
+    }
+  }
+  .add-newcol-btn {
+    background-color: var(--default-btn-color);
+    color: var(--secondary-color);
+    border-color: var(--border-color);
+  }
+  .ant-form-item-explain.ant-form-item-explain-error {
+    display: none;
+  }
+}
 .ant-modal-close-icon {
   color: var(--secondary-color);
 }

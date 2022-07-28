@@ -1,6 +1,7 @@
 import Connections, { PrimaryKey } from "../../services/Connections";
-import { isNumberDataType } from "../utils/utils";
+import { isNumberDataType, isVarCharType } from "../utils/utils";
 import { DBInfo } from "./DBOperation";
+import { INewColName } from "./PGSQLOperation";
 
 export class MySQlOperation {
   rowsData: any[];
@@ -132,5 +133,70 @@ export class MySQlOperation {
       sql += sql_update;
     });
     return sql;
+  }
+
+  addNewColumn(allColsName: INewColName[]) {
+    let sqlQuery = `ALTER TABLE ${this.dbInfo.tableName}\r\n`;
+    let primary_keys: string[] = [];
+
+    allColsName.map((c, i) => {
+      if (c.primary_key) {
+        primary_keys.push(c.colName);
+      }
+      if (allColsName.length === i + 1 && !c.primary_key) {
+        if (isVarCharType(c.datatype)) {
+          return (sqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"};`);
+        }
+        return (sqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"};`);
+      } else {
+        if (isVarCharType(c.datatype)) {
+          return (sqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+        }
+        return (sqlQuery += `ADD COLUMN ${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+      }
+    });
+    if (primary_keys.length) {
+      sqlQuery += `ADD CONSTRAINT ${this.dbInfo.tableName}_pkys PRIMARY KEY (${primary_keys.join(",")});`;
+    }
+    return this.executeQuery(sqlQuery);
+  }
+
+  addNewTable(allColsName: INewColName[], schemaName: string, tableName: string, dbName?: string) {
+    let sqlQuery = `CREATE TABLE ${dbName}.${tableName}(\r\n`;
+    let primary_keys: string[] = [];
+    let foreign_key = "";
+
+    allColsName.map((c, i) => {
+      if (c.primary_key) {
+        primary_keys.push(c.colName);
+      }
+
+      if (c.foreign_key.length) {
+        foreign_key += `CONSTRAINT ${c.foreign_key[0]}_${i}_fkey\r\n`;
+        foreign_key += `FOREIGN KEY(${c.colName})\r\n`;
+        foreign_key += `REFERENCES ${dbName}.${c.foreign_key[0]}(${c.foreign_key[1]})\r\n`;
+      }
+
+      if (allColsName.length === i + 1 && !c.primary_key) {
+        if (isVarCharType(c.datatype)) {
+          return (sqlQuery += `${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"}\r\n);`);
+        }
+        return (sqlQuery += `${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"}\r\n);`);
+      } else {
+        if (isVarCharType(c.datatype)) {
+          return (sqlQuery += `${c.colName}  ${c.datatype}(${c.charNumber}) ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+        }
+        return (sqlQuery += `${c.colName}  ${c.datatype} ${c.is_not_null ? "NOT NULL" : "NULL"},\r\n`);
+      }
+    });
+
+    if (primary_keys.length) {
+      sqlQuery += `PRIMARY KEY (${primary_keys.join(",")})\r\n);`;
+    }
+
+    if (foreign_key) {
+      sqlQuery += foreign_key;
+    }
+    return this.executeQuery(sqlQuery);
   }
 }

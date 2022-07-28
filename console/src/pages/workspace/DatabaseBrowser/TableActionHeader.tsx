@@ -1,4 +1,4 @@
-import { Radio, Space, Button, Tooltip, Pagination } from "antd";
+import { Radio, Space, Button, Tooltip, Pagination, Menu, Dropdown } from "antd";
 import React, { FC } from "react";
 import { MdEdit, MdSync } from "react-icons/md";
 import { HiPlus, HiMinus, HiOutlineDotsHorizontal, HiDownload, HiUpload } from "react-icons/hi";
@@ -12,6 +12,7 @@ const TableActionHeader: FC<{
   onSaveRow: () => void;
   onCancel: () => void;
   openDDL: () => void;
+  openAddColModal: () => void;
   onPagiChange: (page: number, pageSize: number) => void;
   editingKey: string;
   openDwnDataModal: () => void;
@@ -30,6 +31,7 @@ const TableActionHeader: FC<{
   onSaveRow,
   onCancel,
   onPagiChange,
+  openAddColModal,
   openDDL,
   selectedRow,
   editingKey,
@@ -38,6 +40,13 @@ const TableActionHeader: FC<{
   totalRows,
   loading,
 }) => {
+  const dbTableMenu = (
+    <Menu>
+      <Menu.Item key='0' onClick={openAddColModal}>
+        Add Column
+      </Menu.Item>
+    </Menu>
+  );
   return (
     <div className='table-action-header'>
       <div>
@@ -60,7 +69,9 @@ const TableActionHeader: FC<{
               </Tooltip>
             )}
             <Tooltip title='More Action'>
-              <Button size='small' disabled={loading} icon={<HiOutlineDotsHorizontal />} />
+              <Dropdown overlay={dbTableMenu} trigger={["click"]}>
+                <Button size='small' disabled={loading} icon={<HiOutlineDotsHorizontal />} />
+              </Dropdown>
             </Tooltip>
           </div>
           <div className='control-btn'>
