@@ -171,10 +171,7 @@
     }
   }
   .tbl-applications {
-    th.table-cell-light {
-      // background-color: $lt-table-header-cell;
-      // color: $lt-font-dull-color;
-    }
+ 
     th {
       font-size: 11.5px;
     }
@@ -190,11 +187,6 @@
       margin: 0px auto;
     }
 
-    td.table-cell-light {
-      // color: $lt-font-color;
-      // background-color: $lt-card-bg;
-      // border-bottom: none;
-    }
     .app-icon {
       margin-right: 10px;
     }
