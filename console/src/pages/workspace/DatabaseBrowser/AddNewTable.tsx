@@ -8,8 +8,6 @@ import { TableMeta, TableMetaWithSchema } from "../../../services/Connections";
 import { InternalServerError } from "../../../services/SparkService";
 import { EditorLang } from "./DatabaseBrowser";
 
-// const { SHOW_CHILD } = Cascader;
-
 interface IAddNewTable {
   onCloseModal: () => void;
   isAddTableModal: boolean;
@@ -41,6 +39,7 @@ const AddNewTable: FC<IAddNewTable> = ({
   const [addTableForm] = Form.useForm();
 
   const [isCharType, setCharType] = useState<any[]>([]);
+  const [isPrimaryKey, setPrimaryKey] = useState<any[]>([]);
   const [selectedSchema, setSelctedSchema] = useState<string>("");
   const onSelectDataType = (v: any, key: number) => {
     if (isVarCharType(v)) {
@@ -61,6 +60,27 @@ const AddNewTable: FC<IAddNewTable> = ({
       let err = res.parsedBody as InternalServerError;
       message.error(err.message);
     }
+  };
+
+  const onCheckPrimaryKey = (e: any, key: number) => {
+    if (e.target.checked) {
+      setPrimaryKey([...isPrimaryKey, key]);
+    } else {
+      const restKey = isPrimaryKey.filter((p, i) => p !== key);
+      setPrimaryKey(restKey);
+    }
+    const colsValues = addTableForm.getFieldValue("colsName");
+    const newColsValue = colsValues.map((c: any, i: any) => {
+      if (i == key) {
+        return {
+          ...c,
+          is_not_null: e.target.checked,
+        };
+      } else {
+        return c;
+      }
+    });
+    addTableForm.setFieldsValue({ colsName: newColsValue });
   };
 
   return (
@@ -192,18 +212,19 @@ const AddNewTable: FC<IAddNewTable> = ({
                       valuePropName='checked'
                       name={[name, "primary_key"]}
                       rules={[{ required: false }]}>
-                      <Checkbox>PRIMARY KEY</Checkbox>
+                      <Checkbox onChange={(e) => onCheckPrimaryKey(e, key)}>PRIMARY KEY</Checkbox>
                     </Form.Item>
                   </Col>
                   {editorLang !== "cql" && (
                     <Col span={8}>
                       <Form.Item
+                        shouldUpdate={true}
                         style={{ marginBottom: 0 }}
                         {...restField}
                         valuePropName='checked'
                         name={[name, "is_not_null"]}
                         rules={[{ required: false }]}>
-                        <Checkbox>NOT NULL</Checkbox>
+                        <Checkbox disabled={!!isPrimaryKey.includes(key)}>NOT NULL</Checkbox>
                       </Form.Item>
                     </Col>
                   )}
@@ -211,7 +232,7 @@ const AddNewTable: FC<IAddNewTable> = ({
               ))}
               <Form.Item style={{ marginTop: 30 }}>
                 <Button type='dashed' className='add-newcol-btn' onClick={() => add()} block icon={<PlusOutlined />}>
-                  Add new table
+                  Add new column
                 </Button>
               </Form.Item>
             </>
