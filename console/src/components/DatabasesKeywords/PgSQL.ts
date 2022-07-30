@@ -455,23 +455,23 @@ from ;
 
 export const pgsqlDataTypes: CompletionInterface[] = [
   {
-    key: "Boolean",
+    key: "boolean",
     detail:
       "In PostgreSQL, the “bool” or”boolean” keyword is used to initialize a Boolean data type. These data types can hold true, false, and null values. A boolean data type is stored in the database according to the following:",
-    insertText: "Boolean",
+    insertText: "boolean",
   },
   {
-    key: "Character",
+    key: "character",
     detail: "PostgreSQL has three character data types namely, CHAR(n), VARCHAR(n), and TEXT.",
-    insertText: "Character",
+    insertText: "character",
   },
   {
-    key: "Numeric",
+    key: "numeric",
     detail: "PostgreSQL has 2 types of numbers namely, integers and floating-point numbers.",
-    insertText: "Numeric ",
+    insertText: "numeric ",
   },
   {
-    key: "Temporal",
+    key: "temporal",
     detail: `This data type is used to store date-time data. PostgreSQL has 5 temporal data type: 
 DATE is used to store the dates only.
 TIME is used to stores the time of day values.
@@ -479,34 +479,204 @@ TIMESTAMP is used to stores both date and time values.
 TIMESTAMPTZ is used to store a timezone-aware timestamp data type.
 INTERVAL is used to store periods of time.
     `,
-    insertText: "Temporal ",
+    insertText: "temporal ",
   },
   {
-    key: "UUID",
+    key: "uuid",
     detail:
       "The UUID data type allows you to store Universal Unique Identifiers defined by RFC 4122. The UUID values guarantee a better uniqueness than SERIAL and can be used to hide sensitive data exposed to the public such as values of id in URL. ",
-    insertText: "UUID",
+    insertText: "uuid",
   },
   {
-    key: "Array ",
+    key: "array",
     detail:
       "In PostgreSQL, an array column can be used to store an array of strings or an array of integers etc. It can be handy when storing data likes storing days of months, a year, or even a week, etc. ",
-    insertText: "Array ",
+    insertText: "array ",
   },
   {
-    key: "JSON ",
+    key: "josn",
     detail:
       "PostgreSQL supports 2 types of JSON types namely JSON and JSONB(Binary JSON). The JSON data type is used to store plain JSON data that get parsed every time it’s called by a query. Whereas the JSONB data type is used to store JSON data in a binary format. It is one hand makes querying data faster whereas slows down the data insertion process as it supports indexing of table data.",
-    insertText: "JSON ",
+    insertText: "json",
   },
   {
-    key: "hstore ",
+    key: "hstore",
     detail: "",
-    insertText: "hstore ",
+    insertText: "hstore",
   },
   {
-    key: "Special ",
+    key: "Special",
     detail: "",
     insertText: "Special ",
+  },
+  {
+    key: "bigint",
+    detail: "signed eight-byte integer",
+    insertText: "bigint",
+  },
+  {
+    key: "bigserial",
+    detail: "autoincrementing eight-byte integer",
+    insertText: "bigserial",
+  },
+  {
+    key: "bit",
+    detail: "fixed-length bit string",
+    insertText: "bit ",
+  },
+  {
+    key: "bit varying",
+    detail: "variable-length bit string",
+    insertText: "bit varying",
+  },
+  {
+    key: "box",
+    detail: "rectangular box on a plane",
+    insertText: "box",
+  },
+  {
+    key: "bytea",
+    detail: "binary data (“byte array”)",
+    insertText: "bytea",
+  },
+  {
+    key: "cidr",
+    detail: "IPv4 or IPv6 network address",
+    insertText: "cidr",
+  },
+  {
+    key: "circle",
+    detail: "circle on a plane",
+    insertText: "circle",
+  },
+  {
+    key: "date",
+    detail: "	calendar date (year, month, day)",
+    insertText: "date",
+  },
+  {
+    key: "double precision",
+    detail: "double precision floating-point number (8 bytes)",
+    insertText: "double precision",
+  },
+  {
+    key: "inet",
+    detail: "	IPv4 or IPv6 host address",
+    insertText: "inet",
+  },
+  {
+    key: "integer",
+    detail: "signed four-byte integer",
+    insertText: "integer",
+  },
+  {
+    key: "interval",
+    detail: "time span",
+    insertText: "interval",
+  },
+  {
+    key: "jsonb",
+    detail: "	binary JSON data, decomposed",
+    insertText: "jsonb",
+  },
+  {
+    key: "lseg",
+    detail: "	line segment on a plane",
+    insertText: "lseg",
+  },
+  {
+    key: "macaddr",
+    detail: "	MAC (Media Access Control) address",
+    insertText: "macaddr",
+  },
+  {
+    key: "macaddr8",
+    detail: "MAC (Media Access Control) address (EUI-64 format)",
+    insertText: "macaddr8",
+  },
+  {
+    key: "money",
+    detail: "currency amount",
+    insertText: "money",
+  },
+  {
+    key: "path",
+    detail: "geometric path on a plane",
+    insertText: "path",
+  },
+  {
+    key: "pg_lsn",
+    detail: "PostgreSQL Log Sequence Number",
+    insertText: "pg_lsn",
+  },
+  {
+    key: "pg_snapshot",
+    detail: "user-level transaction ID snapshot",
+    insertText: "pg_snapshot",
+  },
+  {
+    key: "point",
+    detail: "geometric point on a plane",
+    insertText: "point",
+  },
+  {
+    key: "polygon",
+    detail: "	closed geometric path on a plane",
+    insertText: "polygon",
+  },
+  {
+    key: "real",
+    detail: "	single precision floating-point number (4 bytes)",
+    insertText: "real",
+  },
+  {
+    key: "smallint",
+    detail: "signed two-byte integer",
+    insertText: "smallint",
+  },
+  {
+    key: "smallserial",
+    detail: "	autoincrementing two-byte integer",
+    insertText: "smallserial",
+  },
+  {
+    key: "serial",
+    detail: "autoincrementing four-byte integer",
+    insertText: "serial",
+  },
+  {
+    key: "text",
+    detail: "variable-length character string",
+    insertText: "text",
+  },
+  {
+    key: "time ",
+    detail: "	time of day (no time zone)",
+    insertText: "time ",
+  },
+  {
+    key: "timestamp ",
+    detail: "	date and time (no time zone)",
+    insertText: "timestamp ",
+  },
+  {
+    key: "tsquery",
+    detail: "text search query",
+    insertText: "tsquery",
+  },
+  {
+    key: "tsvector",
+    detail: "text search document",
+    insertText: "tsvector",
+  },
+  {
+    key: "txid_snapshot",
+    detail: "	user-level transaction ID snapshot (deprecated; see pg_snapshot)",
+    insertText: "txid_snapshot",
+  },
+  {
+    key: "xml",
+    detail: "	XML data",
+    insertText: "xml",
   },
 ];
