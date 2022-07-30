@@ -1,21 +1,5 @@
 import { CompletionInterface } from "./PgSQL";
 
-interface PGSQLKeywords {
-  key: string;
-  detail: string;
-}
-interface PGSQLFunction {
-  key: string;
-  detail: string;
-  insertText: string;
-}
-
-interface PGSQLSnippet {
-  key: string;
-  detail: string;
-  insertText: string;
-}
-
 export const cql_operators: string[] = [
   // Logical
   "ALL",
