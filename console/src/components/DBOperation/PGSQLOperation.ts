@@ -179,7 +179,7 @@ class PGSQlOperation {
       if (c.primary_key) {
         primary_keys.push(c.colName);
       }
-      if (c.foreign_key.length) {
+      if (c.foreign_key && c.foreign_key?.length) {
         foreign_key += `CONSTRAINT ${c.foreign_key[0]}_${i}_fkey\r\n`;
         foreign_key += `FOREIGN KEY(${c.colName})\r\n`;
         foreign_key += `REFERENCES ${schemaName}.${c.foreign_key[0]}(${c.foreign_key[1]})\r\n`;
