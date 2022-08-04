@@ -172,7 +172,7 @@ const KafkaClusterDashboard: FC<{ orgSlugId: string; workspaceId: number; connec
             <Button type='primary' onClick={(e) => enableEditMode()}>
               Edit Connection
             </Button>
-            <Button type='default' onClick={(e) => deleteWarning("connection")}>
+            <Button type='default' className='delete-con-btn ' onClick={(e) => deleteWarning("connection")}>
               Delete Connection
             </Button>
           </Space>
@@ -188,7 +188,7 @@ const KafkaClusterDashboard: FC<{ orgSlugId: string; workspaceId: number; connec
                 <div>{clusterState.name}</div>
               </div>
             </Space>
-            <div>
+            <div className='connection-edit-btn'>
               <Dropdown.Button
                 overlay={menu}
                 onClick={(e) => enableEditMode()}
@@ -199,7 +199,7 @@ const KafkaClusterDashboard: FC<{ orgSlugId: string; workspaceId: number; connec
               </Dropdown.Button>
             </div>
           </div>
-          <div className='tabs-section card-shadow-light' style={{ minHeight: "500px", backgroundColor: "#fff" }}>
+          <div className='tabs-section' style={{ minHeight: "500px" }}>
             <Tabs
               defaultActiveKey='broker'
               activeKey={tabsView.activeTab}

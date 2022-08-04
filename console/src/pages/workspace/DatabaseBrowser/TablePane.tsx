@@ -155,6 +155,7 @@ const TablePane: React.FC<{
 
   const cancelToAddEditRow = () => {
     setEditingKey("");
+    setSelectedRows([]);
     if (isNewRow) {
       const restData = tableData.result.result.filter((r, i) => makeTableRowId(r) !== makeTableRowId(selectedRows[0]));
       setTableData({ ...tableData, result: { ...tableData.result, result: restData } });

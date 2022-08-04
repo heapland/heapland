@@ -1,13 +1,23 @@
 @import "../../../variables.scss";
 .dashboard-container {
-  background-color: $lt-main-bg;
+  background-color: var(--background-color);
   min-height: 100%;
 
   .error-box {
     margin: 100px;
-
+    background-color: var(--background-color);
     div.ant-alert-error {
       margin-bottom: 20px;
+    }
+    .delete-con-btn {
+      background-color: var(--default-btn-color);
+      color: var(--secondary-color);
+      border-color: var(--btn-border);
+
+      &:hover {
+        border-color: var(--default-green);
+        color: var(--default-green);
+      }
     }
   }
 
@@ -20,15 +30,12 @@
     margin: 0 20px 0 0;
 
     &:not(.ant-tabs-tab-active) {
-        
       color: var(--secondary-color);
-    
-  }
+    }
 
     .ant-tabs-tab-btn {
       padding: 0 10px;
 
-      
       // color: var(--primary-color);
     }
   }
@@ -152,6 +159,7 @@
   .cluster-tabs {
     .ant-tabs-content {
       min-height: 50vh;
+      background-color: var(--background-color);
     }
     .ant-tabs-tab {
       margin: 0 20px 0 0;
@@ -165,13 +173,13 @@
       margin-bottom: 0;
       background-color: var(--secondary-bg);
 
-      &::before{
+      &::before {
         border-bottom: 1px solid var(--border-color);
       }
     }
   }
   .tbl-applications {
- 
+    background-color: var(--background-color);
     th {
       font-size: 11.5px;
     }

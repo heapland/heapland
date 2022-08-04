@@ -88,6 +88,10 @@
   color: var(--form-error-text-color);
 }
 
+.ant-checkbox-disabled.ant-checkbox-checked .ant-checkbox-inner::after {
+  border-color: var(--checked-disabed-color);
+}
+
 .ant-dropdown-menu-item-divider {
   background-color: var(--border-color);
 }
@@ -99,16 +103,6 @@
 
 // comman input and select style
 
-// .ant-input {
-//   box-shadow: none;
-//   border-radius: 0;
-//   background-color: var(--background-color);
-//   color: var(--title-color);
-//   border-color: var(--border-color);
-//   &::placeholder {
-//     color: var(--placeholder-color);
-//   }
-// }
 .ant-cascader-picker,
 .ant-input-affix-wrapper,
 .ant-input-number,

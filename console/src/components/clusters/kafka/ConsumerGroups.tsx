@@ -117,7 +117,7 @@ const ConsumerGroups: FC<{
           }`,
         }}
         className='jobs-container tbl-applications consumer-groups-table'
-        style={{ minHeight: "50vh", backgroundColor: "#fff" }}>
+        style={{ minHeight: "50vh" }}>
         <Column
           width='10%'
           title='STATE'

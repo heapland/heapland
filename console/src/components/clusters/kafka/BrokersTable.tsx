@@ -31,7 +31,7 @@ const KafkaBrokersTable: FC<{
           emptyText: `${!isRunning ? "Cluster is not running. Start the cluster to view the brokers" : "No Brokers found!"}`,
         }}
         className='jobs-container tbl-applications'
-        style={{ minHeight: "50vh", backgroundColor: "#fff" }}>
+        style={{ minHeight: "50vh" }}>
         <Column title='ID' dataIndex='id' key='id' className='table-cell-light' />
         <Column
           title='ADDRESS'

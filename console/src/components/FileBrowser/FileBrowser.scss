@@ -17,6 +17,17 @@ div.file-info-drawer {
   }
 }
 
+.edit-cancel-btn {
+  background-color: var(--default-btn-color);
+  color: var(--secondary-color);
+  border-color: var(--border-color);
+  &:hover {
+    color: var(--primary-color);
+    background-color: var(--default-btn-color);
+    border-color: var(--border-color);
+  }
+}
+
 .file-browser-controls {
   height: 45px;
   padding: 10px 15px 10px 10px;
@@ -29,15 +40,6 @@ div.file-info-drawer {
     justify-content: space-between;
     align-items: center;
     gap: 0 15px;
-
-    .edit-cancel-btn {
-      background-color: var(--default-btn-color);
-      color: var(--secondary-color);
-      border-color: var(--border-color);
-      &:hover {
-        color: var(--primary-color);
-      }
-    }
 
     .ant-pagination-item-link:disabled {
       color: var(--secondary-color);

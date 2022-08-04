@@ -424,6 +424,7 @@
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   padding: 0 8px;
   .control-btn {
     button {
@@ -451,7 +452,7 @@
         border-bottom-left-radius: 0;
         border-top-left-radius: 0;
       }
-      &:not(:first-child):not(:last-child){
+      &:not(:first-child):not(:last-child) {
         border-radius: 0;
       }
       border-right: 1px solid var(--light-bg);

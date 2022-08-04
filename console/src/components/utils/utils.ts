@@ -328,7 +328,7 @@ export const isNumberDataType = (dataType: string) => {
   ].includes(dataType?.toLowerCase());
 };
 export const isVarCharType = (dataType: string) => {
-  return ["character", "varchar"].includes(dataType?.toLowerCase());
+  return ["character", "varchar", "text", "char"].includes(dataType?.toLowerCase());
 };
 
 export const extractPkeyfromTable = (allTablesWithCol: TableMetaWithSchema, tblName: string): PrimaryKey[] => {

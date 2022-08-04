@@ -68,7 +68,7 @@ export const KafkaTopicsTable: FC<{
           emptyText: `${!isRunning ? "Cluster is not running. Start the cluster to view the topics" : "No topics were created!"}`,
         }}
         className='jobs-container tbl-applications topic-list-table'
-        style={{ minHeight: "50vh", backgroundColor: "#fff" }}>
+        style={{ minHeight: "50vh" }}>
         <Column
           title='NAME'
           dataIndex=''

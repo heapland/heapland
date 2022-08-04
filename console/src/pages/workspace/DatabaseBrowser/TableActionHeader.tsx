@@ -81,7 +81,7 @@ const TableActionHeader: FC<{
           </div>
           <div className='action-btn-group'>
             <Tooltip title='Download Data'>
-              <Button size='small'  icon={<HiDownload />} onClick={openDwnDataModal} />
+              <Button size='small' icon={<HiDownload />} onClick={openDwnDataModal} />
             </Tooltip>
             <Tooltip title='Upload Data'>
               <Button size='small' disabled={loading} icon={<HiUpload />} onClick={onUploadData} />
@@ -96,6 +96,7 @@ const TableActionHeader: FC<{
               <Button className='edit-cancel-btn' onClick={onCancel} size='small'>
                 Cancel
               </Button>
+
               <Button onClick={onSaveRow} size='small' type='primary'>
                 Save
               </Button>
