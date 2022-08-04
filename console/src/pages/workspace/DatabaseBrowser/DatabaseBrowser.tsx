@@ -505,7 +505,7 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
               };
             }),
           };
-        } else if (k.key.includes("default--table")) {
+        } else if (k.key === `${splitKey[0]}--${splitKey[1]}`) {
           return {
             ...k,
             children: k.children.map((t) => {
@@ -774,17 +774,15 @@ const DatabaseBrowser: FC<{ orgSlugId: string; workspaceId: number; databaseId: 
                           </Tooltip>
                         </Space>
                         <div className='action-btn-group '>
-                          
-                            <Tooltip title='Refresh Table'>
-                              <Button size='small' onClick={onrefreshDB} icon={<MdSync />} />
-                            </Tooltip>
-                            <Tooltip title='Add Table'>
-                              <Button size='small' onClick={() => setAddTableModal(true)} icon={<HiPlus />} />
-                            </Tooltip>
-                            <Tooltip title='More Action'>
-                              <Button size='small' icon={<HiOutlineDotsHorizontal />} />
-                            </Tooltip>
-                          
+                          <Tooltip title='Refresh Table'>
+                            <Button size='small' onClick={onrefreshDB} icon={<MdSync />} />
+                          </Tooltip>
+                          <Tooltip title='Add Table'>
+                            <Button size='small' onClick={() => setAddTableModal(true)} icon={<HiPlus />} />
+                          </Tooltip>
+                          <Tooltip title='More Action'>
+                            <Button size='small' icon={<HiOutlineDotsHorizontal />} />
+                          </Tooltip>
                         </div>
                       </div>
 
